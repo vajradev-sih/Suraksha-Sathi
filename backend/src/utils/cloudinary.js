@@ -5,7 +5,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { HazardMedia } from '../models/hazardMedia.model.js';
 
-export const uploadHazardMedia = asyncHandler(async (req, res) => {
+const uploadHazardMedia = asyncHandler(async (req, res) => {
   if (!req.file) {
     throw new ApiError(400, 'No file uploaded');
   }
@@ -26,3 +26,5 @@ export const uploadHazardMedia = asyncHandler(async (req, res) => {
 
   res.status(201).json(new ApiResponse(201, media, 'Media uploaded successfully'));
 });
+
+export default uploadHazardMedia

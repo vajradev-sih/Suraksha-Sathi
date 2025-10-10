@@ -62,7 +62,7 @@ const deleteChecklistItem = asyncHandler(async (req, res) => {
 
 export {
     createChecklistItem,
-    getChecklistItemById,
+    getItemsForChecklist, // Corrected export
     getChecklistItemById,
     updateChecklistItem,
     deleteChecklistItem

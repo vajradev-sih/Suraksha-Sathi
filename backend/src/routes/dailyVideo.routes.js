@@ -3,7 +3,7 @@ import {
   assignDailyVideo,
   getDailyVideosForUser,
   markDailyVideoWatched
-} from '../controllers/video.controller.js';
+} from '../controllers/dailyVideo.controller.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 
 const router = Router();

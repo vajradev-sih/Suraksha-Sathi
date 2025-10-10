@@ -1,4 +1,4 @@
-import { Role } from "../models/role.model"
+import { Role } from "../models/role.model.js"
 import { User } from "../models/user.model.js";
 import { asyncHandler } from '../utils/AsyncHandler.js'
 import { ApiError } from '../utils/ApiError.js'
@@ -12,7 +12,7 @@ const createRole = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Role name and description are required");
     }
 
-    const existingRole = Role.findOne({ roleName })
+    const existingRole = await Role.findOne({ roleName })
 
     if (existingRole) {
         throw new ApiError(409, "Role with this name already exists");

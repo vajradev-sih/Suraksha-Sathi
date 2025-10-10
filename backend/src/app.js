@@ -20,7 +20,6 @@ app.use(cookieParser())
 //Routes
 import userRouter from './routes/user.routes.js'
 import roleRouter from './routes/role.routes.js';
-import roleRouter from './routes/role.routes.js';
 import taskRouter from './routes/task.routes.js';
 import checklistRouter from './routes/checklist.routes.js';
 import checklistItemRouter from './routes/checklistItem.routes.js';
@@ -75,7 +74,7 @@ app.use('/api/v1/payroll', payrollRouter);
 
 
 // ============ ERROR HANDLING SECTION ===========
-import { errorHandler } from './middlewares/errorHandler.middleware.js'
+import { errorHandler } from './middlewares/error.middleware.js'
 
 // IMPORTANT: Error handler must be registered AFTER all routes
 // This catches any errors thrown by routes or other middleware

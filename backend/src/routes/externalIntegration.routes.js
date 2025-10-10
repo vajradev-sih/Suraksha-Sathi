@@ -4,7 +4,7 @@ import {
   getAllExternalIntegrations,
   updateExternalIntegration,
   deleteExternalIntegration
-} from '../controllers/video.controller.js';
+} from '../controllers/externalIntegration.controller.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 
 const router = Router();

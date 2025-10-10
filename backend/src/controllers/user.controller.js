@@ -7,9 +7,10 @@ import jwt from 'jsonwebtoken'
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
+        // Fetch user and populate role_id for use in verifyJWT
         const user = await User.findById(userId)
-        const accessToken = user.generateAccessToken()
-        const refreshToken = user.generateRefreshToken()
+        const accessToken = await user.generateAccessToken()
+        const refreshToken = await user.generateRefreshToken()
 
         user.refreshToken = refreshToken
         await user.save({ validateBeforeSave: false })
@@ -23,25 +24,17 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
 
 const registerUser = asyncHandler(async (req, res) => {
-    // take userName, email, fullName, password, phone, language pref
-    // validation
-    // check already exist - email nd username
-    // if not create a new user object  - create entry in DB
-    // remove password nd refresh token field from response
-    // check for user creation
-    // return response
-
 
     const { email, userName, fullName, password, phone, language_pref } = req.body
-    console.log(email, userName);
 
-    if (
-        [email, userName, fullName, password, phone, language_pref].some((field) => {
-            field?.trim() === ''
-        })
-    ) {
-        throw new ApiError(400, `${field} is required`)
+    // --- CORRECTED VALIDATION LOGIC ---
+    const requiredFields = { email, userName, fullName, password, phone, language_pref };
+    for (const key in requiredFields) {
+        if (!requiredFields[key] || requiredFields[key].toString().trim() === "") {
+            throw new ApiError(400, `${key} is required`) // Correctly uses 'key'
+        }
     }
+    // ------------------------------------
 
     const existingUser = await User.findOne({
         $or: [{ userName }, { email }]
@@ -77,11 +70,6 @@ const registerUser = asyncHandler(async (req, res) => {
 )
 
 const loginUser = asyncHandler(async (req, res) => {
-    // userName, email , password from req.body
-    // validate userName or email
-    // validate password 
-    // accessToken and refreshToken generate nd send to user
-    // send cookie
 
     const { email, userName, password } = req.body
 
@@ -91,7 +79,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const user = await User.findOne({
         $or: [{ userName }, { email }]
-    })
+    }).populate('role_id') // Populate role for consistent context if needed later
 
     if (!user) {
         throw new ApiError(404, `User does not exist`)
@@ -106,11 +94,11 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
 
-
-    const loggedInUser = User.findById(user._id).select(
+    // --- ADDED AWAIT ---
+    const loggedInUser = await User.findById(user._id).select(
         "-password -refreshToken"
     )
-
+    // -------------------
 
     const options = {
         httpOnly: true,
@@ -165,7 +153,7 @@ const refreshAccesToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
 
     if (!incomingRefreshToken) {
-        throw new ApiError(401, "unauthorized request")
+        throw new ApiError(401, "Unauthorized request")
     }
 
     try {
@@ -188,18 +176,21 @@ const refreshAccesToken = asyncHandler(async (req, res) => {
             httpOnly: true,
             secure: true
         }
-        const { newRefreshToken, accessToken } = await generateAccessAndRefreshTokens(user._id)
+
+        // --- CORRECTED VARIABLE USAGE ---
+        const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshTokens(user._id)
 
         return res
             .status(200)
-            .cookie("accessToken", accessToken)
-            .cookie("refreshToken", refreshToken)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
             .json(
                 new ApiResponse(
                     200,
                     { accessToken, refreshToken: newRefreshToken }
                 )
             )
+        // -------------------------------
     } catch (error) {
         throw new ApiError(401, error?.message || "Invalid refresh token")
     }
@@ -212,13 +203,14 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
 
-
     if (!isPasswordCorrect) {
         throw new ApiError(400, "Invalid old password")
     }
 
     user.password = newPassword
-    await user.save({ validateBeforeSave: false })
+    // --- REMOVED validateBeforeSave: false to enforce password model validation ---
+    await user.save()
+    // -----------------------------------------------------------------------------
 
     return res
         .status(200)
@@ -261,13 +253,160 @@ const updateAccoundDetails = asyncHandler(async (req, res) => {
 })
 
 
+// ============================================
+// ADMIN/MANAGER CRUD FUNCTIONS (IMPLEMENTED)
+// ============================================
+
+/**
+ * Admin function to create a user, typically with an assigned role.
+ * Role ID is mandatory here for Admin creation.
+ */
+const createUser = asyncHandler(async (req, res) => {
+    const { email, userName, fullName, password, phone, language_pref, role_id } = req.body;
+
+    // Stronger validation for required fields
+    const requiredFields = { email, userName, fullName, password, phone, language_pref, role_id };
+    for (const key in requiredFields) {
+        if (!requiredFields[key] || requiredFields[key].toString().trim() === "") {
+            throw new ApiError(400, `${key} is required`);
+        }
+    }
+
+    const existingUser = await User.findOne({ $or: [{ userName }, { email }] });
+    if (existingUser) {
+        throw new ApiError(409, `User with this email or username already exists`);
+    }
+
+    // The password validation (min length, special chars) is handled by the model's pre-save hook.
+    const user = await User.create({
+        fullName,
+        email,
+        userName: userName.toLowerCase(),
+        phone,
+        language_pref,
+        password,
+        role_id // Assign the role during creation
+    });
+
+    const createdUser = await User.findById(user._id).select("-password -refreshToken").populate('role_id');
+
+    return res.status(201).json(
+        new ApiResponse(201, createdUser, "User created successfully by Admin")
+    );
+});
+
+
+/**
+ * Admin/Manager function to fetch all users with optional pagination.
+ */
+const getAllUsers = asyncHandler(async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [users, totalUsers] = await Promise.all([
+        User.find()
+            .select("-password -refreshToken")
+            .populate('role_id')
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 }),
+        User.countDocuments()
+    ]);
+
+    const totalPages = Math.ceil(totalUsers / limit);
+
+    return res.status(200).json(
+        new ApiResponse(200, {
+            users,
+            pagination: { page, limit, totalPages, totalUsers }
+        }, "Users fetched successfully")
+    );
+});
+
+
+/**
+ * Admin/Manager function to fetch a single user by ID.
+ */
+const getUserById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const user = await User.findById(id).select("-password -refreshToken").populate('role_id');
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    return res.status(200).json(new ApiResponse(200, user, "User fetched successfully"));
+});
+
+
+/**
+ * Admin/Manager function to update a user's details (e.g., name, email, phone, role).
+ */
+const updateUser = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { fullName, email, phone, language_pref, role_id } = req.body;
+
+    const updates = {};
+    if (fullName) updates.fullName = fullName;
+    if (email) updates.email = email;
+    if (phone) updates.phone = phone;
+    if (language_pref) updates.language_pref = language_pref;
+    if (role_id) updates.role_id = role_id; // Update role
+
+    if (Object.keys(updates).length === 0) {
+        throw new ApiError(400, "Nothing to update");
+    }
+
+    // Note: Password update should ideally be handled via a separate endpoint/function.
+    const updatedUser = await User.findByIdAndUpdate(
+        id,
+        { $set: updates },
+        { new: true, runValidators: true }
+    ).select("-password -refreshToken").populate('role_id');
+
+    if (!updatedUser) {
+        throw new ApiError(404, "User not found");
+    }
+
+    return res.status(200).json(new ApiResponse(200, updatedUser, "User details updated successfully"));
+});
+
+
+/**
+ * Admin function to delete a user by ID.
+ */
+const deleteUser = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // TODO: Before deleting, ensure any related records (Tasks, Reports, etc.) 
+    // are either reassigned, anonymized, or deleted to maintain data integrity.
+
+    const deletedUser = await User.findByIdAndDelete(id);
+
+    if (!deletedUser) {
+        throw new ApiError(404, "User not found");
+    }
+
+    return res.status(200).json(new ApiResponse(200, {}, "User deleted successfully"));
+});
+
+
+// ... (Keep existing exports in user.controller.js)
 export {
+    // ... all existing auth functions
     registerUser,
     loginUser,
     logoutUser,
     refreshAccesToken,
     changeCurrentPassword,
     getCurrentUser,
-    updateAccoundDetails
-
+    updateAccoundDetails,
+    // Admin CRUD exports
+    createUser,
+    getAllUsers,
+    getUserById,
+    updateUser,
+    deleteUser
 }

@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const roleSchema = new Schema(
     {
-        rollName: {
+        rolName: {
             type: String,
             unique: true,
             required: true,
