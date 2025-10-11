@@ -124,13 +124,17 @@ const loginUser = asyncHandler(async (req, res) => {
 }
 )
 
+// In backend/src/controllers/user.controller.js (logoutUser function)
+
 const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
-        req.user._id,
+        req.user.id,
         {
-            $set: {
-                refreshToken: undefined
+            // === FINAL FIX: Use $unset to explicitly remove the field from the DB ===
+            $unset: {
+                refreshToken: 1 
             }
+            // =========================================================================
         },
         {
             new: true
@@ -199,7 +203,7 @@ const refreshAccesToken = asyncHandler(async (req, res) => {
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     const { oldPassword, newPassword } = req.body
 
-    const user = await User.findById(req.user?._id)
+    const user = await User.findById(req.user?.id)
 
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
 
