@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
+
 <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>Hazard Map</title>
 
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
   <!-- Leaflet CSS & JS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script id="tailwind-config">
@@ -32,9 +33,13 @@
   </script>
 
   <style>
-    #map { height: 100vh; width: 100vw; }
+    #map {
+      height: 100vh;
+      width: 100vw;
+    }
+
     .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
   </style>
 </head>
@@ -42,12 +47,12 @@
 <body class="bg-background-light dark:bg-background-dark font-display">
   <div id="map"></div>
   <!-- Back Arrow Button -->
-<div class="absolute top-4 right-4 z-[999]">
-  <button onclick="goBack()" 
-    class="flex items-center justify-center size-10 rounded-full bg-background-dark/80 text-white shadow-lg hover:bg-background-dark transition">
-    <span class="material-symbols-outlined text-white text-2xl">arrow_back</span>
-  </button>
-</div>
+  <div class="absolute top-4 right-4 z-[999]">
+    <button onclick="goBack()"
+      class="flex items-center justify-center size-10 rounded-full bg-background-dark/80 text-white shadow-lg hover:bg-background-dark transition">
+      <span class="material-symbols-outlined text-white text-2xl">arrow_back</span>
+    </button>
+  </div>
 
 
   <script>
@@ -72,10 +77,10 @@
       const R = 6371; // km
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) ** 2 +
-                Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) *
-                Math.sin(dLon/2) ** 2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
     // --- Use browser geolocation ---
@@ -153,10 +158,11 @@
     }
 
     function goBack() {
-    // Navigate to previous page or dashboard
+      // Navigate to previous page or dashboard
       window.history.back(); // You can replace this with a specific link if needed
     }
 
   </script>
 </body>
+
 </html>

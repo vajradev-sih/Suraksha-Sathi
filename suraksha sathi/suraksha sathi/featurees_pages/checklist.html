@@ -40,7 +40,7 @@
     <button id="backBtn" class="text-text-primary flex size-12 shrink-0 items-center justify-center">
       <span class="material-symbols-outlined text-2xl">arrow_back</span>
     </button>
-    <h1 class="text-text-primary text-lg font-bold flex-1 text-center">Pre-Shift Vehicle Inspection</h1>
+    <h1 class="text-text-primary text-lg font-bold flex-1 text-center" data-translate-key="title">Pre-Shift Vehicle Inspection</h1>
     <button id="historyBtn" class="text-text-primary flex size-12 shrink-0 items-center justify-center">
       <span class="material-symbols-outlined text-2xl">history</span>
     </button>
@@ -50,7 +50,7 @@
   <div class="px-4 pt-4">
     <div class="bg-card rounded-xl p-4 shadow-sm">
       <div class="flex justify-between items-center mb-2">
-        <h2 class="text-text-primary text-base font-bold">Daily Completion</h2>
+        <h2 class="text-text-primary text-base font-bold" data-translate-key="daily_completion">Daily Completion</h2>
         <span id="dailyCompleted" class="text-text-secondary text-sm">0/7 Days</span>
       </div>
       <div id="dailyProgress" class="flex gap-1">
@@ -62,14 +62,14 @@
         <div class="flex-1 h-2 rounded-full bg-gray-300 progress-bar bg-progress-green"></div>
         <div class="flex-1 h-2 rounded-full bg-gray-300 progress-bar bg-progress-green"></div>
       </div>
-      <p class="text-text-secondary text-xs mt-2">Your compliance streak this week.</p>
+      <p class="text-text-secondary text-xs mt-2" data-translate-key="compliance_streak">Your compliance streak this week.</p>
     </div>
   </div>
 
   <!-- Overall Progress -->
   <div class="flex flex-col gap-3 p-4">
     <div class="flex justify-between items-center">
-      <p class="text-text-secondary text-sm font-normal">Overall Progress</p>
+      <p class="text-text-secondary text-sm font-normal" data-translate-key="overall_progress">Overall Progress</p>
       <p id="overallProgressText" class="text-text-primary text-sm font-bold">0% completed</p>
     </div>
     <div class="rounded-full bg-gray-200">
@@ -81,32 +81,32 @@
   <div id="checklistContainer" class="px-4 flex-grow bg-card mx-4 rounded-xl shadow-sm overflow-hidden">
     <label class="flex gap-x-4 py-3 items-center">
       <input class="task-checkbox h-6 w-6 rounded-md border-gray-300 border-2" type="checkbox"/>
-      <p class="text-text-primary text-base font-normal flex-1">Check tire pressure</p>
+      <p class="text-text-primary text-base font-normal flex-1" data-translate-key="task_tire">Check tire pressure</p>
     </label>
     <div class="border-t border-gray-200"></div>
     <label class="flex gap-x-4 py-3 items-center">
       <input class="task-checkbox h-6 w-6 rounded-md border-gray-300 border-2" type="checkbox"/>
-      <p class="text-text-primary text-base font-normal flex-1">Inspect hydraulic lines for leaks</p>
+      <p class="text-text-primary text-base font-normal flex-1" data-translate-key="task_hydraulic">Inspect hydraulic lines for leaks</p>
     </label>
     <div class="border-t border-gray-200"></div>
     <label class="flex gap-x-4 py-3 items-center">
       <input class="task-checkbox h-6 w-6 rounded-md border-gray-300 border-2" type="checkbox"/>
-      <p class="text-text-primary text-base font-normal flex-1">Verify communication equipment</p>
+      <p class="text-text-primary text-base font-normal flex-1" data-translate-key="task_comms">Verify communication equipment</p>
     </label>
     <div class="border-t border-gray-200"></div>
     <label class="flex gap-x-4 py-3 items-center">
       <input class="task-checkbox h-6 w-6 rounded-md border-gray-300 border-2" type="checkbox"/>
-      <p class="text-text-primary text-base font-normal flex-1">Check fluid levels (oil, coolant, etc.)</p>
+      <p class="text-text-primary text-base font-normal flex-1" data-translate-key="task_fluids">Check fluid levels (oil, coolant, etc.)</p>
     </label>
     <div class="border-t border-gray-200"></div>
     <label class="flex gap-x-4 py-3 items-center">
       <input class="task-checkbox h-6 w-6 rounded-md border-gray-300 border-2" type="checkbox"/>
-      <p class="text-text-primary text-base font-normal flex-1">Inspect lights and signals</p>
+      <p class="text-text-primary text-base font-normal flex-1" data-translate-key="task_lights">Inspect lights and signals</p>
     </label>
     <div class="border-t border-gray-200"></div>
     <label class="flex gap-x-4 py-3 items-center">
       <input class="task-checkbox h-6 w-6 rounded-md border-gray-300 border-2" type="checkbox"/>
-      <p class="text-text-primary text-base font-normal flex-1">Test braking system</p>
+      <p class="text-text-primary text-base font-normal flex-1" data-translate-key="task_brakes">Test braking system</p>
     </label>
   </div>
 
@@ -115,10 +115,10 @@
     <div class="flex gap-3">
       <button id="addNoteBtn" class="flex min-w-[120px] items-center justify-center rounded-lg h-10 px-4 bg-blue-600 text-white gap-2 border-2 border-blue-700 hover:bg-blue-700 transition-colors">
         <span class="material-symbols-outlined text-xl">add_comment</span>
-        <span>Add Note</span>
+        <span data-translate-key="add_note">Add Note</span>
       </button>
     </div>
-    <button id="submitBtn" class="w-full rounded-lg h-12 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors">
+    <button id="submitBtn" class="w-full rounded-lg h-12 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors" data-translate-key="submit_report">
       Submit Report
     </button>
   </div>
@@ -127,8 +127,9 @@
 <!-- History Overlay -->
 <div id="historyOverlay">
   <div id="historyContent">
-    <h2 class="text-text-primary text-lg font-bold mb-2">Past Inspections</h2>
+    <h2 class="text-text-primary text-lg font-bold mb-2" data-translate-key="past_inspections">Past Inspections</h2>
     <ul class="text-text-secondary text-sm">
+      <!-- Dynamic content, translation handled in JS if needed -->
       <li>Inspection 01 - 100% complete</li>
       <li>Inspection 02 - 85% complete</li>
       <li>Inspection 03 - 90% complete</li>
@@ -139,11 +140,11 @@
 <!-- Note Modal -->
 <div id="noteOverlay">
   <div id="noteContent">
-    <h2 class="text-text-primary text-lg font-bold mb-2">Add Note</h2>
+    <h2 class="text-text-primary text-lg font-bold mb-2" data-translate-key="add_note_modal">Add Note</h2>
     <textarea id="noteText" class="w-full border border-gray-300 rounded p-2 mb-2" rows="4" placeholder="Type your note here..."></textarea>
     <div class="flex justify-end gap-2">
-      <button id="cancelNoteBtn" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
-      <button id="saveNoteBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+      <button id="cancelNoteBtn" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400" data-translate-key="cancel_button">Cancel</button>
+      <button id="saveNoteBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" data-translate-key="save_button">Save</button>
     </div>
   </div>
 </div>
@@ -166,6 +167,9 @@ const overallProgressBar = document.getElementById("overallProgressBar");
 const overallProgressText = document.getElementById("overallProgressText");
 const dailyCompletedText = document.getElementById("dailyCompleted");
 const dailyBars = document.querySelectorAll("#dailyProgress .progress-bar");
+let translations = {};
+let currentLang = 'en';
+
 
 function updateProgress() {
   let checked = 0;
@@ -173,18 +177,25 @@ function updateProgress() {
 
   const percent = Math.round((checked / checkboxes.length) * 100);
   overallProgressBar.style.width = percent + "%";
-  overallProgressText.textContent = percent + "% completed";
+  
+  const completedText = translations.percent_completed && translations.percent_completed[currentLang] 
+    ? translations.percent_completed[currentLang].replace('{percent}', percent) 
+    : `${percent}% completed`;
+  overallProgressText.textContent = completedText;
 
   dailyBars.forEach((bar, index) => {
     if(index < checked) bar.style.width = "100%";
     else bar.style.width = "0%";
   });
 
-  dailyCompletedText.textContent = `${checked}/${checkboxes.length} Days`;
+  const daysText = translations.days_completed && translations.days_completed[currentLang]
+    ? translations.days_completed[currentLang].replace('{checked}', checked).replace('{total}', checkboxes.length)
+    : `${checked}/${checkboxes.length} Days`;
+  dailyCompletedText.textContent = daysText;
 }
 
 checkboxes.forEach(cb => cb.addEventListener("change", updateProgress));
-updateProgress();
+
 
 // Note modal
 const addNoteBtn = document.getElementById("addNoteBtn");
@@ -207,6 +218,51 @@ document.getElementById("submitBtn").addEventListener("click", ()=>{
   const checklistData = Array.from(checkboxes).map(cb => cb.checked);
   alert("Report submitted!\nChecklist status: " + checklistData.join(", "));
 });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        translations = {
+            title: { en: "Pre-Shift Vehicle Inspection", hi: "प्री-शिफ्ट वाहन निरीक्षण" },
+            daily_completion: { en: "Daily Completion", hi: "दैनिक समापन" },
+            compliance_streak: { en: "Your compliance streak this week.", hi: "इस सप्ताह आपकी अनुपालन श्रृंखला।" },
+            overall_progress: { en: "Overall Progress", hi: "समग्र प्रगति" },
+            percent_completed: { en: "{percent}% completed", hi: "{percent}% पूरा हुआ" },
+            days_completed: { en: "{checked}/{total} Days", hi: "{checked}/{total} दिन" },
+            task_tire: { en: "Check tire pressure", hi: "टायर दबाव की जाँच करें" },
+            task_hydraulic: { en: "Inspect hydraulic lines for leaks", hi: "रिसाव के लिए हाइड्रोलिक लाइनों का निरीक्षण करें" },
+            task_comms: { en: "Verify communication equipment", hi: "संचार उपकरण सत्यापित करें" },
+            task_fluids: { en: "Check fluid levels (oil, coolant, etc.)", hi: "द्रव स्तर की जाँच करें (तेल, शीतलक, आदि)" },
+            task_lights: { en: "Inspect lights and signals", hi: "रोशनी और संकेतों का निरीक्षण करें" },
+            task_brakes: { en: "Test braking system", hi: "ब्रेकिंग सिस्टम का परीक्षण करें" },
+            add_note: { en: "Add Note", hi: "नोट जोड़ें" },
+            submit_report: { en: "Submit Report", hi: "रिपोर्ट सबमिट करें" },
+            past_inspections: { en: "Past Inspections", hi: "पिछले निरीक्षण" },
+            add_note_modal: { en: "Add Note", hi: "नोट जोड़ें" },
+            cancel_button: { en: "Cancel", hi: "रद्द करें" },
+            save_button: { en: "Save", hi: "सहेजें" }
+        };
+
+        currentLang = localStorage.getItem('lang') || 'en';
+
+        function applyLanguage(lang) {
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-translate-key]').forEach(element => {
+                const key = element.getAttribute('data-translate-key');
+                if (translations[key] && translations[key][lang]) {
+                    element.textContent = translations[key][lang];
+                }
+            });
+             const titleKey = 'title';
+            if (translations[titleKey] && translations[titleKey][lang]) {
+                document.title = translations[titleKey][lang];
+            }
+            // Also update dynamic text
+            updateProgress();
+        }
+
+        applyLanguage(currentLang);
+    });
 </script>
 </body>
 </html>

@@ -6,7 +6,8 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>Mine Safety App Login</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&amp;display=swap"
+    rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <script>
     tailwind.config = {
@@ -49,8 +50,7 @@
     <div class="flex flex-col items-center justify-center min-h-screen p-4">
       <div class="w-full max-w-sm">
 
-        <h1
-          class="text-white tracking-light text-[32px] font-bold leading-tight px-4 text-center pb-8 pt-6">
+        <h1 class="text-white tracking-light text-[32px] font-bold leading-tight px-4 text-center pb-8 pt-6">
           Mine Safety App
         </h1>
 
@@ -123,8 +123,7 @@
               style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDJSkZFiO1hyxyPKSPLPZSDeuHStox-UGrciPn2rSo9yK2_7CJ6oi8Ou167MrqxOCgwdrGET3Xsv5yJcjZQZMUPrmC2O3ad_h99spixzEvd0QwluboLxwCrc3XlfZqGe444fPspIqlLqtvk1vI7s9PeH0AxcrzdzYy9TCBqztVEF2Nkly5aUNCTI-mgpijRKpWXbOYCrUg4YXuf3JPiv7WUldtGqx5wiBvx2w7qfvQ9_Gfr2g7FMsQoOD7rlrrxsZ4OkXxJwN7jpF8");'>
             </div> -->
           </div>
-          <h1
-            class="text-white tracking-light text-[32px] font-bold leading-tight px-4 text-center pb-8 pt-6">
+          <h1 class="text-white tracking-light text-[32px] font-bold leading-tight px-4 text-center pb-8 pt-6">
             Admin Login</h1>
           <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
             <label class="flex flex-col min-w-40 flex-1">
@@ -249,22 +248,22 @@
   </script>
 
 
-  
-   <!-- =======================
+
+  <!-- =======================
      Loader Section
 ======================= -->
-<div id="loader">
+  <div id="loader">
     <h1>ENVIRONMENTS</h1>
     <h1>EXPERIENCES</h1>
     <h1>CONTENT</h1>
-</div>
+  </div>
 
-<!-- =======================
+  <!-- =======================
      Loader Styles
 ======================= -->
-<style>
-  /* Loader Container */
-  #loader {
+  <style>
+    /* Loader Container */
+    #loader {
       height: 100%;
       width: 100%;
       background-color: #000;
@@ -278,10 +277,10 @@
       flex-direction: column;
       overflow: hidden;
       transition: all ease 0.7s;
-  }
+    }
 
-  /* Animated Text */
-  #loader h1 {
+    /* Animated Text */
+    #loader h1 {
       font-size: 4vw;
       color: transparent;
       background: linear-gradient(to right, rgb(243, 92, 4), rgb(4, 113, 238));
@@ -293,49 +292,67 @@
       animation-duration: 1s;
       animation-timing-function: linear;
       font-weight: bolder;
-  }
+    }
 
-  /* Animation Delay for Each Word */
-  #loader h1:nth-child(1) {
+    /* Animation Delay for Each Word */
+    #loader h1:nth-child(1) {
       animation-delay: 1s;
-  }
-  #loader h1:nth-child(2) {
+    }
+
+    #loader h1:nth-child(2) {
       animation-delay: 2s;
-  }
-  #loader h1:nth-child(3) {
+    }
+
+    #loader h1:nth-child(3) {
       animation-delay: 3s;
-  }
+    }
 
-  /* Keyframes for Fade In / Fade Out */
-  @keyframes load {
-      0% { opacity: 0; transform: translateY(10px); }
-      10% { opacity: 1; transform: translateY(0); }
-      90% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-10px); }
-  }
-
-  /* Responsive Text Size */
-  @media (max-width: 600px) {
-      #loader h1 {
-          font-size: 9vw;
+    /* Keyframes for Fade In / Fade Out */
+    @keyframes load {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
       }
-  }
-</style>
 
-<!-- =======================
+      10% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      90% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+    }
+
+    /* Responsive Text Size */
+    @media (max-width: 600px) {
+      #loader h1 {
+        font-size: 9vw;
+      }
+    }
+  </style>
+
+  <!-- =======================
      Loader Script
 ======================= -->
-<script>
-  function loaderAnimation() {
+  <script>
+    function loaderAnimation() {
       const loader = document.querySelector("#loader");
       setTimeout(() => {
-          loader.style.top = "-100%";
+        loader.style.top = "-100%";
       }, 4200); // time matches total animation duration
-  }
+    }
 
-  // Run loader animation after DOM loads
-  window.addEventListener("load", loaderAnimation);
-</script>
+    // Run loader animation after DOM loads
+    window.addEventListener("load", loaderAnimation);
+  </script>
 
 </body>
+
 </html>
