@@ -9,15 +9,19 @@ import { Checklist } from '../models/checklist.model.js';
 import { asyncHandler } from '../utils/AsyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
+import { log } from 'console';
 
 // CREATE a Checklist
 const createChecklist = asyncHandler(async (req, res) => {
     const { role_id, task_id, name, created_by } = req.body;
+    
+    
     if (!role_id || !task_id || !name || !created_by)
         throw new ApiError(400, "All fields required");
     const exists = await Checklist.findOne({ name, role_id, task_id });
     if (exists) throw new ApiError(409, "Checklist already exists for this role and task");
     const checklist = await Checklist.create({ role_id, task_id, name, created_by });
+    
     res.status(201).json(new ApiResponse(201, checklist, "Checklist created"));
 });
 

@@ -21,7 +21,8 @@ const uploadHazardMedia = async (req, res, next) => {
 
     res.status(201).json({ message: 'Hazard media uploaded', data: media });
   } catch (error) {
-    if (req.file) await fs.unlink(req.file.path).catch(() => {});
+    console.error("Cloudinary/Upload Error:", error)
+    if (req.file) await fs.unlink(req.file.path).catch(() => { });
     next(error);
   }
 };

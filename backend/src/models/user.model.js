@@ -65,7 +65,7 @@ const userSchema = new Schema(
         // ✅ Virtual field to expose readable role name (fallback: "Citizen")
         role_name: {
             type: String,
-            default: 'Citizen'
+            default: 'Worker'
         },
 
         refreshToken: {
@@ -93,10 +93,10 @@ userSchema.pre('save', async function (next) {
         if (roleDoc) {
             this.role_name = roleDoc.roleName;
         } else {
-            this.role_name = 'Citizen'; // fallback
+            this.role_name = 'Worker'; // fallback
         }
     } else {
-        this.role_name = 'Citizen'; // fallback
+        this.role_name = 'Worker'; // fallback
     }
 
     next();

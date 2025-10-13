@@ -56,7 +56,7 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
                 }
                 : {
                     id: null,
-                    name: "Citizen" // fallback only if no role assigned
+                    name: "Worker" // fallback only if no role assigned
                 }
         };
 

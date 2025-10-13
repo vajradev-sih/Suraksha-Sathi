@@ -1,30 +1,16 @@
-import cloudinary from '../utils/cloudinary.js';  // Import Cloudinary from your utils
-import fs from 'fs';
-import { asyncHandler } from '../utils/AsyncHandler.js';
-import { ApiError } from '../utils/ApiError.js';
-import { ApiResponse } from '../utils/ApiResponse.js';
-import { HazardMedia } from '../models/hazardMedia.model.js';
+import { v2 as cloudinary } from 'cloudinary';
+import dotenv from 'dotenv';
 
-const uploadHazardMedia = asyncHandler(async (req, res) => {
-  if (!req.file) {
-    throw new ApiError(400, 'No file uploaded');
-  }
+// Load environment variables (ensure this is done once in index.js or app.js)
+// If you use 'nodemon -r dotenv/config', this line might not be needed, but it's safer.
+// dotenv.config(); 
 
-  // Upload to Cloudinary
-  const result = await cloudinary.uploader.upload(req.file.path, { folder: 'hazard_media' });
-
-  // Remove local file
-  fs.unlinkSync(req.file.path);
-
-  // Save media info in DB
-  const media = await HazardMedia.create({
-    report_id: req.body.report_id,
-    media_type: req.file.mimetype.split('/')[0],
-    language_code: req.body.language_code || '',
-    url: result.secure_url
-  });
-
-  res.status(201).json(new ApiResponse(201, media, 'Media uploaded successfully'));
+// Configure Cloudinary using environment variables from your .env file
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME, // sih-internal
+    api_key: process.env.CLOUDINARY_API_KEY,       // 737734146781243
+    api_secret: process.env.CLOUDINARY_API_SECRET, // g-jLEzPyyy8lHFFLlMP33wjjv0ew
+    secure: true
 });
 
-export default uploadHazardMedia
+export default cloudinary; // Export the configured instance

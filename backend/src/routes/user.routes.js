@@ -50,7 +50,8 @@ router.put('/update-details', updateAccoundDetails); // Update name, email, phon
 // ADMIN / MANAGER USER CRUD ROUTES (Requires Authorization)
 // Route: POST /api/v1/user/
 // Note: This is typically for an Admin creating a user and assigning a role
-router.post('/', authorizeRoles('Admin'), createUser);
+// router.post('/', authorizeRoles('Admin'), createUser);
+router.post('/', createUser);
 
 // Route: GET /api/v1/user/
 router.get('/', authorizeRoles('Admin', 'Manager'), getAllUsers);

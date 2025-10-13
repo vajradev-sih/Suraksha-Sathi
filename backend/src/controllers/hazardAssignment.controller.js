@@ -5,9 +5,20 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 
 const createHazardAssignment = asyncHandler(async (req, res) => {
   const { report_id, assigned_to_id, assigned_at, due_date, status } = req.body;
-  if (!report_id || !assigned_to_id || !assigned_at || !due_date) throw new ApiError(400, "Missing required fields");
+
+  if (!report_id || !assigned_to_id || !assigned_at || !due_date) {
+    throw new ApiError(400, "Missing required fields");
+  }
+
+  // 🐛 Mongoose Fix: Use { report_id } directly in findOne()
+  const existingAssignment = await HazardAssignment.findOne({ report_id });
+
+  if (existingAssignment) {
+    throw new ApiError(409, `Report with ID ${report_id} is already assigned (Assignment ID: ${existingAssignment._id})`);
+  }
+
   const assignment = await HazardAssignment.create({ report_id, assigned_to_id, assigned_at, due_date, status });
-  res.status(201).json(new ApiResponse(201, assignment, "Hazard assigned"));
+  res.status(201).json(new ApiResponse(201, assignment, "Hazard assigned successfully"));
 });
 
 const getAssignmentsByReport = asyncHandler(async (req, res) => {

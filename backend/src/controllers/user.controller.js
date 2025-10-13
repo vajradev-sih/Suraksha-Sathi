@@ -24,7 +24,6 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
 
 const registerUser = asyncHandler(async (req, res) => {
-
     const { email, userName, fullName, password, phone, language_pref } = req.body
 
     // --- CORRECTED VALIDATION LOGIC ---
