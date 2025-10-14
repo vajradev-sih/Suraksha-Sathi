@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mine Operations Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            /* Light gray background */
+            color: #1e293b;
+        }
+
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar-open {
+            transform: translateX(0);
+        }
+
+        .sidebar-closed {
+            transform: translateX(-100%);
+        }
+
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-inprogress {
+            background-color: #3b82f620;
+            color: #2563eb;
+        }
+
+        .status-completed {
+            background-color: #10b98120;
+            color: #059669;
+        }
+
+        .status-pending {
+            background-color: #f9731620;
+            color: #ea580c;
+        }
+
+        /* Custom styling for date input icon */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: invert(0.6);
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+    <!-- Custom Message Box -->
+    <div id="customAlert"
+        class="fixed top-5 right-5 z-[100] hidden items-center p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-100 shadow-lg"
+        role="alert">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span class="font-medium" id="alertMessage">Success!</span>
+    </div>
+
+    <div id="sidebar-backdrop" class="fixed inset-0 z-30 bg-black/50 lg:hidden hidden"></div>
+
+    <div class="relative min-h-screen lg:flex">
+        <!-- Sidebar -->
+        <aside id="sidebar"
+            class="sidebar sidebar-closed lg:sidebar-open fixed inset-y-0 left-0 z-40 flex-shrink-0 w-64 overflow-y-auto bg-white border-r border-gray-200 lg:static lg:block">
+            <div class="flex items-center justify-center p-4 h-16 border-b border-gray-200">
+                <i class="fas fa-gem text-2xl text-blue-600 mr-3"></i>
+                <h1 class="text-xl font-bold text-slate-800">MineAdmin</h1>
+            </div>
+            <nav class="mt-6">
+                <a href="#" class="flex items-center px-6 py-3 text-blue-600 bg-blue-50">
+                    <i class="fas fa-tachometer-alt w-5 h-5"></i>
+                    <span class="ml-4 font-semibold">Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-slate-600 hover:bg-slate-100">
+                    <i class="fas fa-users w-5 h-5"></i>
+                    <span class="ml-4">Workers</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-slate-600 hover:bg-slate-100">
+                    <i class="fas fa-tasks w-5 h-5"></i>
+                    <span class="ml-4">Tasks</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-slate-600 hover:bg-slate-100">
+                    <i class="fas fa-chart-bar w-5 h-5"></i>
+                    <span class="ml-4">Reports</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-slate-600 hover:bg-slate-100">
+                    <i class="fas fa-cog w-5 h-5"></i>
+                    <span class="ml-4">Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <div class="relative z-10 flex-1 flex flex-col">
+            <!-- Header -->
+            <header
+                class="flex items-center justify-between p-4 bg-white border-b border-gray-200 lg:justify-end shadow-sm">
+                <button id="menu-button" class="lg:hidden text-slate-500 hover:text-slate-800 focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="flex items-center space-x-4">
+                    <button class="text-slate-500 hover:text-slate-800"><i class="fas fa-bell"></i></button>
+                    <div class="flex items-center">
+                        <img class="h-9 w-9 rounded-full object-cover ring-2 ring-offset-2 ring-blue-500"
+                            src="https://placehold.co/100x100/4A5568/E2E8F0?text=A" alt="Admin Avatar">
+                        <div class="ml-3">
+                            <p class="text-sm font-semibold text-slate-800">Admin</p>
+                            <p class="text-xs text-slate-500">Mine Supervisor</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="flex-1 p-4 sm:p-6 lg:p-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start mb-6">
+                    <div>
+                        <h2 class="text-3xl font-bold text-slate-800">Dashboard</h2>
+                        <p id="current-date" class="text-slate-500 mt-1">Today's Overview</p>
+                    </div>
+                    <button id="assignTaskBtn"
+                        class="w-full mt-4 sm:mt-0 sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
+                        <i class="fas fa-plus mr-2"></i> Assign New Task
+                    </button>
+                </div>
+
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div
+                        class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between border-l-4 border-blue-500">
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Total Workers</p>
+                            <p class="text-3xl font-bold text-slate-800">48</p>
+                        </div>
+                        <div class="bg-blue-100 text-blue-600 p-3 rounded-full">
+                            <i class="fas fa-users fa-lg"></i>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between border-l-4 border-orange-500">
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Active Tasks</p>
+                            <p class="text-3xl font-bold text-slate-800">12</p>
+                        </div>
+                        <div class="bg-orange-100 text-orange-600 p-3 rounded-full">
+                            <i class="fas fa-spinner fa-lg"></i>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between border-l-4 border-green-500">
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Completed Today</p>
+                            <p class="text-3xl font-bold text-slate-800">7</p>
+                        </div>
+                        <div class="bg-green-100 text-green-600 p-3 rounded-full">
+                            <i class="fas fa-check-circle fa-lg"></i>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between border-l-4 border-red-500">
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Safety Incidents</p>
+                            <p class="text-3xl font-bold text-slate-800">0</p>
+                        </div>
+                        <div class="bg-red-100 text-red-600 p-3 rounded-full">
+                            <i class="fas fa-exclamation-triangle fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Worker Management Table -->
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Daily Worker Assignments</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-gray-200 bg-slate-50">
+                                    <th class="p-4 text-sm font-semibold text-slate-600">Worker</th>
+                                    <th class="p-4 text-sm font-semibold text-slate-600 hidden lg:table-cell">Assigned
+                                        Task</th>
+                                    <th class="p-4 text-sm font-semibold text-slate-600 hidden md:table-cell">Date
+                                        Assigned</th>
+                                    <th class="p-4 text-sm font-semibold text-slate-600">Status</th>
+                                    <th class="p-4 text-sm font-semibold text-slate-600">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assignments-table-body">
+                                <!-- Table content will be loaded dynamically -->
+                                <tr class="border-b border-gray-200 hover:bg-slate-50">
+                                    <td class="p-4">
+                                        <div class="flex items-center">
+                                            <img class="h-10 w-10 rounded-full object-cover"
+                                                src="https://placehold.co/100x100/667EEA/FFFFFF?text=RS"
+                                                alt="Worker Avatar">
+                                            <div class="ml-3">
+                                                <p class="font-semibold text-slate-800">Rohan Sharma</p>
+                                                <p class="text-sm text-slate-500">ID: M-001</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-slate-600 hidden lg:table-cell">Ore Extraction - Sector 4</td>
+                                    <td class="p-4 text-slate-600 hidden md:table-cell">2025-10-14</td>
+                                    <td class="p-4">
+                                        <span class="status-pill status-inprogress">In Progress</span>
+                                    </td>
+                                    <td class="p-4 space-x-2">
+                                        <button class="text-slate-500 hover:text-blue-600 p-1"><i
+                                                class="fas fa-edit"></i></button>
+                                        <button class="text-slate-500 hover:text-red-600 p-1"><i
+                                                class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <!-- More sample rows... -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Assign Task Modal -->
+    <div id="taskModal" class="fixed inset-0 z-50 items-center justify-center hidden">
+        <div class="modal-backdrop fixed inset-0"></div>
+        <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 max-w-lg mx-auto z-10 relative">
+            <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-4">
+                <h3 class="text-xl font-semibold text-slate-800">Assign New Task</h3>
+                <button id="closeModal" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <form id="taskForm">
+                <div class="mb-4">
+                    <label for="worker-select" class="block text-sm font-medium text-slate-600 mb-2">Select Worker</label>
+                    <select id="worker-select" name="worker-select"
+                        class="w-full bg-slate-50 border border-gray-300 rounded-lg py-2 px-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <!-- Will be populated dynamically -->
+                        <option>Loading workers...</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="task-description" class="block text-sm font-medium text-slate-600 mb-2">Task Description</label>
+                    <textarea id="task-description" name="task-description" rows="3"
+                        class="w-full bg-slate-50 border border-gray-300 rounded-lg py-2 px-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., Clear debris from Tunnel B"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label for="priority" class="block text-sm font-medium text-slate-600 mb-2">Priority</label>
+                    <select id="priority" name="priority"
+                        class="w-full bg-slate-50 border border-gray-300 rounded-lg py-2 px-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option>High</option>
+                        <option selected>Medium</option>
+                        <option>Low</option>
+                    </select>
+                </div>
+                <div class="mb-6">
+                    <label for="dueDate" class="block text-sm font-medium text-slate-600 mb-2">Due Date</label>
+                    <input type="date" id="dueDate" name="dueDate"
+                        class="w-full bg-slate-50 border border-gray-300 rounded-lg py-2 px-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelModal"
+                        class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg">Cancel</button>
+                    <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Assign
+                        Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../api.client.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 1. AUTH CHECK ---
+            const token = localStorage.getItem("token");
+            if (!token) { 
+                window.location.href = "../index.html"; 
+                return; 
+            }
+
+            // --- 2. ELEMENT SELECTION ---
+            const sidebar = document.getElementById('sidebar');
+            const menuButton = document.getElementById('menu-button');
+            const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+            const taskModal = document.getElementById('taskModal');
+            const assignTaskBtn = document.getElementById('assignTaskBtn');
+            const closeModalBtn = document.getElementById('closeModal');
+            const cancelModalBtn = document.getElementById('cancelModal');
+            const taskForm = document.getElementById('taskForm');
+            const customAlert = document.getElementById('customAlert');
+            const alertMessage = document.getElementById('alertMessage');
+            const tableBody = document.getElementById('assignments-table-body');
+            const workerSelect = document.getElementById('worker-select');
+            const currentDateEl = document.getElementById('current-date');
+
+            // Store data globally for reuse
+            let allUsers = [];
+            let allTasks = [];
+
+            // --- 3. UI FUNCTIONS ---
+            const toggleSidebar = () => {
+                sidebar.classList.toggle('sidebar-closed');
+                sidebar.classList.toggle('sidebar-open');
+                sidebarBackdrop.classList.toggle('hidden');
+            };
+
+            const showAlert = (message) => {
+                alertMessage.textContent = message;
+                customAlert.classList.remove('hidden');
+                customAlert.classList.add('flex');
+
+                setTimeout(() => {
+                    customAlert.classList.add('hidden');
+                    customAlert.classList.remove('flex');
+                }, 3000); // Hide after 3 seconds
+            };
+
+            const openModal = () => {
+                taskModal.classList.remove('hidden');
+                taskModal.classList.add('flex');
+            };
+
+            const closeModal = () => {
+                taskModal.classList.add('hidden');
+                taskModal.classList.remove('flex');
+                taskForm.reset();
+            };
+
+            // --- 4. DATA RENDERING ---
+            const renderTable = (assignments) => {
+                tableBody.innerHTML = '';
+                
+                if (!assignments || assignments.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-10 text-slate-500">No tasks assigned today.</td></tr>`;
+                    return;
+                }
+                
+                assignments.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b hover:bg-slate-50';
+                    
+                    // Format the status for CSS class
+                    const statusClass = item.status ? 
+                        item.status.toLowerCase().replace(' ', '') : 'pending';
+                    
+                    row.innerHTML = `
+                        <td class="p-4">
+                            <div class="flex items-center">
+                                <img class="h-10 w-10 rounded-full object-cover" 
+                                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=${item.userName || 'user'}" 
+                                    alt="Avatar">
+                                <div class="ml-3">
+                                    <p class="font-semibold text-slate-800">${item.fullName || 'Unknown'}</p>
+                                    <p class="text-sm text-slate-500">ID: ${item.userId ? item.userId.slice(-6).toUpperCase() : 'N/A'}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4 text-slate-600 hidden lg:table-cell">${item.taskTitle || 'Unnamed Task'}</td>
+                        <td class="p-4 text-slate-600 hidden md:table-cell">${
+                            item.assignedDate ? new Date(item.assignedDate).toISOString().split('T')[0] : 'N/A'
+                        }</td>
+                        <td class="p-4">
+                            <span class="status-pill status-${statusClass}">${item.status || 'Pending'}</span>
+                        </td>
+                        <td class="p-4 space-x-2">
+                            <button class="text-slate-500 hover:text-blue-600 p-1" data-id="${item.assignmentId}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-slate-500 hover:text-red-600 p-1" data-id="${item.assignmentId}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // Add event listeners to action buttons
+                document.querySelectorAll('button[data-id]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        // In a full implementation, you would handle edits and deletes here
+                        showAlert(btn.querySelector('i').classList.contains('fa-edit') ? 
+                            'Edit functionality coming soon!' : 'Delete functionality coming soon!');
+                    });
+                });
+            };
+
+            // --- 5. API CALLS ---
+            const initializePage = async () => {
+                try {
+                    // 1. Fetch users and tasks
+                    const [usersResponse, tasksResponse] = await Promise.all([
+                        userManagementAPI.getAll(),
+                        taskAPI.getAll()
+                    ]);
+
+                    // Fix: Properly extract users array, handle different response structures
+                    allUsers = Array.isArray(usersResponse.data) ? usersResponse.data : 
+                               (usersResponse.data && Array.isArray(usersResponse.data.users) ? 
+                                usersResponse.data.users : []);
+                    
+                    allTasks = Array.isArray(tasksResponse.data) ? tasksResponse.data : 
+                              (tasksResponse.data && Array.isArray(tasksResponse.data.tasks) ? 
+                               tasksResponse.data.tasks : []);
+
+                    console.log("Users data:", allUsers);
+                    console.log("Tasks data:", allTasks);
+
+                    // 2. Populate worker dropdown in modal
+                    workerSelect.innerHTML = '';
+                    if (allUsers.length > 0) {
+                        allUsers.forEach(user => {
+                            const option = document.createElement('option');
+                            option.value = user._id;
+                            option.textContent = `${user.fullName || user.userName || user.name || 'Unknown'} (ID: ${user._id ? user._id.slice(-6).toUpperCase() : 'N/A'})`;
+                            workerSelect.appendChild(option);
+                        });
+                    } else {
+                        workerSelect.innerHTML = '<option value="">No workers available</option>';
+                    }
+
+                    // 3. Fetch assignments - Only if we have users
+                    if (allUsers.length === 0) {
+                        tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-10 text-slate-500">No workers available to assign tasks.</td></tr>`;
+                        return;
+                    }
+
+                    const assignmentPromises = allUsers.map(user => 
+                        userTaskAssignmentAPI.getForUser(user._id)
+                        .catch(() => ({ data: [] }))
+                    );
+                    
+                    const assignmentResults = await Promise.all(assignmentPromises);
+                    const flatAssignments = assignmentResults.flatMap(res => res.data || []);
+
+                    // 4. Combine data for display
+                    const combinedData = flatAssignments.map(assignment => {
+                        const user = allUsers.find(u => u._id === assignment.user_id) || {};
+                        const task = allTasks.find(t => t._id === assignment.task_id) || {};
+                        
+                        return {
+                            assignmentId: assignment._id || '',
+                            userId: user._id || '',
+                            fullName: user.fullName || user.userName || user.name || 'Unknown User',
+                            userName: user.userName || user.name || '',
+                            taskId: task._id || '',
+                            taskTitle: task.title || 'Unknown Task',
+                            assignedDate: assignment.createdAt || new Date().toISOString(),
+                            status: assignment.status || 'Pending'
+                        };
+                    });
+
+                    // 5. Update UI
+                    renderTable(combinedData);
+
+                } catch (error) {
+                    console.error("Failed to initialize page:", error);
+                    console.log("API Response details:", error.response || error);
+                    
+                    // Provide more helpful error information to users
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center p-10">
+                                <div class="text-red-500 mb-2">Error loading data.</div>
+                                <div class="text-slate-500 text-sm">${error.message || 'Unknown error'}</div>
+                                <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded" onclick="location.reload()">
+                                    Retry
+                                </button>
+                            </td>
+                        </tr>`;
+                }
+            };
+
+            // --- 6. EVENT LISTENERS ---
+            // Sidebar toggle
+            menuButton.addEventListener('click', toggleSidebar);
+            sidebarBackdrop.addEventListener('click', toggleSidebar);
+
+            // Modal controls
+            assignTaskBtn.addEventListener('click', openModal);
+            closeModalBtn.addEventListener('click', closeModal);
+            cancelModalBtn.addEventListener('click', closeModal);
+            taskModal.querySelector('.modal-backdrop').addEventListener('click', closeModal);
+
+            // Form submission
+            taskForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const userId = workerSelect.value;
+                const taskDescription = document.getElementById('task-description').value;
+                const priority = document.getElementById('priority').value;
+                const dueDate = document.getElementById('dueDate').value;
+
+                if (!userId || !taskDescription) {
+                    alert("Please select a worker and enter a task description.");
+                    return;
+                }
+
+                try {
+                    // 1. Create the new task definition
+                    const taskResponse = await taskAPI.create({ 
+                        title: taskDescription.substring(0, 50), // First 50 chars for title
+                        description: taskDescription,
+                        priority: priority,
+                        due_date: dueDate || new Date(Date.now() + 86400000).toISOString() // Tomorrow if not specified
+                    });
+                    
+                    const newTaskId = taskResponse.data._id;
+
+                    // 2. Assign the new task to the user
+                    await userTaskAssignmentAPI.assign({
+                        user_id: userId,
+                        task_id: newTaskId,
+                        status: 'Pending'
+                    });
+
+                    showAlert('Task assigned successfully!');
+                    closeModal();
+                    initializePage(); // Refresh the table
+
+                } catch (error) {
+                    console.error("Failed to assign task:", error);
+                    alert("Error assigning task: " + (error.message || "Unknown error"));
+                }
+            });
+
+            // --- 7. INITIALIZATION ---
+            if (currentDateEl) {
+                currentDateEl.textContent = "Today's Overview: " + new Date().toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            }
+            
+            initializePage();
+        });
+    </script>
+</body>
+
+</html>

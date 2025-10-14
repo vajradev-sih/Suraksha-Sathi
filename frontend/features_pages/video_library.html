@@ -1,156 +1,276 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8" />
-  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-  <title>Safety Resources</title>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  <script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "primary": "#117dd4",
-            "background-light": "#f6f7f8",
-            "background-dark": "#101a22",
-            gray: { 100: "#f7fafc", 200: "#e9edf1", 300: "#d1d5db", 500: "#6b7280", 700: "#374151", 800: "#1f2937" }
-          },
-          fontFamily: { display: ["Public Sans", "sans-serif"] },
-        },
-      },
-    }
-  </script>
-  <style>
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    }
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Safety Resources (DGMS Enhanced)</title>
 
-    body {
-      min-height: max(884px, 100dvh);
-    }
-  </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
+
+
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#117dd4",
+        "background-light": "#f6f7f8",
+        "background-dark": "#101a22",
+        gray: {100:"#f7fafc",200:"#e9edf1",300:"#d1d5db",500:"#6b7280",700:"#374151",800:"#1f2937"}
+      },
+      fontFamily: {display:["Public Sans","sans-serif"]},
+    },
+  },
+}
+</script>
+
+<style>
+.material-symbols-outlined {
+  font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+}
+body {
+  min-height:max(884px,100dvh);
+}
+</style>
 </head>
 
 <body class="bg-background-light font-display">
 
-  <div class="relative flex h-auto min-h-screen w-full flex-col">
+<div class="relative flex h-auto min-h-screen w-full flex-col">
 
-    <!-- HEADER -->
-    <div class="flex items-center bg-white p-4 pb-2 justify-between border-b border-gray-200">
-      <div class="flex size-12 shrink-0 items-center">
-        <button onclick="window.history.back()" class="cursor-pointer">
-          <span class="material-symbols-outlined text-gray-800 text-2xl">arrow_back</span>
+  <!-- Header -->
+  <header class="sticky top-0 z-50 flex items-center bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] px-4 py-3 justify-between shadow-lg">
+    <div class="flex size-12 shrink-0 items-center justify-start">
+        <button onclick="window.history.back()" class="text-white">
+            <span class="material-symbols-outlined">arrow_back</span>
         </button>
+    </div>
+    <div class="flex-1 flex justify-center">
+        <h1 class="text-xl sm:text-2xl font-[Orbitron] tracking-widest text-white">
+            Safety Resources
+        </h1>
+    </div>
+    <div class="flex w-12 items-center justify-end"></div>
+  </header>
+
+  <!-- Search -->
+  <div class="bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] p-4">
+    <label class="flex w-full h-12 items-center bg-black/20 backdrop-blur-sm rounded-lg border border-white/10 focus-within:ring-2 focus-within:ring-primary transition-all">
+        <div class="flex items-center justify-center pl-4">
+            <span class="material-symbols-outlined text-neutral-400 text-2xl">search</span>
+        </div>
+        <input id="searchInput" onkeyup="filterCards()" placeholder="Search for resources..." class="flex-1 h-full px-4 bg-transparent border-none focus:ring-0 text-white placeholder:text-neutral-400" />
+    </label>
+</div>
+
+  <!-- Tabs -->
+  <div class="bg-white pb-3 overflow-x-auto border-b border-gray-200">
+    <div class="flex px-4 gap-8">
+      <button class="tab active text-primary border-b-2 border-primary pb-3 pt-4 font-bold text-sm" data-category="all">All</button>
+      <button class="tab text-gray-500 border-b-2 border-transparent pb-3 pt-4 font-bold text-sm" data-category="videos">Videos</button>
+      <button class="tab text-gray-500 border-b-2 border-transparent pb-3 pt-4 font-bold text-sm" data-category="case-studies">Case Studies</button>
+    </div>
+  </div>
+
+  <!-- Video / Case Study Grid -->
+  <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(600px,1fr))] gap-4 p-4">
+
+    <!-- VIDEO 1 -->
+    <div class="video-card" data-category="videos">
+      <div class="aspect-video rounded-lg overflow-hidden relative">
+        <iframe class="w-full h-full rounded-lg" src="https://www.youtube.com/embed/zkn_wD2lBfU" title="Safe Blasting Procedures" frameborder="0" allowfullscreen></iframe>
+        <span class="absolute top-2 right-2 material-symbols-outlined text-white">bookmark_border</span>
+        <div class="absolute top-2 left-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded">NEW</div>
       </div>
-      <h2 class="text-gray-800 text-lg font-bold flex-1 text-center">Safety Resources</h2>
-      <div class="flex w-12 items-center justify-end">
-        <button class="rounded-full h-10 w-10 flex items-center justify-center hover:bg-gray-100">
-          <span class="material-symbols-outlined text-gray-800 text-2xl">more_vert</span>
-        </button>
-      </div>
+      <p class="text-gray-800 font-medium mt-2">Safe Blasting Procedures</p>
+      <p class="text-gray-500 text-sm">Video</p>
     </div>
 
-    <!-- SEARCH -->
-    <div class="bg-white px-4 py-3 border-b border-gray-200">
-      <label class="flex w-full h-12">
-        <div class="flex items-center justify-center pl-4 bg-gray-100 rounded-l-lg">
-          <span class="material-symbols-outlined text-gray-500 text-2xl">search</span>
-        </div>
-        <input id="searchInput" onkeyup="filterCards()" placeholder="Search for resources..."
-          class="flex-1 px-4 bg-gray-100 rounded-r-lg border-none focus:ring-0 text-gray-800" />
-      </label>
+    <!-- VIDEO 2 -->
+    <div class="video-card" data-category="videos">
+      <div class="aspect-video rounded-lg overflow-hidden relative">
+        <iframe class="w-full h-full rounded-lg" src="https://www.youtube.com/embed/vtdQTTCS9Oc" title="Fall Protection Measures" frameborder="0" allowfullscreen></iframe>
+        <span class="absolute top-2 right-2 material-symbols-outlined text-white">bookmark_border</span>
+      </div>
+      <p class="text-gray-800 font-medium mt-2">Fall Protection Measures</p>
+      <p class="text-gray-500 text-sm">Video</p>
     </div>
 
-    <!-- TABS -->
-    <div class="bg-white pb-3 overflow-x-auto border-b border-gray-200">
-      <div class="flex px-4 gap-8">
-        <button class="tab active text-primary border-b-2 border-primary pb-3 pt-4 font-bold text-sm"
-          data-category="all">All</button>
-        <button class="tab text-gray-500 border-b-2 border-transparent pb-3 pt-4 font-bold text-sm"
-          data-category="videos">Videos</button>
-        <button class="tab text-gray-500 border-b-2 border-transparent pb-3 pt-4 font-bold text-sm"
-          data-category="case-studies">Case Studies</button>
+    <!-- VIDEO 3 (Placeholder) -->
+    <div class="video-card" data-category="videos">
+      <div class="aspect-video rounded-lg overflow-hidden relative bg-gray-200 flex items-center justify-center">
+        <!-- Replace link below -->
+        <iframe class="w-full h-full rounded-lg" src="https://youtu.be/osNwXd37Vz4?si=3IP5zaTde8OOz34u" title="Your Video Title Here" frameborder="0" allowfullscreen></iframe>
       </div>
+      <p class="text-gray-800 font-medium mt-2">Your Video Title Here</p>
+      <p class="text-gray-500 text-sm">Video</p>
     </div>
 
-    <!-- GRID -->
-    <div id="videoGrid" class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-4 p-4">
-
-      <!-- VIDEO CARD EXAMPLES -->
-      <div class="video-card" data-category="videos">
-        <div class="aspect-video rounded-lg overflow-hidden relative">
-          <iframe class="w-full h-full rounded-lg" src="https://www.youtube.com/embed/asG7cwxi1sA?si=5Zp_zPxrVfVjDZ-i"
-            title="Safe Blasting Procedures" frameborder="0" allowfullscreen></iframe>
-          <span class="absolute top-2 right-2 material-symbols-outlined text-white">bookmark_border</span>
-          <div class="absolute top-2 left-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded">NEW</div>
-        </div>
-        <p class="text-gray-800 font-medium mt-2">Safe Blasting Procedures</p>
-        <p class="text-gray-500 text-sm">Video</p>
+    <!-- VIDEO 4 (Placeholder) -->
+    <div class="video-card" data-category="videos">
+      <div class="aspect-video rounded-lg overflow-hidden relative bg-gray-200 flex items-center justify-center">
+        <!-- Replace link below -->
+        <iframe class="w-full h-full rounded-lg" src="https://youtu.be/BZwWK-COPew?si=E7ZccrHM4UwnPVHX" title="Your Video Title Here" frameborder="0" allowfullscreen></iframe>
       </div>
+      <p class="text-gray-800 font-medium mt-2">Your Video Title Here</p>
+      <p class="text-gray-500 text-sm">Video</p>
+    </div>
 
-      <div class="video-card" data-category="videos">
-        <div class="aspect-video rounded-lg overflow-hidden relative">
-          <iframe class="w-full h-full rounded-lg" src="https://www.youtube.com/embed/asG7cwxi1sA?si=5Zp_zPxrVfVjDZ-i"
-            title="Fall Protection Measures" frameborder="0" allowfullscreen></iframe>
-          <span class="absolute top-2 right-2 material-symbols-outlined text-white">bookmark_border</span>
-        </div>
-        <p class="text-gray-800 font-medium mt-2">Fall Protection Measures</p>
-        <p class="text-gray-500 text-sm">Video</p>
+    <!-- VIDEO 5 (Placeholder) -->
+    <div class="video-card" data-category="videos">
+      <div class="aspect-video rounded-lg overflow-hidden relative bg-gray-200 flex items-center justify-center">
+        <!-- Replace link below -->
+        <iframe class="w-full h-full rounded-lg" src="https://youtu.be/4BxgTj0O0Mc?si=ave19ioFEVAqhfmL" title="Your Video Title Here" frameborder="0" allowfullscreen></iframe>
       </div>
+      <p class="text-gray-800 font-medium mt-2">Your Video Title Here</p>
+      <p class="text-gray-500 text-sm">Video</p>
+    </div>
 
-      <!-- CASE STUDY CARD -->
-      <div class="video-card" data-category="case-studies">
-        <div class="aspect-video rounded-lg overflow-hidden relative">
-          <img
-            src="https://images.unsplash.com/photo-1735665114740-b1fe03b51b55?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fHdvcmtlcnMlMjBtYXJjYXJ8ZW58MHx8MHx8fDA%3D"
-            class="w-full h-full object-cover rounded-lg" alt="Dummy Case Study">
-          <span class="absolute top-2 right-2 material-symbols-outlined text-white">bookmark_border</span>
-          <div class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded">CASE STUDY
-          </div>
-        </div>
-        <p class="text-gray-800 font-medium mt-2">Dummy Case Study: Safety Protocols</p>
-        <p class="text-gray-500 text-sm">Case Study</p>
+    <!-- CASE STUDY 1 -->
+    <div class="video-card cursor-pointer" data-category="case-studies" onclick="openCaseStudy('case1', this)">
+      <div class="aspect-video rounded-lg overflow-hidden relative">
+        <img src="https://th-i.thgim.com/public/news/national/other-states/vuf66t/article38358761.ece/alternates/LANDSCAPE_1200/TH---INDIA-COAL" class="w-full h-full object-cover rounded-lg">
+        <div class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded">CASE STUDY</div>
       </div>
+      <p class="text-gray-800 font-semibold mt-2">Coal Dust Explosion – Dhanbad, 2021</p>
+    </div>
 
+    <!-- CASE STUDY 2 -->
+    <div class="video-card cursor-pointer" data-category="case-studies" onclick="openCaseStudy('case2', this)">
+      <div class="aspect-video rounded-lg overflow-hidden relative">
+        <img src="https://static.independent.co.uk/2023/02/27/09/10485711.jpg" class="w-full h-full object-cover rounded-lg">
+        <div class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded">CASE STUDY</div>
+      </div>
+      <p class="text-gray-800 font-semibold mt-2">Mine Roof Collapse – Chhattisgarh, 2022</p>
+    </div>
+
+    <!-- CASE STUDY 3 (Flooding Incident) -->
+    <div class="video-card cursor-pointer" data-category="case-studies" onclick="openCaseStudy('case4', this)">
+      <div class="aspect-video rounded-lg overflow-hidden relative">
+        <img src="https://i.ytimg.com/vi/YrVsC0AtHCI/hqdefault.jpg" class="w-full h-full object-cover rounded-lg">
+        <div class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded">CASE STUDY</div>
+      </div>
+      <p class="text-gray-800 font-semibold mt-2">Flooding Incident – Ratnagiri Quarry, 2023</p>
     </div>
 
   </div>
+</div>
 
-  <script>
-    const tabs = document.querySelectorAll(".tab");
-    const cards = document.querySelectorAll(".video-card");
+<!-- POPUP -->
+<div id="popupOverlay" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center transition-opacity duration-300" onclick="closePopup()">
+  <div id="popupContent" class="relative bg-white rounded-2xl shadow-xl w-[95%] h-[90%] overflow-y-auto transform scale-95 transition-all duration-300 p-6" onclick="event.stopPropagation()">
+    <button onclick="closePopup()" class="absolute top-4 right-5 text-gray-600 hover:text-gray-900 text-2xl">&times;</button>
+    <div id="popupInner"></div>
+  </div>
+</div>
 
-    // TAB FUNCTIONALITY
-    tabs.forEach(tab => {
-      tab.addEventListener("click", () => {
-        tabs.forEach(t => t.classList.remove("text-primary", "border-primary", "active"));
-        tab.classList.add("text-primary", "border-primary", "active");
-        const category = tab.dataset.category;
-
-        cards.forEach(card => {
-          if (category === "all" || card.dataset.category === category) {
-            card.style.display = "flex";
-            card.style.flexDirection = "column";
-          } else {
-            card.style.display = "none";
-          }
-        });
-      });
+<script>
+// Tabs
+const tabs = document.querySelectorAll(".tab");
+const cards = document.querySelectorAll(".video-card");
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    tabs.forEach(t => t.classList.remove("text-primary","border-primary","active"));
+    tab.classList.add("text-primary","border-primary","active");
+    const category = tab.dataset.category;
+    cards.forEach(card => {
+      if(category==="all" || card.dataset.category===category){
+        card.style.display = "flex";
+        card.style.flexDirection = "column";
+      } else {
+        card.style.display = "none";
+      }
     });
+  });
+});
 
-    // SEARCH FUNCTIONALITY
-    function filterCards() {
-      const input = document.getElementById("searchInput").value.toLowerCase();
-      cards.forEach(card => {
-        const title = card.querySelector("p").textContent.toLowerCase();
-        card.style.display = title.includes(input) ? "flex" : "none";
-      });
-    }
-  </script>
+// Case Studies (with DGMS info)
+const caseStudies = {
+  case1: {
+    title: "Coal Dust Explosion – Dhanbad, 2021",
+    overview: "A methane and coal dust explosion occurred in a Dhanbad underground coal mine due to poor ventilation and inadequate gas monitoring.",
+    rootCause: "Methane accumulation and failure of gas detection systems.",
+    dgms: "DGMS Circular No. 08 of 2019 – Guidelines on Methane and Coal Dust Explosion Prevention.",
+    safety: [
+      "Continuous gas monitoring using DGMS-approved methane detectors.",
+      "Mandatory ventilation checks every 2 hours in gassy seams.",
+      "Training for miners on evacuation and use of self-rescue apparatus.",
+      "Installation of flame-proof electrical equipment in gassy mines."
+    ],
+    link: "https://dgms.gov.in/safety-circulars"
+  },
+  case2: {
+    title: "Mine Roof Collapse – Chhattisgarh, 2022",
+    overview: "A roof fall occurred during excavation due to weak strata support and ignored cracks in the mine ceiling.",
+    rootCause: "Improper roof bolting and lack of pre-shift inspection.",
+    dgms: "DGMS Circular No. 06 of 2020 – Safety in Underground Roof Control Operations.",
+    safety: [
+      "Conduct roof tests before every blasting operation.",
+      "Use resin-grouted bolts as per DGMS specifications.",
+      "Ensure visual and instrumental roof monitoring.",
+      "Maintain record of strata control inspections daily."
+    ],
+    link: "https://dgms.gov.in/safety-circulars"
+  },
+  case4: {
+    title: "Flooding Incident – Ratnagiri Quarry, 2023",
+    overview: "Heavy rainfall caused flooding in an open quarry due to lack of drainage and insufficient weather monitoring systems.",
+    rootCause: "Absence of proper sump channels and flood sensors.",
+    dgms: "DGMS Circular No. 09 of 2020 – Guidelines on Water Ingress and Flood Control in Mines.",
+    safety: [
+      "Install flood-level sensors and emergency sirens.",
+      "Construct proper drainage and pumping channels.",
+      "Integrate rainfall and weather alerts with mine dashboards.",
+      "Train workers in flood evacuation drills."
+    ],
+    link: "https://dgms.gov.in/safety-circulars"
+  }
+};
+
+// Open popup
+function openCaseStudy(id, card) {
+  const cs = caseStudies[id];
+  const img = card.querySelector("img")?.src || "";
+  const inner = `
+    <img src="${img}" alt="${cs.title}" class="rounded-xl w-full h-72 object-cover mb-4">
+    <h2 class="text-2xl font-bold text-gray-800 mb-3">${cs.title}</h2>
+    <p class="text-gray-700 mb-4"><b>Overview:</b> ${cs.overview}</p>
+    <p class="text-gray-700 mb-3"><b>Root Cause:</b> ${cs.rootCause}</p>
+    <p class="text-gray-700 mb-3"><b>DGMS Reference:</b> ${cs.dgms}</p>
+    <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">🛡️ DGMS Safety Measures</h3>
+    <ul class="text-sm text-gray-700 list-disc list-inside space-y-1 mb-3">
+      ${cs.safety.map(m => `<li>${m}</li>`).join('')}
+    </ul>
+    <a href="${cs.link}" target="_blank" class="text-primary underline text-sm hover:text-blue-700">View DGMS Safety Circulars</a>
+  `;
+  document.getElementById("popupInner").innerHTML = inner;
+  const overlay = document.getElementById("popupOverlay");
+  overlay.classList.remove("hidden");
+  document.body.classList.add("overflow-hidden");
+  setTimeout(() => overlay.classList.add("opacity-100", "scale-100"), 10);
+}
+
+// Close popup
+function closePopup() {
+  const overlay = document.getElementById("popupOverlay");
+  overlay.classList.remove("opacity-100", "scale-100");
+  document.body.classList.remove("overflow-hidden");
+  setTimeout(() => overlay.classList.add("hidden"), 200);
+}
+
+// Search
+function filterCards(){
+  const input = document.getElementById("searchInput").value.toLowerCase();
+  cards.forEach(card=>{
+    const title = card.querySelector("p").textContent.toLowerCase();
+    card.style.display = title.includes(input) ? "flex" : "none";
+  });
+}
+</script>
+
 </body>
-
 </html>

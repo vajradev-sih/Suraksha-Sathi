@@ -1,30 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin - Activity Log</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0..200" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0..200"
+        rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
     <script id="tailwind-config">
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {"primary": "#0284c7", "alert-red": "#ef4444", "info-blue": "#3b82f6", "neutral-900": "#0f172a" },
+                    colors: { "primary": "#0284c7", "alert-red": "#ef4444", "info-blue": "#3b82f6", "neutral-900": "#0f172a" },
                     fontFamily: { "sans": ["Inter", "sans-serif"], "orbitron": ["Orbitron", "sans-serif"] },
                 },
             },
         };
     </script>
-    <style>.material-symbols-rounded { font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24; }</style>
+    <style>
+        .material-symbols-rounded {
+            font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+    </style>
 </head>
+
 <body class="bg-neutral-100 font-sans text-neutral-800 min-h-screen">
     <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden pb-20">
         <!-- Header -->
-        <div class="sticky top-0 z-30 flex items-center bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] px-4 py-3 justify-between shadow-lg">
-            <a href="admin_home.html" class="text-white"><span class="material-symbols-rounded text-2xl">arrow_back</span></a>
+        <div
+            class="sticky top-0 z-30 flex items-center bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] px-4 py-3 justify-between shadow-lg">
+            <a href="admin-home.html" class="text-white"><span
+                    class="material-symbols-rounded text-2xl">arrow_back</span></a>
             <h1 class="text-xl font-[Orbitron] tracking-widest text-white">Activity Log</h1>
             <div class="w-12"></div>
         </div>
@@ -34,60 +44,115 @@
                 <!-- Activity items will be injected here -->
             </div>
         </main>
-        
+
         <!-- Bottom Navigation -->
-        <nav class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] border-t border-white/10 shadow-lg z-20">
+        <nav
+            class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] border-t border-white/10 shadow-lg z-20">
             <div class="flex justify-around">
-                <a href="admin_home.html" class="flex flex-col items-center justify-center pt-3 pb-2 w-1/4 text-neutral-400 hover:text-white">
-                    <span class="material-symbols-rounded">dashboard</span><span class="text-xs font-medium mt-1">Dashboard</span>
+                <a href="admin-home.html"
+                    class="flex flex-col items-center justify-center pt-3 pb-2 w-1/4 text-neutral-400 hover:text-white">
+                    <span class="material-symbols-rounded">dashboard</span><span
+                        class="text-xs font-medium mt-1">Dashboard</span>
                 </a>
-                <a href="admin_hazards.html" class="flex flex-col items-center justify-center pt-3 pb-2 w-1/4 text-neutral-400 hover:text-white">
-                    <span class="material-symbols-rounded">warning</span><span class="text-xs font-medium mt-1">Hazards</span>
+                <a href="admin_hazards.html"
+                    class="flex flex-col items-center justify-center pt-3 pb-2 w-1/4 text-neutral-400 hover:text-white">
+                    <span class="material-symbols-rounded">warning</span><span
+                        class="text-xs font-medium mt-1">Hazards</span>
                 </a>
-                <a href="admin_workforce.html" class="flex flex-col items-center justify-center pt-3 pb-2 w-1/4 text-neutral-400 hover:text-white">
-                    <span class="material-symbols-rounded">groups</span><span class="text-xs font-medium mt-1">Workforce</span>
+                <a href="#"
+                    class="flex flex-col items-center justify-center pt-3 pb-2 w-1/4 text-neutral-400 hover:text-white">
+                    <span class="material-symbols-rounded">groups</span><span
+                        class="text-xs font-medium mt-1">Workforce</span>
                 </a>
-                <a href="admin_activity.html" class="flex flex-col items-center justify-center pt-3 pb-2 w-1/4 text-primary">
-                    <span class="material-symbols-rounded">notifications</span><span class="text-xs font-medium mt-1">Activity</span>
+                <a href="activity_admin.html"
+                    class="flex flex-col items-center justify-center pt-3 pb-2 w-1/4 text-primary">
+                    <span class="material-symbols-rounded">notifications</span><span
+                        class="text-xs font-medium mt-1">Activity</span>
                 </a>
             </div>
         </nav>
     </div>
+
+    <script src="../api.client.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const activityData = [
-            { date: 'Today, 14 October', items: [
-                { icon: 'warning', color: 'text-alert-red', text: '<strong>Priya Patel</strong> reported a <strong>High</strong> severity hazard: "Ventilation Fault".', time: '10:45 AM' },
-                { icon: 'person_add', color: 'text-info-blue', text: 'New worker <strong>Arjun Mehta</strong> was added to the system.', time: '09:15 AM' },
-                { icon: 'payments', color: 'text-green-600', text: 'Payroll for September 2025 was processed.', time: '09:00 AM' },
-            ]},
-            { date: 'Yesterday, 13 October', items: [
-                { icon: 'engineering', color: 'text-neutral-500', text: '<strong>Suresh Singh</strong> completed maintenance task #M-102.', time: '03:30 PM' },
-                { icon: 'assignment_turned_in', color: 'text-primary', text: 'Hazard <strong>HAZ-002</strong> status changed to <strong>Resolved</strong>.', time: '11:00 AM' },
-            ]}
-        ];
-        
+        const token = localStorage.getItem("token");
+        if (!token) {
+            window.location.href = "../index.html";
+            return;
+        }
+
         const logContainer = document.getElementById('activity-log');
 
-        function renderLog() {
+        const fetchAndRenderLog = async () => {
+            try {
+                // Step 1: Fetch all users
+                const usersResponse = await userManagementAPI.getAll();
+                const users = usersResponse.data.users || [];
+
+                if (users.length === 0) {
+                    logContainer.innerHTML = `<p class="text-center text-neutral-500 py-10">No users found to fetch activity from.</p>`;
+                    return;
+                }
+
+                // Step 2: Create a promise to fetch notifications for each user
+                const notificationPromises = users.map(user => notificationAPI.getForUser(user._id));
+                const allNotificationResponses = await Promise.all(notificationPromises);
+
+                // Step 3: Combine all notifications into a single array
+                const allNotifications = allNotificationResponses.flatMap(response => response.data || []);
+                
+                // Step 4: Sort all notifications by date, newest first
+                allNotifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                // Group notifications by date
+                const groupedByDate = allNotifications.reduce((acc, item) => {
+                    const date = new Date(item.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+                    if (!acc[date]) {
+                        acc[date] = [];
+                    }
+                    acc[date].push(item);
+                    return acc;
+                }, {});
+
+                renderLog(groupedByDate);
+                
+            } catch (error) {
+                console.error("Failed to fetch activity log:", error);
+                logContainer.innerHTML = `<p class="text-center text-red-500 py-10">Failed to load activity log.</p>`;
+            }
+        };
+        
+        const renderLog = (groupedData) => {
             logContainer.innerHTML = '';
-            activityData.forEach(group => {
+            if (Object.keys(groupedData).length === 0) {
+                logContainer.innerHTML = `<p class="text-center text-neutral-500 py-10">No activity found.</p>`;
+                return;
+            }
+
+            for (const date in groupedData) {
                 const groupEl = document.createElement('div');
-                groupEl.innerHTML = `<h3 class="font-bold text-neutral-600 mb-2">${group.date}</h3>`;
+                groupEl.innerHTML = `<h3 class="font-bold text-neutral-600 mb-2">${date}</h3>`;
                 
                 const listEl = document.createElement('div');
                 listEl.className = 'bg-white p-3 rounded-2xl shadow-card space-y-3';
 
-                group.items.forEach(item => {
+                groupedData[date].forEach(item => {
+                    // Customize icon and color based on notification type
+                    let icon = 'info';
+                    let color = 'text-info-blue';
+                    if (item.type === 'hazard_report') { icon = 'warning'; color = 'text-alert-red'; }
+                    if (item.type === 'user_registered') { icon = 'person_add'; color = 'text-success-green'; }
+                    
                     const itemEl = document.createElement('div');
                     itemEl.className = 'flex items-start gap-3';
                     itemEl.innerHTML = `
-                        <div class="w-8 h-8 flex-shrink-0 mt-1 flex items-center justify-center rounded-full bg-neutral-100 ${item.color}">
-                            <span class="material-symbols-rounded text-base">${item.icon}</span>
+                        <div class="w-8 h-8 flex-shrink-0 mt-1 flex items-center justify-center rounded-full bg-neutral-100 ${color}">
+                            <span class="material-symbols-rounded text-base">${icon}</span>
                         </div>
                         <div class="flex-1">
-                            <p class="text-sm text-neutral-700">${item.text}</p>
-                            <p class="text-xs text-neutral-400 mt-1">${item.time}</p>
+                            <p class="text-sm text-neutral-700">${item.notification_type.replace(/_/g, ' ')}</p>
+                            <p class="text-xs text-neutral-400 mt-1">${new Date(item.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
                         </div>
                     `;
                     listEl.appendChild(itemEl);
@@ -95,12 +160,12 @@
 
                 groupEl.appendChild(listEl);
                 logContainer.appendChild(groupEl);
-            });
-        }
+            }
+        };
         
-        renderLog();
+        fetchAndRenderLog();
     });
     </script>
 </body>
-</html>
 
+</html>

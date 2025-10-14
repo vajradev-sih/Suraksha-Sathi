@@ -1,720 +1,736 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
-
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MineSafe - Safety Training Shorts</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-    <style>
-        :root {
-            --primary: #F9A825;
-            --success: #22C55E;
-            --danger: #EF4444;
-        }
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MineSafe - Safety Training Shorts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+:root {
+  --primary: #F9A825;
+  --success: #22C55E;
+  --danger: #EF4444;
+}
 
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow-x: hidden;
-            font-family: 'Inter', sans-serif;
-        }
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+  font-family: 'Inter', sans-serif;
+}
 
-        #shortsFeed {
-            height: 100vh;
-            scroll-snap-type: y mandatory;
-            scroll-behavior: smooth;
-            overflow-y: scroll;
-            background: #000;
-            -webkit-overflow-scrolling: touch;
-            /* Smooth scrolling on iOS */
-        }
+#shortsFeed {
+  height: 100vh;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  overflow-y: scroll;
+  background: #000;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
 
-        .short-video {
-            height: 100vh;
-            width: 100%;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #000;
-            scroll-snap-align: center;
-            /* Changed from 'start' to 'center' for stronger snap */
-            scroll-snap-stop: always;
-            /* Forces snap on each video */
-            overflow: hidden;
-        }
+.short-video {
+  height: 100vh;
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  scroll-snap-align: center; /* Changed from 'start' to 'center' for stronger snap */
+  scroll-snap-stop: always; /* Forces snap on each video */
+  overflow: hidden;
+}
 
-        .short-video video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+.short-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-        .play-button {
-            position: absolute;
-            font-size: 4rem;
-            color: white;
-            opacity: 0.8;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 50%;
-            padding: 20px;
-        }
+.play-button {
+  position: absolute;
+  font-size: 4rem;
+  color: white;
+  opacity: 0.8;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: rgba(0,0,0,0.3);
+  border-radius: 50%;
+  padding: 20px;
+  opacity: 0; /* Initially hidden */
+  pointer-events: none;
+}
 
-        .play-button:hover {
-            opacity: 1;
-            transform: scale(1.1);
-        }
+.play-button:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
 
-        .progress-bar-container {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 0 16px 16px;
-            display: flex;
-            gap: 4px;
-        }
+.progress-bar-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0 16px 16px;
+  display: flex;
+  gap: 4px;
+}
 
-        .progress-segment {
-            flex: 1;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 999px;
-            overflow: hidden;
-        }
+.progress-segment {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 999px;
+  overflow: hidden;
+}
 
-        .progress-fill {
-            height: 100%;
-            background: var(--primary);
-            width: 0%;
-            transition: width 0.1s linear;
-        }
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  width: 0%;
+  transition: width 0.1s linear;
+}
 
-        .content-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-            padding: 20px;
-            color: white;
-            z-index: 10;
-        }
+.content-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  padding: 20px;
+  color: white;
+  z-index: 10;
+}
 
-        .video-info {
-            max-width: 80%;
-        }
+.video-info {
+  max-width: 80%;
+}
 
-        .video-info h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
+.video-info h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
 
-        .video-info p {
-            font-size: 1rem;
-            opacity: 0.9;
-            margin-bottom: 16px;
-        }
+.video-info p {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin-bottom: 16px;
+}
 
-        .video-meta {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: 0.875rem;
-            opacity: 0.8;
-        }
+.video-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
 
-        .category-tag {
-            background: var(--primary);
-            color: black;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 0.75rem;
-        }
+.category-tag {
+  background: var(--primary);
+  color: black;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
 
-        .actions {
-            position: absolute;
-            right: 16px;
-            bottom: 100px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            align-items: center;
-        }
+.actions {
+  position: absolute;
+  right: 16px;
+  bottom: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+}
 
-        .action-button {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+.action-button {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
 
-        .action-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
-        }
+.action-button:hover {
+  background: rgba(255,255,255,0.2);
+  transform: scale(1.1);
+}
 
-        .action-button.active {
-            background: var(--primary);
-            color: black;
-        }
+.action-button.active {
+  background: var(--primary);
+  color: black;
+}
 
-        .action-count {
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-top: 4px;
-        }
+.action-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
 
-        .top-bar {
-            position: fixed;
-            /* Change from absolute to fixed */
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 50;
-            /* Increased z-index to ensure it stays on top */
-            background: linear-gradient(rgba(0, 0, 0, 0.7), transparent);
-            pointer-events: none;
-            /* Allow scrolling through the bar */
-        }
+.top-bar {
+  position: fixed; /* Change from absolute to fixed */
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 50; /* Increased z-index to ensure it stays on top */
+  background: linear-gradient(rgba(0,0,0,0.7), transparent);
+  pointer-events: none; /* Allow scrolling through the bar */
+}
 
-        .nav-button {
-            pointer-events: auto;
-            /* Re-enable pointer events for buttons */
-            background: rgba(0, 0, 0, 0.6);
-            /* Darker background for better visibility */
-            border: none;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            backdrop-filter: blur(4px);
-        }
+.nav-button {
+  pointer-events: auto; /* Re-enable pointer events for buttons */
+  background: rgba(0,0,0,0.6); /* Darker background for better visibility */
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
+}
 
-        .nav-button:hover {
-            background: rgba(0, 0, 0, 0.8);
-            transform: scale(1.05);
-        }
+.nav-button:hover {
+  background: rgba(0,0,0,0.8);
+  transform: scale(1.05);
+}
 
-        .save-notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 999px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            z-index: 30;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
+.save-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  z-index: 30;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
 
-        .quiz-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            z-index: 25;
-            color: white;
-            text-align: center;
-        }
 
-        .quiz-overlay.active {
-            display: flex;
-        }
-
-        .quiz-content {
-            max-width: 400px;
-        }
-
-        .quiz-options {
-            display: grid;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .quiz-option {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid transparent;
-            color: white;
-            padding: 12px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .quiz-option:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .quiz-option.correct {
-            background: var(--success);
-            color: white;
-        }
-
-        .quiz-option.wrong {
-            background: var(--danger);
-            color: white;
-        }
-    </style>
+</style>
 </head>
-
 <body class="bg-black font-display">
 
-    <div class="top-bar">
-        <button onclick="window.history.back()" class="nav-button">
-            <span class="material-symbols-outlined">arrow_back</span>
-        </button>
-        <button class="nav-button" onclick="toggleFullscreen()">
-            <span class="material-symbols-outlined">fullscreen</span>
-        </button>
-    </div>
+<div class="top-bar">
+    <button onclick="window.history.back()" class="nav-button">
+        <span class="material-symbols-outlined">arrow_back</span>
+    </button>
+</div>
 
-    <div id="shortsFeed">
-        <div id="saveNotification" class="save-notification" data-translate-key="notification_saved">Video saved to your
-            library!</div>
+<div id="shortsFeed">
+    <div id="saveNotification" class="save-notification" data-translate-key="notification_saved">Video saved to your library!</div>
 
-        <!-- Short 1: Gas Detection Safety -->
-        <div class="short-video" data-index="0">
-            <video src="https://cdn.pixabay.com/video/2020/03/30/34616-402679736_tiny.mp4"
-                poster="https://img.youtube.com/vi/6fLxnc5IJ-E/maxresdefault.jpg" muted loop></video>
-            <span class="material-symbols-outlined play-button">play_arrow</span>
+    <!-- Short 1: Gas Detection Safety -->
+    <div class="short-video" data-index="0">
+        <video src="https://cdn.pixabay.com/video/2020/03/30/34616-402679736_tiny.mp4" 
+               poster="https://img.youtube.com/vi/6fLxnc5IJ-E/maxresdefault.jpg"
+               muted loop autoplay></video>
+        <span class="material-symbols-outlined play-button">play_arrow</span>
 
-            <div class="content-overlay">
-                <div class="video-info">
-                    <span class="category-tag" data-translate-key="cat_gas">Gas Safety</span>
-                    <h1 data-translate-key="title_gas">Essential Gas Detection Procedures</h1>
-                    <p data-translate-key="desc_gas">Learn the critical steps for monitoring and detecting hazardous
-                        gases in underground mining operations.</p>
-                    <div class="video-meta">
-                        <span>2:45</span>
-                        <span>•</span>
-                        <span data-translate-key="meta_protocol">Safety Protocol</span>
-                        <span>•</span>
-                        <span data-translate-key="meta_mandatory">Mandatory Training</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="actions">
-                <button class="action-button likeBtn" title="Like">
-                    <span class="material-symbols-outlined">thumb_up</span>
-                    <span class="action-count">1.2k</span>
-                </button>
-                <button class="action-button saveBtn" title="Save">
-                    <span class="material-symbols-outlined">bookmark</span>
-                    <span class="action-count" data-translate-key="action_save">Save</span>
-                </button>
-                <button class="action-button quizBtn" title="Take Quiz">
-                    <span class="material-symbols-outlined">quiz</span>
-                    <span class="action-count" data-translate-key="action_quiz">Quiz</span>
-                </button>
-                <button class="action-button shareBtn" title="Share">
-                    <span class="material-symbols-outlined">share</span>
-                    <span class="action-count" data-translate-key="action_share">Share</span>
-                </button>
-            </div>
-
-            <div class="progress-bar-container">
-                <div class="progress-segment">
-                    <div class="progress-fill"></div>
-                </div>
-            </div>
-
-            <div class="quiz-overlay" data-video-index="0">
-                <div class="quiz-content">
-                    <h2 class="text-xl font-bold mb-4" data-translate-key="quiz_title_knowledge">Quick Knowledge Check
-                    </h2>
-                    <p class="mb-6" data-translate-key="q_gas">What is the first step when detecting a gas leak?</p>
-                    <div class="quiz-options">
-                        <button class="quiz-option" data-correct="true" data-translate-key="q_gas_a1">Alert nearby
-                            personnel and activate emergency protocol</button>
-                        <button class="quiz-option" data-translate-key="q_gas_a2">Continue working but monitor the
-                            situation</button>
-                        <button class="quiz-option" data-translate-key="q_gas_a3">Attempt to fix the leak
-                            yourself</button>
-                        <button class="quiz-option" data-translate-key="q_gas_a4">Ignore if the levels are low</button>
-                    </div>
+        <div class="content-overlay">
+            <div class="video-info">
+                <span class="category-tag" data-translate-key="cat_gas">Gas Safety</span>
+                <h1 data-translate-key="title_gas">Essential Gas Detection Procedures</h1>
+                <p data-translate-key="desc_gas">Learn the critical steps for monitoring and detecting hazardous gases in underground mining operations.</p>
+                <div class="video-meta">
+                    <span>2:45</span>
+                    <span>•</span>
+                    <span data-translate-key="meta_protocol">Safety Protocol</span>
+                    <span>•</span>
+                    <span data-translate-key="meta_mandatory">Mandatory Training</span>
                 </div>
             </div>
         </div>
 
-        <!-- Short 2: PPE Equipment Guide -->
-        <div class="short-video" data-index="1">
-            <video src="https://cdn.pixabay.com/video/2020/05/24/40030-424911975_tiny.mp4"
-                poster="https://img.youtube.com/vi/RtQj19HoJ_8/maxresdefault.jpg" muted loop></video>
-            <span class="material-symbols-outlined play-button">play_arrow</span>
-
-            <div class="content-overlay">
-                <div class="video-info">
-                    <span class="category-tag" data-translate-key="cat_ppe">PPE Safety</span>
-                    <h1 data-translate-key="title_ppe">Complete PPE Equipment Guide</h1>
-                    <p data-translate-key="desc_ppe">Master the proper use and maintenance of Personal Protective
-                        Equipment in mining environments.</p>
-                    <div class="video-meta">
-                        <span>3:15</span>
-                        <span>•</span>
-                        <span data-translate-key="meta_equipment">Equipment Safety</span>
-                        <span>•</span>
-                        <span data-translate-key="meta_daily">Daily Requirement</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="actions">
-                <button class="action-button likeBtn">
-                    <span class="material-symbols-outlined">thumb_up</span>
-                    <span class="action-count">856</span>
-                </button>
-                <button class="action-button saveBtn">
-                    <span class="material-symbols-outlined">bookmark</span>
-                    <span class="action-count" data-translate-key="action_save">Save</span>
-                </button>
-                <button class="action-button quizBtn">
-                    <span class="material-symbols-outlined">quiz</span>
-                    <span class="action-count" data-translate-key="action_quiz">Quiz</span>
-                </button>
-                <button class="action-button shareBtn">
-                    <span class="material-symbols-outlined">share</span>
-                    <span class="action-count" data-translate-key="action_share">Share</span>
-                </button>
-            </div>
-
-            <div class="progress-bar-container">
-                <div class="progress-segment">
-                    <div class="progress-fill"></div>
-                </div>
-            </div>
-
-            <div class="quiz-overlay" data-video-index="1">
-                <div class="quiz-content">
-                    <h2 class="text-xl font-bold mb-4" data-translate-key="quiz_title_safety">Safety Check</h2>
-                    <p class="mb-6" data-translate-key="q_ppe">When should you replace your safety helmet?</p>
-                    <div class="quiz-options">
-                        <button class="quiz-option" data-correct="true" data-translate-key="q_ppe_a1">After any
-                            significant impact or visible damage</button>
-                        <button class="quiz-option" data-translate-key="q_ppe_a2">Only when it's completely
-                            broken</button>
-                        <button class="quiz-option" data-translate-key="q_ppe_a3">Every 10 years</button>
-                        <button class="quiz-option" data-translate-key="q_ppe_a4">When it looks old</button>
-                    </div>
-                </div>
-            </div>
+        <div class="actions">
+            <button class="action-button likeBtn" title="Like">
+                <span class="material-symbols-outlined">thumb_up</span>
+                <span class="action-count">1.2k</span>
+            </button>
+            <button class="action-button saveBtn" title="Save">
+                <span class="material-symbols-outlined">bookmark</span>
+                <span class="action-count" data-translate-key="action_save">Save</span>
+            </button>
+            
+            <button class="action-button shareBtn" title="Share">
+                <span class="material-symbols-outlined">share</span>
+                <span class="action-count" data-translate-key="action_share">Share</span>
+            </button>
         </div>
 
-        <!-- Short 3: Emergency Response -->
-        <div class="short-video" data-index="2">
-            <video src="https://cdn.pixabay.com/video/2015/12/11/1643-148614430_tiny.mp4"
-                poster="https://img.youtube.com/vi/PZN5T5JqJ7o/maxresdefault.jpg" muted loop></video>
-            <span class="material-symbols-outlined play-button">play_arrow</span>
-
-            <div class="content-overlay">
-                <div class="video-info">
-                    <span class="category-tag" data-translate-key="cat_emergency">Emergency Response</span>
-                    <h1 data-translate-key="title_emergency">Underground Emergency Procedures</h1>
-                    <p data-translate-key="desc_emergency">Critical steps to follow during underground emergencies. Know
-                        your escape routes and safety protocols.</p>
-                    <div class="video-meta">
-                        <span>4:20</span>
-                        <span>•</span>
-                        <span data-translate-key="meta_emergency">Emergency Protocol</span>
-                        <span>•</span>
-                        <span data-translate-key="meta_priority">High Priority</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="actions">
-                <button class="action-button likeBtn">
-                    <span class="material-symbols-outlined">thumb_up</span>
-                    <span class="action-count">2.1k</span>
-                </button>
-                <button class="action-button saveBtn">
-                    <span class="material-symbols-outlined">bookmark</span>
-                    <span class="action-count" data-translate-key="action_save">Save</span>
-                </button>
-                <button class="action-button quizBtn">
-                    <span class="material-symbols-outlined">quiz</span>
-                    <span class="action-count" data-translate-key="action_quiz">Quiz</span>
-                </button>
-                <button class="action-button shareBtn">
-                    <span class="material-symbols-outlined">share</span>
-                    <span class="action-count" data-translate-key="action_share">Share</span>
-                </button>
-            </div>
-
-            <div class="progress-bar-container">
-                <div class="progress-segment">
-                    <div class="progress-fill"></div>
-                </div>
-            </div>
-
-            <div class="quiz-overlay" data-video-index="2">
-                <div class="quiz-content">
-                    <h2 class="text-xl font-bold mb-4" data-translate-key="quiz_title_protocol">Emergency Protocol Test
-                    </h2>
-                    <p class="mb-6" data-translate-key="q_emergency">What's the first action in an underground
-                        emergency?</p>
-                    <div class="quiz-options">
-                        <button class="quiz-option" data-correct="true" data-translate-key="q_emergency_a1">Check for
-                            immediate dangers and alert others</button>
-                        <button class="quiz-option" data-translate-key="q_emergency_a2">Run to the nearest exit</button>
-                        <button class="quiz-option" data-translate-key="q_emergency_a3">Call your supervisor</button>
-                        <button class="quiz-option" data-translate-key="q_emergency_a4">Continue working until told
-                            otherwise</button>
-                    </div>
-                </div>
-            </div>
+        <div class="progress-bar-container">
+            <div class="progress-segment"><div class="progress-fill"></div></div>
         </div>
     </div>
 
-    <script>
-        const shorts = document.querySelectorAll(".short-video");
-        const saveNotification = document.getElementById("saveNotification");
-        let currentLang = 'en';
-        let translations = {};
+    <!-- Short 2: PPE Equipment Guide -->
+    <div class="short-video" data-index="1">
+        <video src="https://cdn.pixabay.com/video/2020/05/24/40030-424911975_tiny.mp4" 
+               poster="https://img.youtube.com/vi/RtQj19HoJ_8/maxresdefault.jpg"
+               muted loop autoplay></video>
+        <span class="material-symbols-outlined play-button">play_arrow</span>
 
-        // Play/pause and progress
-        shorts.forEach(short => {
-            const video = short.querySelector("video");
-            const playBtn = short.querySelector(".play-button");
-            const progressFill = short.querySelector(".progress-fill");
-            const quizOverlay = short.querySelector(".quiz-overlay");
-            let isLiked = false;
-            let isSaved = false;
+        <div class="content-overlay">
+            <div class="video-info">
+                <span class="category-tag" data-translate-key="cat_ppe">PPE Safety</span>
+                <h1 data-translate-key="title_ppe">Complete PPE Equipment Guide</h1>
+                <p data-translate-key="desc_ppe">Master the proper use and maintenance of Personal Protective Equipment in mining environments.</p>
+                <div class="video-meta">
+                    <span>3:15</span>
+                    <span>•</span>
+                    <span data-translate-key="meta_equipment">Equipment Safety</span>
+                    <span>•</span>
+                    <span data-translate-key="meta_daily">Daily Requirement</span>
+                </div>
+            </div>
+        </div>
 
-            // Play/Pause functionality
-            function togglePlay() {
-                if (video.paused) {
-                    video.play();
-                    playBtn.style.opacity = "0";
-                } else {
-                    video.pause();
-                    playBtn.style.opacity = "0.8";
-                }
-                playBtn.textContent = video.paused ? 'play_arrow' : '';
-            }
+        <div class="actions">
+            <button class="action-button likeBtn">
+                <span class="material-symbols-outlined">thumb_up</span>
+                <span class="action-count">856</span>
+            </button>
+            <button class="action-button saveBtn">
+                <span class="material-symbols-outlined">bookmark</span>
+                <span class="action-count" data-translate-key="action_save">Save</span>
+            </button>
+            
+            <button class="action-button shareBtn">
+                <span class="material-symbols-outlined">share</span>
+                <span class="action-count" data-translate-key="action_share">Share</span>
+            </button>
+        </div>
 
-            playBtn.addEventListener("click", togglePlay);
-            video.addEventListener("click", togglePlay);
+        <div class="progress-bar-container">
+            <div class="progress-segment"><div class="progress-fill"></div></div>
+        </div>
+    </div>
 
-            // Progress bar update
-            video.addEventListener("timeupdate", () => {
-                const progress = (video.currentTime / video.duration) * 100;
-                progressFill.style.width = `${progress}%`;
-            });
+    <!-- Short 3: Fire Safety -->
+    <div class="short-video" data-index="2">
+        <video src="https://cdn.pixabay.com/video/2021/08/16/85351-590746476_tiny.mp4"
+               poster="https://img.youtube.com/vi/Atbb94JInJg/maxresdefault.jpg"
+               loop autoplay></video>
+        <span class="material-symbols-outlined play-button">play_arrow</span>
 
-            // Like button
-            const likeBtn = short.querySelector(".likeBtn");
-            likeBtn.addEventListener("click", () => {
-                isLiked = !isLiked;
-                likeBtn.classList.toggle("active");
-                const countElement = likeBtn.querySelector(".action-count");
-                let count = parseInt(countElement.textContent.replace('k', '000'));
-                count = isLiked ? count + 1 : count - 1;
-                countElement.textContent = count >= 1000 ? (count / 1000).toFixed(1) + 'k' : count;
-            });
+        <div class="content-overlay">
+            <div class="video-info">
+                <span class="category-tag">Fire Safety</span>
+                <h1>Emergency Fire Response</h1>
+                <p>Know how to act swiftly and safely when a fire breaks out in a mining zone.</p>
+                <div class="video-meta">
+                    <span>1:50</span>
+                    <span>•</span>
+                    <span>Fire Protocol</span>
+                    <span>•</span>
+                    <span>High Priority</span>
+                </div>
+            </div>
+        </div>
 
-            // Save button
-            const saveBtn = short.querySelector(".saveBtn");
-            saveBtn.addEventListener("click", () => {
-                isSaved = !isSaved;
-                saveBtn.classList.toggle("active");
-                const key = isSaved ? "notification_saved" : "notification_removed";
-                saveNotification.textContent = translations[key] ? translations[key][currentLang] : "Action complete";
-                saveNotification.style.opacity = "1";
-                setTimeout(() => saveNotification.style.opacity = "0", 2000);
-            });
+        <div class="actions">
+            <button class="action-button likeBtn">
+                <span class="material-symbols-outlined">thumb_up</span>
+                <span class="action-count">927</span>
+            </button>
+            <button class="action-button saveBtn">
+                <span class="material-symbols-outlined">bookmark</span>
+                <span class="action-count">Save</span>
+            </button>
+            
+            <button class="action-button shareBtn">
+                <span class="material-symbols-outlined">share</span>
+                <span class="action-count">Share</span>
+            </button>
+        </div>
 
-            // Quiz functionality
-            const quizBtn = short.querySelector(".quizBtn");
-            quizBtn.addEventListener("click", () => {
-                video.pause();
-                quizOverlay.classList.add("active");
-            });
+        <div class="progress-bar-container">
+            <div class="progress-segment"><div class="progress-fill"></div></div>
+        </div>
+    </div>
 
-            // Quiz answers
-            const quizOptions = short.querySelectorAll(".quiz-option");
-            quizOptions.forEach(option => {
-                option.addEventListener("click", () => {
-                    quizOptions.forEach(opt => opt.disabled = true);
-                    const isCorrect = option.dataset.correct === "true";
-                    option.classList.add(isCorrect ? "correct" : "wrong");
+    <!-- Short 3: Equipment Handling -->
+    <div class="short-video" data-index="3">
+        <video src="https://cdn.pixabay.com/video/2022/12/09/142327-779987365_tiny.mp4"
+               poster="https://img.youtube.com/vi/machinerySafety/maxresdefault.jpg"
+                loop autoplay></video>
+        <span class="material-symbols-outlined play-button">play_arrow</span>
 
-                    setTimeout(() => {
-                        quizOverlay.classList.remove("active");
-                        quizOptions.forEach(opt => {
-                            opt.disabled = false;
-                            opt.classList.remove("correct", "wrong");
-                        });
-                        video.play();
-                    }, 2000);
+        <div class="content-overlay">
+            <div class="video-info">
+                <span class="category-tag">Machinery Safety</span>
+                <h1>Safe Equipment Handling Practices</h1>
+                <p>Ensure correct use of heavy machinery to prevent workplace injuries.</p>
+                <div class="video-meta">
+                    <span>2:30</span>
+                    <span>•</span>
+                    <span>Operational Safety</span>
+                    <span>•</span>
+                    <span>Certified Training</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="action-button likeBtn">
+                <span class="material-symbols-outlined">thumb_up</span>
+                <span class="action-count">1.1k</span>
+            </button>
+            <button class="action-button saveBtn">
+                <span class="material-symbols-outlined">bookmark</span>
+                <span class="action-count">Save</span>
+            </button>
+            
+            <button class="action-button shareBtn">
+                <span class="material-symbols-outlined">share</span>
+                <span class="action-count">Share</span>
+            </button>
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-segment"><div class="progress-fill"></div></div>
+        </div>
+    </div>
+
+    <!-- Short 4: Ventilation Awareness -->
+    <div class="short-video" data-index="4">
+        <video src="https://cdn.pixabay.com/video/2024/02/05/199408-910162363_tiny.mp4"
+               poster="https://img.youtube.com/vi/ventilationSafety/maxresdefault.jpg"
+                loop autoplay></video>
+        <span class="material-symbols-outlined play-button">play_arrow</span>
+
+        <div class="content-overlay">
+            <div class="video-info">
+                <span class="category-tag">Ventilation Safety</span>
+                <h1>Ventilation Awareness in Tunnels</h1>
+                <p>Understand the role of ventilation in maintaining breathable air in mining shafts.</p>
+                <div class="video-meta">
+                    <span>2:10</span>
+                    <span>•</span>
+                    <span>Air Quality</span>
+                    <span>•</span>
+                    <span>Daily Inspection</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="action-button likeBtn">
+                <span class="material-symbols-outlined">thumb_up</span>
+                <span class="action-count">742</span>
+            </button>
+            <button class="action-button saveBtn">
+                <span class="material-symbols-outlined">bookmark</span>
+                <span class="action-count">Save</span>
+            </button>
+            
+            <button class="action-button shareBtn">
+                <span class="material-symbols-outlined">share</span>
+                <span class="action-count">Share</span>
+            </button>
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-segment"><div class="progress-fill"></div></div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Short 5: Emergency Response -->
+    <div class="short-video" data-index="5">
+        <video src="https://cdn.pixabay.com/video/2015/12/11/1643-148614430_tiny.mp4" 
+               poster="https://img.youtube.com/vi/PZN5T5JqJ7o/maxresdefault.jpg"
+               autoplay loop></video>
+        <span class="material-symbols-outlined play-button">play_arrow</span>
+
+        <div class="content-overlay">
+            <div class="video-info">
+                <span class="category-tag" data-translate-key="cat_emergency">Emergency Response</span>
+                <h1 data-translate-key="title_emergency">Underground Emergency Procedures</h1>
+                <p data-translate-key="desc_emergency">Critical steps to follow during underground emergencies. Know your escape routes and safety protocols.</p>
+                <div class="video-meta">
+                    <span>4:20</span>
+                    <span>•</span>
+                    <span data-translate-key="meta_emergency">Emergency Protocol</span>
+                    <span>•</span>
+                    <span data-translate-key="meta_priority">High Priority</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="action-button likeBtn">
+                <span class="material-symbols-outlined">thumb_up</span>
+                <span class="action-count">2.1k</span>
+            </button>
+            <button class="action-button saveBtn">
+                <span class="material-symbols-outlined">bookmark</span>
+                <span class="action-count" data-translate-key="action_save">Save</span>
+            </button>
+            
+            <button class="action-button shareBtn">
+                <span class="material-symbols-outlined">share</span>
+                <span class="action-count" data-translate-key="action_share">Share</span>
+            </button>
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-segment"><div class="progress-fill"></div></div>
+        </div>
+
+        
+    </div>
+
+    
+</div>
+
+<script>
+const shorts = document.querySelectorAll(".short-video");
+const saveNotification = document.getElementById("saveNotification");
+let currentLang = 'en';
+let translations = {};
+
+// Play/pause and progress
+shorts.forEach(short => {
+    const video = short.querySelector("video");
+    const playBtn = short.querySelector(".play-button");
+    const progressFill = short.querySelector(".progress-fill");
+    const quizOverlay = short.querySelector(".quiz-overlay");
+    let isLiked = false;
+    let isSaved = false;
+
+    // Play/Pause functionality
+    function togglePlay() {
+        if (video.paused) {
+            video.play();
+            playBtn.style.opacity = "0";
+            playBtn.style.pointerEvents = "none";
+
+        } else {
+            video.pause();
+            playBtn.style.opacity = "0.8";
+            playBtn.style.pointerEvents = "auto";
+        }
+        playBtn.textContent = video.paused ? 'play_arrow' : '';
+    }
+
+    playBtn.addEventListener("click", togglePlay);
+    video.addEventListener("click", togglePlay);
+
+    // Progress bar update
+    video.addEventListener("timeupdate", () => {
+        const progress = (video.currentTime / video.duration) * 100;
+        progressFill.style.width = `${progress}%`;
+    });
+
+    // Like button
+    const likeBtn = short.querySelector(".likeBtn");
+    likeBtn.addEventListener("click", () => {
+        isLiked = !isLiked;
+        likeBtn.classList.toggle("active");
+        const countElement = likeBtn.querySelector(".action-count");
+        let count = parseInt(countElement.textContent.replace('k', '000'));
+        count = isLiked ? count + 1 : count - 1;
+        countElement.textContent = count >= 1000 ? (count/1000).toFixed(1) + 'k' : count;
+    });
+
+    // Save button
+    const saveBtn = short.querySelector(".saveBtn");
+    saveBtn.addEventListener("click", () => {
+        isSaved = !isSaved;
+        saveBtn.classList.toggle("active");
+        const key = isSaved ? "notification_saved" : "notification_removed";
+        saveNotification.textContent = translations[key] ? translations[key][currentLang] : "Action complete";
+        saveNotification.style.opacity = "1";
+        setTimeout(() => saveNotification.style.opacity = "0", 2000);
+    });
+
+    // Quiz functionality
+    const quizBtn = short.querySelector(".quizBtn");
+    quizBtn.addEventListener("click", () => {
+        video.pause();
+        quizOverlay.classList.add("active");
+    });
+
+    // Quiz answers
+    const quizOptions = short.querySelectorAll(".quiz-option");
+    quizOptions.forEach(option => {
+        option.addEventListener("click", () => {
+            quizOptions.forEach(opt => opt.disabled = true);
+            const isCorrect = option.dataset.correct === "true";
+            option.classList.add(isCorrect ? "correct" : "wrong");
+            
+            setTimeout(() => {
+                quizOverlay.classList.remove("active");
+                quizOptions.forEach(opt => {
+                    opt.disabled = false;
+                    opt.classList.remove("correct", "wrong");
                 });
-            });
-
-            // Share functionality
-            const shareBtn = short.querySelector(".shareBtn");
-            shareBtn.addEventListener("click", async () => {
-                try {
-                    await navigator.share({
-                        title: short.querySelector("h1").textContent,
-                        text: short.querySelector("p").textContent,
-                        url: window.location.href
-                    });
-                } catch {
-                    // Fallback if Web Share API is not available
-                    const shareURL = window.location.href;
-                    navigator.clipboard.writeText(shareURL);
-                    const key = "notification_copied";
-                    saveNotification.textContent = translations[key] ? translations[key][currentLang] : "Link copied!";
-                    saveNotification.style.opacity = "1";
-                    setTimeout(() => saveNotification.style.opacity = "0", 2000);
-                }
-            });
+                video.play();
+            }, 2000);
         });
+    });
 
-        // Auto-play video in view
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                const video = entry.target.querySelector("video");
-                const playBtn = entry.target.querySelector(".play-button");
-                if (entry.isIntersecting) {
-                    video.play();
-                    playBtn.style.opacity = "0";
-                } else {
-                    video.pause();
-                    playBtn.style.opacity = "0.8";
-                    video.currentTime = 0;
-                }
-                playBtn.textContent = video.paused ? 'play_arrow' : '';
+    // Share functionality
+    const shareBtn = short.querySelector(".shareBtn");
+    shareBtn.addEventListener("click", async () => {
+        try {
+            await navigator.share({
+                title: short.querySelector("h1").textContent,
+                text: short.querySelector("p").textContent,
+                url: window.location.href
             });
-        }, { threshold: 0.8 });
+        } catch {
+            // Fallback if Web Share API is not available
+            const shareURL = window.location.href;
+            navigator.clipboard.writeText(shareURL);
+            const key = "notification_copied";
+            saveNotification.textContent = translations[key] ? translations[key][currentLang] : "Link copied!";
+            saveNotification.style.opacity = "1";
+            setTimeout(() => saveNotification.style.opacity = "0", 2000);
+        }
+    });
+});
 
-        // Fullscreen functionality
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-            } else {
-                document.exitFullscreen();
+// Auto-play video in view
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        const video = entry.target.querySelector("video");
+        const playBtn = entry.target.querySelector(".play-button");
+
+        if (entry.isIntersecting) {
+            video.play();
+            playBtn.style.opacity = "0";
+            playBtn.style.pointerEvents = "none";
+        } else {
+            video.pause();
+            video.currentTime = 0;
+            playBtn.style.opacity = "0.8";
+            playBtn.style.pointerEvents = "auto";
+        }
+
+        // Update icon based on paused/playing state
+        playBtn.textContent = video.paused ? 'play_arrow' : '';
+    });
+}, { threshold: 0.8 });
+
+
+// Fullscreen functionality
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+// Double tap to like
+shorts.forEach(short => {
+    let lastTap = 0;
+    const likeBtn = short.querySelector(".likeBtn");
+    
+    short.addEventListener("touchend", (e) => {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+        if (tapLength < 300 && tapLength > 0) {
+            likeBtn.click();
+            e.preventDefault();
+        }
+        lastTap = currentTime;
+    });
+
+    observer.observe(short);
+});
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        translations = {
+            title: { en: "MineSafe - Safety Training Shorts", hi: "माइनसेफ - सुरक्षा प्रशिक्षण शॉर्ट्स" },
+            notification_saved: { en: "Video saved to your library!", hi: "वीडियो आपकी लाइब्रेरी में सहेजा गया!" },
+            notification_removed: { en: "Video removed from your library", hi: "वीडियो आपकी लाइब्रेरी से हटा दिया गया" },
+            notification_copied: { en: "Link copied to clipboard!", hi: "लिंक क्लिपबोर्ड पर कॉपी किया गया!" },
+            cat_gas: { en: "Gas Safety", hi: "गैस सुरक्षा" },
+            title_gas: { en: "Essential Gas Detection Procedures", hi: "आवश्यक गैस पहचान प्रक्रियाएं" },
+            desc_gas: { en: "Learn the critical steps for monitoring and detecting hazardous gases in underground mining operations.", hi: "भूमिगत खनन कार्यों में खतरनाक गैसों की निगरानी और पता लगाने के लिए महत्वपूर्ण कदम जानें।" },
+            meta_protocol: { en: "Safety Protocol", hi: "सुरक्षा प्रोटोकॉल" },
+            meta_mandatory: { en: "Mandatory Training", hi: "अनिवार्य प्रशिक्षण" },
+            action_save: { en: "Save", hi: "सहेजें" },
+            action_quiz: { en: "Quiz", hi: "प्रश्नोत्तरी" },
+            action_share: { en: "Share", hi: "शेयर करें" },
+            quiz_title_knowledge: { en: "Quick Knowledge Check", hi: "त्वरित ज्ञान जांच" },
+            q_gas: { en: "What is the first step when detecting a gas leak?", hi: "गैस रिसाव का पता चलने पर पहला कदम क्या है?" },
+            q_gas_a1: { en: "Alert nearby personnel and activate emergency protocol", hi: "आस-पास के कर्मियों को सचेत करें और आपातकालीन प्रोटोकॉल सक्रिय करें" },
+            q_gas_a2: { en: "Continue working but monitor the situation", hi: "काम करना जारी रखें लेकिन स्थिति पर नजर रखें" },
+            q_gas_a3: { en: "Attempt to fix the leak yourself", hi: "रिसाव को स्वयं ठीक करने का प्रयास करें" },
+            q_gas_a4: { en: "Ignore if the levels are low", hi: "यदि स्तर कम हैं तो अनदेखा करें" },
+            cat_ppe: { en: "PPE Safety", hi: "पीपीई सुरक्षा" },
+            title_ppe: { en: "Complete PPE Equipment Guide", hi: "संपूर्ण पीपीई उपकरण गाइड" },
+            desc_ppe: { en: "Master the proper use and maintenance of Personal Protective Equipment in mining environments.", hi: "खनन वातावरण में व्यक्तिगत सुरक्षा उपकरण के उचित उपयोग और रखरखाव में महारत हासिल करें।" },
+            meta_equipment: { en: "Equipment Safety", hi: "उपकरण सुरक्षा" },
+            meta_daily: { en: "Daily Requirement", hi: "दैनिक आवश्यकता" },
+            quiz_title_safety: { en: "Safety Check", hi: "सुरक्षा जांच" },
+            q_ppe: { en: "When should you replace your safety helmet?", hi: "आपको अपना सुरक्षा हेलमेट कब बदलना चाहिए?" },
+            q_ppe_a1: { en: "After any significant impact or visible damage", hi: "किसी भी महत्वपूर्ण प्रभाव या दृश्य क्षति के बाद" },
+            q_ppe_a2: { en: "Only when it's completely broken", hi: "केवल जब यह पूरी तरह से टूट गया हो" },
+            q_ppe_a3: { en: "Every 10 years", hi: "हर 10 साल में" },
+            q_ppe_a4: { en: "When it looks old", hi: "जब यह पुराना लगे" },
+            cat_emergency: { en: "Emergency Response", hi: "आपातकालीन प्रतिक्रिया" },
+            title_emergency: { en: "Underground Emergency Procedures", hi: "भूमिगत आपातकालीन प्रक्रियाएं" },
+            desc_emergency: { en: "Critical steps to follow during underground emergencies. Know your escape routes and safety protocols.", hi: "भूमिगत आपात स्थितियों के दौरान पालन करने के लिए महत्वपूर्ण कदम। अपने भागने के मार्गों और सुरक्षा प्रोटोकॉल को जानें।" },
+            meta_emergency: { en: "Emergency Protocol", hi: "आपातकालीन प्रोटोकॉल" },
+            meta_priority: { en: "High Priority", hi: "उच्च प्राथमिकता" },
+            quiz_title_protocol: { en: "Emergency Protocol Test", hi: "आपातकालीन प्रोटोकॉल परीक्षण" },
+            q_emergency: { en: "What's the first action in an underground emergency?", hi: "भूमिगत आपात स्थिति में पहली कार्रवाई क्या है?" },
+            q_emergency_a1: { en: "Check for immediate dangers and alert others", hi: "तत्काल खतरों की जांच करें और दूसरों को सचेत करें" },
+            q_emergency_a2: { en: "Run to the nearest exit", hi: "निकटतम निकास की ओर भागें" },
+            q_emergency_a3: { en: "Call your supervisor", hi: "अपने पर्यवेक्षक को बुलाओ" },
+            q_emergency_a4: { en: "Continue working until told otherwise", hi: "जब तक अन्यथा न कहा जाए तब तक काम करना जारी रखें" }
+        };
+
+        currentLang = localStorage.getItem('lang') || 'en';
+
+        function applyLanguage(lang) {
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-translate-key]').forEach(element => {
+                const key = element.getAttribute('data-translate-key');
+                if (translations[key] && translations[key][lang]) {
+                    element.textContent = translations[key][lang];
+                }
+            });
+            const titleKey = 'title';
+            if (translations[titleKey] && translations[titleKey][lang]) {
+                document.title = translations[titleKey][lang];
             }
         }
 
-        // Double tap to like
-        shorts.forEach(short => {
-            let lastTap = 0;
-            const likeBtn = short.querySelector(".likeBtn");
-
-            short.addEventListener("touchend", (e) => {
-                const currentTime = new Date().getTime();
-                const tapLength = currentTime - lastTap;
-                if (tapLength < 300 && tapLength > 0) {
-                    likeBtn.click();
-                    e.preventDefault();
-                }
-                lastTap = currentTime;
-            });
-
-            observer.observe(short);
-        });
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            translations = {
-                title: { en: "MineSafe - Safety Training Shorts", hi: "माइनसेफ - सुरक्षा प्रशिक्षण शॉर्ट्स" },
-                notification_saved: { en: "Video saved to your library!", hi: "वीडियो आपकी लाइब्रेरी में सहेजा गया!" },
-                notification_removed: { en: "Video removed from your library", hi: "वीडियो आपकी लाइब्रेरी से हटा दिया गया" },
-                notification_copied: { en: "Link copied to clipboard!", hi: "लिंक क्लिपबोर्ड पर कॉपी किया गया!" },
-                cat_gas: { en: "Gas Safety", hi: "गैस सुरक्षा" },
-                title_gas: { en: "Essential Gas Detection Procedures", hi: "आवश्यक गैस पहचान प्रक्रियाएं" },
-                desc_gas: { en: "Learn the critical steps for monitoring and detecting hazardous gases in underground mining operations.", hi: "भूमिगत खनन कार्यों में खतरनाक गैसों की निगरानी और पता लगाने के लिए महत्वपूर्ण कदम जानें।" },
-                meta_protocol: { en: "Safety Protocol", hi: "सुरक्षा प्रोटोकॉल" },
-                meta_mandatory: { en: "Mandatory Training", hi: "अनिवार्य प्रशिक्षण" },
-                action_save: { en: "Save", hi: "सहेजें" },
-                action_quiz: { en: "Quiz", hi: "प्रश्नोत्तरी" },
-                action_share: { en: "Share", hi: "शेयर करें" },
-                quiz_title_knowledge: { en: "Quick Knowledge Check", hi: "त्वरित ज्ञान जांच" },
-                q_gas: { en: "What is the first step when detecting a gas leak?", hi: "गैस रिसाव का पता चलने पर पहला कदम क्या है?" },
-                q_gas_a1: { en: "Alert nearby personnel and activate emergency protocol", hi: "आस-पास के कर्मियों को सचेत करें और आपातकालीन प्रोटोकॉल सक्रिय करें" },
-                q_gas_a2: { en: "Continue working but monitor the situation", hi: "काम करना जारी रखें लेकिन स्थिति पर नजर रखें" },
-                q_gas_a3: { en: "Attempt to fix the leak yourself", hi: "रिसाव को स्वयं ठीक करने का प्रयास करें" },
-                q_gas_a4: { en: "Ignore if the levels are low", hi: "यदि स्तर कम हैं तो अनदेखा करें" },
-                cat_ppe: { en: "PPE Safety", hi: "पीपीई सुरक्षा" },
-                title_ppe: { en: "Complete PPE Equipment Guide", hi: "संपूर्ण पीपीई उपकरण गाइड" },
-                desc_ppe: { en: "Master the proper use and maintenance of Personal Protective Equipment in mining environments.", hi: "खनन वातावरण में व्यक्तिगत सुरक्षा उपकरण के उचित उपयोग और रखरखाव में महारत हासिल करें।" },
-                meta_equipment: { en: "Equipment Safety", hi: "उपकरण सुरक्षा" },
-                meta_daily: { en: "Daily Requirement", hi: "दैनिक आवश्यकता" },
-                quiz_title_safety: { en: "Safety Check", hi: "सुरक्षा जांच" },
-                q_ppe: { en: "When should you replace your safety helmet?", hi: "आपको अपना सुरक्षा हेलमेट कब बदलना चाहिए?" },
-                q_ppe_a1: { en: "After any significant impact or visible damage", hi: "किसी भी महत्वपूर्ण प्रभाव या दृश्य क्षति के बाद" },
-                q_ppe_a2: { en: "Only when it's completely broken", hi: "केवल जब यह पूरी तरह से टूट गया हो" },
-                q_ppe_a3: { en: "Every 10 years", hi: "हर 10 साल में" },
-                q_ppe_a4: { en: "When it looks old", hi: "जब यह पुराना लगे" },
-                cat_emergency: { en: "Emergency Response", hi: "आपातकालीन प्रतिक्रिया" },
-                title_emergency: { en: "Underground Emergency Procedures", hi: "भूमिगत आपातकालीन प्रक्रियाएं" },
-                desc_emergency: { en: "Critical steps to follow during underground emergencies. Know your escape routes and safety protocols.", hi: "भूमिगत आपात स्थितियों के दौरान पालन करने के लिए महत्वपूर्ण कदम। अपने भागने के मार्गों और सुरक्षा प्रोटोकॉल को जानें।" },
-                meta_emergency: { en: "Emergency Protocol", hi: "आपातकालीन प्रोटोकॉल" },
-                meta_priority: { en: "High Priority", hi: "उच्च प्राथमिकता" },
-                quiz_title_protocol: { en: "Emergency Protocol Test", hi: "आपातकालीन प्रोटोकॉल परीक्षण" },
-                q_emergency: { en: "What's the first action in an underground emergency?", hi: "भूमिगत आपात स्थिति में पहली कार्रवाई क्या है?" },
-                q_emergency_a1: { en: "Check for immediate dangers and alert others", hi: "तत्काल खतरों की जांच करें और दूसरों को सचेत करें" },
-                q_emergency_a2: { en: "Run to the nearest exit", hi: "निकटतम निकास की ओर भागें" },
-                q_emergency_a3: { en: "Call your supervisor", hi: "अपने पर्यवेक्षक को बुलाओ" },
-                q_emergency_a4: { en: "Continue working until told otherwise", hi: "जब तक अन्यथा न कहा जाए तब तक काम करना जारी रखें" }
-            };
-
-            currentLang = localStorage.getItem('lang') || 'en';
-
-            function applyLanguage(lang) {
-                document.documentElement.lang = lang;
-                document.querySelectorAll('[data-translate-key]').forEach(element => {
-                    const key = element.getAttribute('data-translate-key');
-                    if (translations[key] && translations[key][lang]) {
-                        element.textContent = translations[key][lang];
-                    }
-                });
-                const titleKey = 'title';
-                if (translations[titleKey] && translations[titleKey][lang]) {
-                    document.title = translations[titleKey][lang];
-                }
-            }
-
-            applyLanguage(currentLang);
-        });
-    </script>
+        applyLanguage(currentLang);
+    });
+</script>
 </body>
-
 </html>

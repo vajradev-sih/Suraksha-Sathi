@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = "https://localhost:5000"; // Change to your actual API base URL
+const API_BASE_URL = "http://localhost:3000"; // Change to your actual API base URL
 
 // --- Utility Functions ---
 
@@ -80,43 +80,43 @@ const apiRequest = async (endpoint, options = {}) => {
 const authAPI = {
   // Auth endpoints are often simpler paths like /register, /login
   register: (data) =>
-    apiRequest("/api/v1/users/register", {
+    apiRequest("/api/v1/user/register", {
       method: "POST",
       body: JSON.stringify(data),
     }),
   login: (data) =>
-    apiRequest("/api/v1/users/login", {
+    apiRequest("/api/v1/user/login", {
       method: "POST",
       body: JSON.stringify(data),
     }),
   logout: () =>
-    apiRequest("/api/v1/users/logout", {
+    apiRequest("/api/v1/user/logout", {
       method: "POST",
     }),
   getCurrentUser: () =>
-    apiRequest("/api/v1/users/current-user", {
+    apiRequest("/api/v1/user/current-user", {
       // Assumed path from controller logic
       method: "GET",
     }),
   updateAccount: (data) =>
-    apiRequest("/api/v1/users/update-account", {
+    apiRequest("/api/v1/user/update-account", {
       // Assumed path
       method: "PATCH",
       body: JSON.stringify(data),
     }),
   changePassword: (data) =>
-    apiRequest("/api/v1/users/change-password", {
+    apiRequest("/api/v1/user/change-password", {
       // Assumed path
       method: "POST",
       body: JSON.stringify(data),
     }),
   // Placeholder methods for completeness based on controller logic
   getWatchHistory: (userId) =>
-    apiRequest(`/api/v1/users/watch-history/${userId}`, {
+    apiRequest(`/api/v1/user/watch-history/${userId}`, {
       method: "GET",
     }),
   getPublicUserInfo: (userId) =>
-    apiRequest(`/api/v1/users/public/${userId}`, {
+    apiRequest(`/api/v1/user/public/${userId}`, {
       method: "GET",
     }),
 };
@@ -124,25 +124,25 @@ const authAPI = {
 // 2. User Management API (Admin/Manager CRUD)
 const userManagementAPI = {
   create: (data) =>
-    apiRequest("/api/v1/users", {
+    apiRequest("/api/v1/user", {
       method: "POST",
       body: JSON.stringify(data),
     }),
   getAll: (page = 1, limit = 10) =>
-    apiRequest(`/api/v1/users?page=${page}&limit=${limit}`, {
+    apiRequest(`/api/v1/user?page=${page}&limit=${limit}`, {
       method: "GET",
     }),
   getById: (id) =>
-    apiRequest(`/api/v1/users/${id}`, {
+    apiRequest(`/api/v1/user/${id}`, {
       method: "GET",
     }),
   update: (id, data) =>
-    apiRequest(`/api/v1/users/${id}`, {
+    apiRequest(`/api/v1/user/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
   delete: (id) =>
-    apiRequest(`/api/v1/users/${id}`, {
+    apiRequest(`/api/v1/user/${id}`, {
       method: "DELETE",
     }),
 };
@@ -527,13 +527,13 @@ const notificationAPI = {
 // 19. Payroll API
 const payrollAPI = {
   createOrUpdate: (data) =>
-    apiRequest("/api/v1/payrolls", {
-      // Assuming /api/v1/payrolls is base
+    apiRequest("/api/v1/payroll", {
+      // Assuming /api/v1/payroll is base
       method: "POST",
       body: JSON.stringify(data),
     }),
   getForUser: (userId) =>
-    apiRequest(`/api/v1/payrolls/user/${userId}`, {
+    apiRequest(`/api/v1/payroll/user/${userId}`, {
       method: "GET",
     }),
 };
