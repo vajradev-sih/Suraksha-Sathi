@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Hazard Management Dashboard</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap"
+    rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#003366",
+            "accent": "#FF6600",
+            "background-light": "#f5f5f5",
+            "background-dark": "#101a22",
+            "status-new": "#D32F2F",
+            "status-progress": "#FBC02D",
+            "status-resolved": "#388E3C"
+          },
+          fontFamily: {
+            "display": ["Public Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+
+    @keyframes progress-animation {
+      from {
+        width: 0;
+      }
+
+      to {
+        width: var(--progress-width, 0);
+      }
+    }
+
+    .animate-progress {
+      animation: progress-animation 1s ease-out forwards;
+    }
+
+    @keyframes pulse-badge {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .pulse-badge {
+      animation: pulse-badge 1.5s infinite ease-in-out;
+    }
+  </style>
+  <style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  <style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  <style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+  <div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+    <header
+      class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between border-b border-gray-200 dark:border-gray-700">
+
+      <!-- Left: Menu Toggle -->
+      <div class="flex size-12 shrink-0 items-center justify-center relative">
+        <!-- Main menu toggle -->
+        <input class="hidden" id="menu-toggle" type="checkbox" />
+        <label class="cursor-pointer" for="menu-toggle">
+          <span class="material-symbols-outlined text-black text-3xl">menu</span>
+        </label>
+
+        <!-- Menu container -->
+        <div
+          class="absolute top-12 left-0 w-64 bg-white rounded-lg shadow-lg z-10 max-h-0 opacity-0 overflow-hidden transition-all duration-450 ease-in-out"
+          id="menu">
+          <a href="" class="flex items-center gap-3 p-4 hover:bg-gamified-light-blue/20 transition-colors duration-200">
+            <span class="material-symbols-outlined text-gamified-purple">checklist</span>
+            <span class="text-sm font-medium text-black">Statisctic</span>
+          </a>
+          <a href="leaderboard.html"
+            class="flex items-center gap-3 p-4 hover:bg-gamified-light-blue/20 transition-colors duration-200">
+            <span class="material-symbols-outlined text-gamified-purple">trophy</span>
+            <span class="text-sm font-medium text-black">Leader Board</span>
+          </a>
+          <a href="map.html"
+            class="flex items-center gap-3 p-4 hover:bg-gamified-light-blue/20 transition-colors duration-200">
+            <span class="material-symbols-outlined text-gamified-purple">map</span>
+            <span class="text-sm font-medium text-black">Hazard Map</span>
+          </a>
+          <!-- Profile / Reports / Checklists -->
+          <a href="profile_setting.html"
+            class="flex items-center gap-3 p-4 hover:bg-gamified-light-blue/20 transition-colors duration-200">
+            <span class="material-symbols-outlined text-gamified-purple">person</span>
+            <span class="text-sm font-medium text-black">Profile</span>
+          </a>
+
+        </div>
+      </div>
+
+      <script>
+        // Toggle main menu
+        const menuToggle = document.getElementById("menu-toggle");
+        const menu = document.getElementById("menu");
+        menuToggle.addEventListener("change", function () {
+          if (this.checked) {
+            menu.style.maxHeight = "500px";
+            menu.style.opacity = "1";
+          } else {
+            menu.style.maxHeight = "0";
+            menu.style.opacity = "0";
+          }
+        });
+
+      </script>
+
+
+      <div class="flex items-center gap-2">
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white">
+          Hazard Map
+        </h1>
+      </div>
+      <div class="flex items-center gap-4">
+        <button class="flex items-center justify-center rounded-full h-10 w-10 bg-primary/20 text-primary">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <img class="h-10 w-10 rounded-full" data-alt="User avatar"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCG0_AL3M_CNBNseAYYnK80VobW8MqCSALWAKjnB8QvVVpJyBMJaSIPyJnI_SqGiooMh0sOHJE-xQxc8DCxqHzCtBUDgrOOzV_9qS9ZxwoiPJ283OS6mdwoEJ3TKJB8Jo_kLWaRLBq1_HckkhK-EmB50Cetvg_VkF604cNJJx-ebeVMX2V4umKAjjMWZAtLd0148e0RNEZnJO7hU-Ln7p9MY1jMzJeXjEINiW-6lwnIH7_N582xXCqfRTNl2RoAQFrYPw5Q6FJBQUk" />
+      </div>
+    </header>
+    <main class="relative flex flex-1 flex-col p-4 space-y-4 overflow-y-auto">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-2xl">event_note</span>
+          Daily Briefing
+        </h2>
+        <div class="grid grid-cols-2 gap-4 text-center">
+          <div
+            class="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg flex flex-col items-center justify-center border border-red-100 dark:border-red-800">
+            <span class="material-symbols-outlined text-red-500 text-3xl mb-1">crisis_alert</span>
+            <p class="text-xl font-bold text-red-700 dark:text-red-300">3</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">New Hazards</p>
+          </div>
+          <div
+            class="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg flex flex-col items-center justify-center border border-green-100 dark:border-green-800">
+            <span class="material-symbols-outlined text-green-500 text-3xl mb-1">task_alt</span>
+            <p class="text-xl font-bold text-green-700 dark:text-green-300">2</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Resolved Today</p>
+          </div>
+          <div
+            class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg flex flex-col items-center justify-center border border-blue-100 dark:border-blue-800">
+            <span class="material-symbols-outlined text-blue-500 text-3xl mb-1">pending_actions</span>
+            <p class="text-xl font-bold text-blue-700 dark:text-blue-300">7</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">In Progress</p>
+          </div>
+          <div
+            class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg flex flex-col items-center justify-center border border-purple-100 dark:border-purple-800">
+            <span class="material-symbols-outlined text-purple-500 text-3xl mb-1">summarize</span>
+            <p class="text-xl font-bold text-purple-700 dark:text-purple-300">25</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Total Hazards</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-2xl">trophy</span>
+          Your Progress
+        </h2>
+        <div class="mb-4">
+          <div class="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400 mb-1">
+            <span>Hazards Reported: 15/20</span>
+            <span class="font-bold text-primary">75%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 overflow-hidden">
+            <div class="bg-primary h-full rounded-full animate-progress" style="--progress-width: 75%"></div>
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400 mb-1">
+            <span>Hazards Resolved: 8/10</span>
+            <span class="font-bold text-accent">80%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 overflow-hidden">
+            <div class="bg-accent h-full rounded-full animate-progress" style="--progress-width: 80%"></div>
+          </div>
+        </div>
+        <h3 class="font-bold text-md text-gray-800 dark:text-gray-200 mb-2 mt-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg text-green-500">military_tech</span>
+          Your Badges
+        </h3>
+        <div class="flex flex-wrap gap-3 justify-center">
+          <div
+            class="flex flex-col items-center justify-center p-3 rounded-xl bg-gradient-to-br from-yellow-300 to-yellow-500 text-white w-24 h-24 text-center text-xs shadow-lg transform hover:scale-105 transition-transform pulse-badge">
+            <span class="material-symbols-outlined text-4xl">edit_square</span>
+            <span class="mt-1 font-bold">Reporter Pro</span>
+          </div>
+          <div
+            class="flex flex-col items-center justify-center p-3 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 text-white w-24 h-24 text-center text-xs shadow-lg transform hover:scale-105 transition-transform pulse-badge"
+            style="animation-delay: 0.2s">
+            <span class="material-symbols-outlined text-4xl">speed</span>
+            <span class="mt-1 font-bold">Swift Resolver</span>
+          </div>
+          <div
+            class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-300 dark:bg-gray-700 w-24 h-24 text-center text-xs opacity-60">
+            <span class="material-symbols-outlined text-4xl text-gray-500 dark:text-gray-400">workspace_premium</span>
+            <span class="mt-1 font-bold">Safety Champion</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4 py-3 rounded-lg">
+        <label class="flex flex-col min-w-40 h-12 w-full">
+          <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+            <div
+              class="text-gray-500 dark:text-gray-400 flex border-none bg-gray-200 dark:bg-gray-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
+              <span class="material-symbols-outlined">search</span>
+            </div>
+            <input
+              class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-0 border-none bg-gray-200 dark:bg-gray-800 focus:border-none h-full placeholder:text-gray-500 dark:placeholder:text-gray-400 px-4 text-base font-normal leading-normal"
+              placeholder="Search by keyword, ID, or name" value="" />
+          </div>
+        </label>
+      </div>
+      <div class="flex gap-3 px-4 py-3 overflow-x-auto pb-4">
+        <button
+          class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-200 dark:bg-gray-800 pl-4 pr-3 text-sm font-medium text-gray-800 dark:text-gray-200">
+          Status
+          <span class="material-symbols-outlined">arrow_drop_down</span>
+        </button>
+        <button
+          class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-200 dark:bg-gray-800 pl-4 pr-3 text-sm font-medium text-gray-800 dark:text-gray-200">
+          Severity
+          <span class="material-symbols-outlined">arrow_drop_down</span>
+        </button>
+        <button
+          class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-200 dark:bg-gray-800 pl-4 pr-3 text-sm font-medium text-gray-800 dark:text-gray-200">
+          Date
+          <span class="material-symbols-outlined">arrow_drop_down</span>
+        </button>
+        <button
+          class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-200 dark:bg-gray-800 pl-4 pr-3 text-sm font-medium text-gray-800 dark:text-gray-200">
+          Assigned To
+          <span class="material-symbols-outlined">arrow_drop_down</span>
+        </button>
+        <button
+          class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-200 dark:bg-gray-800 pl-4 pr-3 text-sm font-medium text-gray-800 dark:text-gray-200">
+          Sort By
+          <span class="material-symbols-outlined">swap_vert</span>
+        </button>
+      </div>
+      <div class="space-y-4 px-4 pb-4">
+        <div
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 flex flex-col gap-2 border border-gray-200 dark:border-gray-700 cursor-pointer"
+          onclick="document.getElementById('hazard-detail-modal').classList.remove('hidden'); document.getElementById('modal-hazard-id').textContent = 'HAZ-0012'; document.getElementById('modal-hazard-description').textContent = 'Equipment malfunction in Sector B.'; document.getElementById('modal-reporter').textContent = 'John Doe'; document.getElementById('modal-status').className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-status-new text-white'; document.getElementById('modal-status').textContent = 'New'; document.getElementById('modal-severity').className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'; document.getElementById('modal-severity').textContent = 'High Severity';">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              HAZ-0012
+            </h3>
+            <div class="flex items-center gap-2">
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-status-new text-white">New</span>
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">High
+                Severity</span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+            Equipment malfunction in Sector B. The belt is showing signs of
+            tearing and is making unusual grinding noises. This poses an
+            immediate risk to personnel working in the vicinity.
+          </p>
+          <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+            <span>Reported by John Doe</span>
+            <span>Oct 27, 2023</span>
+          </div>
+        </div>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 flex flex-col gap-2 border border-gray-200 dark:border-gray-700 cursor-pointer"
+          onclick="document.getElementById('hazard-detail-modal').classList.remove('hidden'); document.getElementById('modal-hazard-id').textContent = 'HAZ-0011'; document.getElementById('modal-hazard-description').textContent = 'Minor leak in hydraulic line.'; document.getElementById('modal-reporter').textContent = 'Jane Smith'; document.getElementById('modal-status').className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-status-progress text-gray-800'; document.getElementById('modal-status').textContent = 'In Progress'; document.getElementById('modal-severity').className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'; document.getElementById('modal-severity').textContent = 'Medium Severity';">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              HAZ-0011
+            </h3>
+            <div class="flex items-center gap-2">
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-status-progress text-gray-800">In
+                Progress</span>
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">Medium
+                Severity</span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+            Minor leak in hydraulic line near pump station 3. Requires
+            immediate attention to prevent further damage and potential
+            environmental impact.
+          </p>
+          <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+            <span>Reported by Jane Smith</span>
+            <span>Oct 26, 2023</span>
+          </div>
+        </div>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 flex flex-col gap-2 border border-gray-200 dark:border-gray-700 cursor-pointer"
+          onclick="document.getElementById('hazard-detail-modal').classList.remove('hidden'); document.getElementById('modal-hazard-id').textContent = 'HAZ-0010'; document.getElementById('modal-hazard-description').textContent = 'Trip hazard from loose cabling.'; document.getElementById('modal-reporter').textContent = 'Bob Williams'; document.getElementById('modal-status').className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-status-resolved text-white'; document.getElementById('modal-status').textContent = 'Resolved'; document.getElementById('modal-severity').className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'; document='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'; document.getElementById('modal-severity').textContent = 'Low Severity';">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              HAZ-0010
+            </h3>
+            <div class="flex items-center gap-2">
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-status-resolved text-white">Resolved</span>
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Low
+                Severity</span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+            Trip hazard from loose cabling in maintenance corridor. Cables
+            have been secured and area is now clear.
+          </p>
+          <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+            <span>Reported by Bob Williams</span>
+            <span>Oct 25, 2023</span>
+          </div>
+        </div>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 flex flex-col gap-2 border border-gray-200 dark:border-gray-700 cursor-pointer"
+          onclick="document.getElementById('hazard-detail-modal').classList.remove('hidden'); document.getElementById('modal-hazard-id').textContent = 'HAZ-0009'; document.getElementById('modal-hazard-description').textContent = 'Overhead crane showing signs of wear.'; document.getElementById('modal-reporter').textContent = 'Alice Johnson'; document.getElementById('modal-status').className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-status-progress text-gray-800'; document.getElementById('modal-status').textContent = 'In Progress'; document.getElementById('modal-severity').className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'; document.getElementById('modal-severity').textContent = 'Medium Severity';">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              HAZ-0009
+            </h3>
+            <div class="flex items-center gap-2">
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-status-progress text-gray-800">In
+                Progress</span>
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">Medium
+                Severity</span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+            Overhead crane showing signs of wear and tear, including minor
+            rust and creaking noises. Scheduled for inspection next week.
+          </p>
+          <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+            <span>Reported by Alice Johnson</span>
+            <span>Oct 24, 2023</span>
+          </div>
+        </div>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 flex flex-col gap-2 border border-gray-200 dark:border-gray-700 cursor-pointer"
+          onclick="document.getElementById('hazard-detail-modal').classList.remove('hidden'); document.getElementById('modal-hazard-id').textContent = 'HAZ-0008'; document.getElementById('modal-hazard-description').textContent = 'Slippery floor due to cleaning fluid.'; document.getElementById('modal-reporter').textContent = 'David Lee'; document.getElementById('modal-status').className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-status-resolved text-white'; document.getElementById('modal-status').textContent = 'Resolved'; document.getElementById('modal-severity').className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'; document.getElementById('modal-severity').textContent = 'Low Severity';">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              HAZ-0008
+            </h3>
+            <div class="flex items-center gap-2">
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-status-resolved text-white">Resolved</span>
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Low
+                Severity</span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+            Slippery floor due to cleaning fluid in the breakroom. Area has
+            been mopped dry and warning signs are in place.
+          </p>
+          <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+            <span>Reported by David Lee</span>
+            <span>Oct 23, 2023</span>
+          </div>
+        </div>
+      </div>
+    </main>
+    <div class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4" id="hazard-detail-modal">
+      <div
+        class="bg-background-light dark:bg-background-dark rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div
+          class="p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-background-light dark:bg-background-dark">
+          <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+              Hazard Details: <span id="modal-hazard-id"></span>
+            </h2>
+            <button class="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
+              onclick="document.getElementById('hazard-detail-modal').classList.add('hidden')">
+              <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+          </div>
+          <div class="flex items-center gap-4 mt-2">
+            <span id="modal-status"></span>
+            <span id="modal-severity"></span>
+          </div>
+        </div>
+        <div class="p-6 space-y-6">
+          <div>
+            <h3 class="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-2">
+              Full Hazard Description
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400" id="modal-hazard-description">
+              A critical malfunction has been observed with the main conveyor
+              belt in Sector B. The belt is showing signs of tearing and is
+              making unusual grinding noises. This poses an immediate risk to
+              personnel working in the vicinity and could lead to a major
+              operational shutdown if not addressed urgently.
+            </p>
+          </div>
+          <div>
+            <h3 class="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-2">
+              Reporter Information
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              <span id="modal-reporter">John Doe</span>, Sector B Supervisor
+            </p>
+            <p class="text-gray-600 dark:text-gray-400">
+              Reported on: October 27, 2023, 08:15 AM
+            </p>
+          </div>
+          <div>
+            <h3 class="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-2">
+              Attached Media
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <img class="rounded-lg w-full h-32 object-cover cursor-pointer" data-alt="Torn conveyor belt"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7OSMke4__h-5QvuYfuwcSYQl6tETUm3iN8GEoalGU-GyGWkOIG60nNjUYkn7nSI9SAHDMdx8gwMLs-2xJkMW35t9KwFcQEGYnh7XmIVJIhfdF3aC4X5kPjJsj0WJ2kiRIFCvNiVqgkeOW6YN5sXwq1OEweFK70bi9k0V5xbLgjVsgiCOjv4yNyocHfW2bjd4h9l_7Yh0ViaSx3Z8zRoq350ZyZYVQCma4cDXAM-Bi7cmLevP5rRI3DJ2GnpomBEP4IaLJ5mJiyCU" />
+              <div
+                class="rounded-lg w-full h-32 bg-gray-300 dark:bg-gray-700 flex items-center justify-center cursor-pointer">
+                <span class="material-symbols-outlined text-4xl text-gray-500">play_circle</span>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <h3 class="font-semibold text-lg text-gray-800 dark:text-gray-200">
+              Actions
+            </h3>
+            <div class="flex flex-wrap gap-4">
+              <button
+                class="flex-1 min-w-[150px] bg-primary text-white px-6 py-3 rounded-lg text-base font-medium hover:bg-primary/90 transition-colors">
+                Assign Task
+              </button>
+              <button
+                class="flex-1 min-w-[150px] bg-accent text-white px-6 py-3 rounded-lg text-base font-medium hover:bg-accent/90 transition-colors">
+                Update Status
+              </button>
+              <button
+                class="flex-1 min-w-[150px] bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-6 py-3 rounded-lg text-base font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                Send Message
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Dark mode toggle for demonstration
+    const htmlEl = document.documentElement;
+    // Set to dark mode by default for this example
+    // htmlEl.classList.add('dark');
+  </script>
+</body>
+
+</html>

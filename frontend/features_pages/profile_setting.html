@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Profile &amp; Settings</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700&amp;display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#FFBF00",
+            "background-light": "#f5f5f5",
+            "background-dark": "#333333",
+          },
+          fontFamily: {
+            "display": ["Public Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+  </style>
+  <style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display">
+  <div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+    <!-- Top App Bar -->
+    <div
+      class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
+      <div class="text-gray-800 dark:text-white flex size-12 shrink-0 items-center">
+        <span class="material-symbols-outlined text-2xl">arrow_back</span>
+      </div>
+      <h2 class="text-gray-800 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center"
+        data-translate-key="title">Profile &amp; Settings</h2>
+      <div class="flex size-12 shrink-0 items-center"></div>
+    </div>
+    <!-- Profile Header -->
+    <div class="flex p-4 @container">
+      <div class="flex w-full flex-col gap-4 items-center">
+        <div class="flex gap-4 flex-col items-center">
+          <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32"
+            data-alt="User's profile picture"
+            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCV-TFiTKLsbBsav0CYGfX49GoxWnvkegM579f4jJ5pbrhXMsddyR5v8AXM-qTqNrDw8WMZJlZxB3lSky3o5S7vOuhfTpDvZIZxYxCEGuQO86lIRCxgsjatY3WxGC_jDlJ2DAcAIhCqK0BOqP-9K5bZWKwCWy-TBuOnSubpiLCTixMG3PIaIoRUx5WvdsqIz0RPuj2cC8Ylp1XgkcJhygS5dcbGkVRb3SRpnP7U4QozJVT2WYTfGtiRHw57CojXLutxvkdOImPvPGI");'>
+          </div>
+          <div class="flex flex-col items-center justify-center">
+            <p
+              class="text-gray-800 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] text-center">
+              Alex Johnson</p>
+            <p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal text-center"
+              data-translate-key="role">Blaster</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Personal Information Section -->
+    <div class="px-4">
+      <h3 class="text-gray-800 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-2 pt-4"
+        data-translate-key="personal_info">Personal Information</h3>
+      <div class="flex flex-col bg-white dark:bg-[#444444] rounded-lg">
+        <div
+          class="flex items-center gap-4 px-4 min-h-14 justify-between border-b border-gray-200 dark:border-gray-600">
+          <div class="flex items-center gap-4">
+            <div
+              class="text-gray-800 dark:text-white flex items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700 shrink-0 size-10">
+              <span class="material-symbols-outlined text-2xl">badge</span>
+            </div>
+            <p class="text-gray-800 dark:text-white text-base font-normal leading-normal flex-1 truncate"
+              data-translate-key="employee_id">Employee ID</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal">54321</p>
+          </div>
+        </div>
+        <div
+          class="flex items-center gap-4 px-4 min-h-14 justify-between border-b border-gray-200 dark:border-gray-600">
+          <div class="flex items-center gap-4">
+            <div
+              class="text-gray-800 dark:text-white flex items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700 shrink-0 size-10">
+              <span class="material-symbols-outlined text-2xl">email</span>
+            </div>
+            <p class="text-gray-800 dark:text-white text-base font-normal leading-normal flex-1 truncate"
+              data-translate-key="email">Email</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal">alex.j@minecorp.com</p>
+            <span class="material-symbols-outlined text-gray-400 dark:text-gray-500 text-xl cursor-pointer">edit</span>
+          </div>
+        </div>
+        <div
+          class="flex items-center gap-4 px-4 min-h-14 justify-between border-b border-gray-200 dark:border-gray-600">
+          <div class="flex items-center gap-4">
+            <div
+              class="text-gray-800 dark:text-white flex items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700 shrink-0 size-10">
+              <span class="material-symbols-outlined text-2xl">phone</span>
+            </div>
+            <p class="text-gray-800 dark:text-white text-base font-normal leading-normal flex-1 truncate"
+              data-translate-key="phone">Phone</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal">(123) 456-7890</p>
+            <span class="material-symbols-outlined text-gray-400 dark:text-gray-500 text-xl cursor-pointer">edit</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 px-4 min-h-14 justify-between">
+          <div class="flex items-center gap-4">
+            <div
+              class="text-gray-800 dark:text-white flex items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700 shrink-0 size-10">
+              <span class="material-symbols-outlined text-2xl">contact_emergency</span>
+            </div>
+            <p class="text-gray-800 dark:text-white text-base font-normal leading-normal flex-1 truncate"
+              data-translate-key="emergency_contact">Emergency Contact</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal">(098) 765-4321</p>
+            <span class="material-symbols-outlined text-gray-400 dark:text-gray-500 text-xl cursor-pointer">edit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- App Preferences Section -->
+    <div class="px-4">
+      <h3 class="text-gray-800 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-2 pt-4"
+        data-translate-key="app_prefs">App Preferences</h3>
+      <div class="flex flex-col bg-white dark:bg-[#444444] rounded-lg">
+        <div
+          class="flex items-center gap-4 px-4 min-h-14 justify-between border-b border-gray-200 dark:border-gray-600">
+          <div class="flex items-center gap-4">
+            <div
+              class="text-gray-800 dark:text-white flex items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700 shrink-0 size-10">
+              <span class="material-symbols-outlined text-2xl">notifications</span>
+            </div>
+            <p class="text-gray-800 dark:text-white text-base font-normal leading-normal flex-1 truncate"
+              data-translate-key="notification_settings">Notification Settings</p>
+          </div>
+          <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+            <input checked=""
+              class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+              id="toggle" name="toggle" type="checkbox" />
+            <label
+              class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 dark:bg-gray-500 cursor-pointer"
+              for="toggle"></label>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 px-4 min-h-14 justify-between">
+          <div class="flex items-center gap-4">
+            <div
+              class="text-gray-800 dark:text-white flex items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700 shrink-0 size-10">
+              <span class="material-symbols-outlined text-2xl">language</span>
+            </div>
+            <p class="text-gray-800 dark:text-white text-base font-normal leading-normal flex-1 truncate"
+              data-translate-key="language">Language</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal"
+              data-translate-key="language_name">English</p>
+            <span
+              class="material-symbols-outlined text-gray-400 dark:text-gray-500 text-xl cursor-pointer">arrow_forward_ios</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Help & Support Section -->
+    <div class="px-4">
+      <h3 class="text-gray-800 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-2 pt-4"
+        data-translate-key="help_support">Help &amp; Support</h3>
+      <div class="flex flex-col bg-white dark:bg-[#444444] rounded-lg">
+        <div
+          class="flex items-center gap-4 px-4 min-h-14 justify-between border-b border-gray-200 dark:border-gray-600 cursor-pointer">
+          <div class="flex items-center gap-4">
+            <div
+              class="text-gray-800 dark:text-white flex items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700 shrink-0 size-10">
+              <span class="material-symbols-outlined text-2xl">help_center</span>
+            </div>
+            <p class="text-gray-800 dark:text-white text-base font-normal leading-normal flex-1 truncate"
+              data-translate-key="help_center">Help Center</p>
+          </div>
+          <span class="material-symbols-outlined text-gray-400 dark:text-gray-500 text-xl">arrow_forward_ios</span>
+        </div>
+        <div class="flex items-center gap-4 px-4 min-h-14 justify-between cursor-pointer">
+          <div class="flex items-center gap-4">
+            <div
+              class="text-gray-800 dark:text-white flex items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700 shrink-0 size-10">
+              <span class="material-symbols-outlined text-2xl">report</span>
+            </div>
+            <p class="text-gray-800 dark:text-white text-base font-normal leading-normal flex-1 truncate"
+              data-translate-key="report_problem">Report a Problem</p>
+          </div>
+          <span class="material-symbols-outlined text-gray-400 dark:text-gray-500 text-xl">arrow_forward_ios</span>
+        </div>
+      </div>
+    </div>
+    <!-- Account Management Section -->
+    <div class="p-4 mt-4">
+      <button
+        class="w-full bg-primary text-gray-800 font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined">logout</span>
+        <span data-translate-key="log_out">Log Out</span>
+      </button>
+    </div>
+  </div>
+  <style>
+    .toggle-checkbox:checked {
+      right: 0;
+      border-color: #FFBF00;
+    }
+
+    .toggle-checkbox:checked+.toggle-label {
+      background-color: #FFBF00;
+    }
+  </style>
+
+  <script>
+    // Back button functionality
+    document.querySelector('.text-gray-800.dark\\:text-white.flex.size-12').addEventListener('click', () => {
+      history.back();
+    });
+
+    // Notification toggle
+    const notificationToggle = document.querySelector('#toggle');
+    notificationToggle.addEventListener('change', (e) => {
+      alert('Notifications ' + (e.target.checked ? 'Enabled' : 'Disabled'));
+    });
+
+    // Save editable fields (Email, Phone, Emergency)
+    const editIcons = document.querySelectorAll('.material-symbols-outlined.cursor-pointer');
+    editIcons.forEach((icon) => {
+      icon.addEventListener('click', () => {
+        const parent = icon.closest('div.flex.items-center.justify-between');
+        const input = parent.querySelector('input');
+        if (input) {
+          alert(input.value + ' saved successfully!');
+        }
+      });
+    });
+
+    // Language selector
+    const languageSelect = document.querySelector('#languageSelect');
+    if (languageSelect) {
+      languageSelect.addEventListener('change', (e) => {
+        alert('Language changed to: ' + e.target.value);
+      });
+    }
+
+    // Log Out button
+    document.querySelector('button.bg-primary').addEventListener('click', () => {
+      alert('Logged out successfully!');
+      // Example redirect: window.location.href = '/login';
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const translations = {
+        title: { en: "Profile & Settings", hi: "प्रोफ़ाइल और सेटिंग्स" },
+        role: { en: "Blaster", hi: "ब्लास्टर" },
+        personal_info: { en: "Personal Information", hi: "व्यक्तिगत जानकारी" },
+        employee_id: { en: "Employee ID", hi: "कर्मचारी आईडी" },
+        email: { en: "Email", hi: "ईमेल" },
+        phone: { en: "Phone", hi: "फ़ोन" },
+        emergency_contact: { en: "Emergency Contact", hi: "आपातकालीन संपर्क" },
+        app_prefs: { en: "App Preferences", hi: "ऐप प्राथमिकताएं" },
+        notification_settings: { en: "Notification Settings", hi: "अधिसूचना सेटिंग्स" },
+        language: { en: "Language", hi: "भाषा" },
+        language_name: { en: "English", hi: "हिन्दी" },
+        help_support: { en: "Help & Support", hi: "सहायता और समर्थन" },
+        help_center: { en: "Help Center", hi: "सहायता केंद्र" },
+        report_problem: { en: "Report a Problem", hi: "समस्या की रिपोर्ट करें" },
+        log_out: { en: "Log Out", hi: "लॉग आउट" }
+      };
+
+      const currentLang = localStorage.getItem('lang') || 'en';
+
+      function applyLanguage(lang) {
+        document.documentElement.lang = lang;
+        document.querySelectorAll('[data-translate-key]').forEach(element => {
+          const key = element.getAttribute('data-translate-key');
+          if (translations[key] && translations[key][lang]) {
+            element.textContent = translations[key][lang];
+          }
+        });
+        // Update page title
+        const titleKey = 'title';
+        if (translations[titleKey] && translations[titleKey][lang]) {
+          document.title = translations[titleKey][lang];
+        }
+      }
+
+      applyLanguage(currentLang);
+    });
+  </script>
+
+</body>
+
+</html>

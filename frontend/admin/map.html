@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Hazard Map</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#117dd4",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101a22",
+          },
+          fontFamily: {
+            "display": ["Public Sans"]
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    #map {
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display">
+  <div id="map"></div>
+  <!-- Back Arrow Button -->
+  <div class="absolute top-4 right-4 z-[999]">
+    <button onclick="goBack()"
+      class="flex items-center justify-center size-10 rounded-full bg-background-dark/80 text-white shadow-lg hover:bg-background-dark transition">
+      <span class="material-symbols-outlined text-white text-2xl">arrow_back</span>
+    </button>
+  </div>
+
+
+  <script>
+    // --- Initialize the map ---
+    const map = L.map('map').setView([20.5937, 78.9629], 5); // Default India view
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // --- Sample hazard data ---
+    const hazards = [
+      { coords: [23.8103, 85.2799], title: "Gas Leak", id: "HZ-001", status: "High", color: "red" },
+      { coords: [22.5726, 88.3639], title: "Unstable Ground", id: "HZ-002", status: "Medium", color: "yellow" },
+      { coords: [19.0760, 72.8777], title: "Faulty Equipment", id: "HZ-003", status: "Low", color: "green" },
+      { coords: [25.5941, 85.1376], title: "Heat Stress", id: "HZ-004", status: "High", color: "red" },
+      { coords: [21.1702, 72.8311], title: "Minor Spill", id: "HZ-005", status: "Low", color: "green" }
+    ];
+
+    // --- Helper: Distance in km between two lat/lng ---
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371; // km
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    // --- Use browser geolocation ---
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        map.setView([lat, lon], 12);
+
+        // Show current location marker (blue)
+        L.circleMarker([lat, lon], {
+          radius: 10,
+          color: "blue",
+          fillColor: "blue",
+          fillOpacity: 0.6
+        }).addTo(map)
+          .bindPopup("<b>Your Current Location</b>");
+
+        // Filter hazards within 20 km
+        const nearby = hazards.filter(h => getDistance(lat, lon, h.coords[0], h.coords[1]) <= 20);
+
+        if (nearby.length === 0) {
+          L.popup()
+            .setLatLng([lat, lon])
+            .setContent("✅ No hazards found within 20 km.")
+            .openOn(map);
+        }
+
+        // Add hazard markers
+        nearby.forEach(h => {
+          const marker = L.circleMarker(h.coords, {
+            radius: 10,
+            color: h.color,
+            fillColor: h.color,
+            fillOpacity: 0.7
+          }).addTo(map);
+
+          marker.bindPopup(`
+            <div class="rounded-lg bg-background-dark/90 p-3 text-white shadow-lg">
+              <h3 class="font-bold text-${h.color}-500">${h.title}</h3>
+              <p class="text-sm">ID: ${h.id}</p>
+              <p class="text-sm">Severity: ${h.status}</p>
+              <a class="text-primary mt-1 inline-block text-sm" href="#">View Details</a>
+            </div>
+          `);
+        });
+
+      }, err => {
+        alert("Location access denied. Showing default map view.");
+        addAllHazards(); // fallback
+      });
+    } else {
+      alert("Geolocation not supported.");
+      addAllHazards();
+    }
+
+    // --- Fallback: show all hazards if location not available ---
+    function addAllHazards() {
+      hazards.forEach(h => {
+        const marker = L.circleMarker(h.coords, {
+          radius: 10,
+          color: h.color,
+          fillColor: h.color,
+          fillOpacity: 0.7
+        }).addTo(map);
+        marker.bindPopup(`
+          <div class="rounded-lg bg-background-dark/90 p-3 text-white shadow-lg">
+            <h3 class="font-bold text-${h.color}-500">${h.title}</h3>
+            <p class="text-sm">ID: ${h.id}</p>
+            <p class="text-sm">Severity: ${h.status}</p>
+            <a class="text-primary mt-1 inline-block text-sm" href="#">View Details</a>
+          </div>
+        `);
+      });
+    }
+
+    function goBack() {
+      // Navigate to previous page or dashboard
+      window.history.back(); // You can replace this with a specific link if needed
+    }
+
+  </script>
+</body>
+
+</html>
