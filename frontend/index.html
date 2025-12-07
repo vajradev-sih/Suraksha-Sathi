@@ -29,12 +29,199 @@
   <style>
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      cursor: pointer;
-      /* Make visibility icon clickable */
     }
 
     body {
       min-height: max(884px, 100dvh);
+    }
+
+    /* Hide browser's default password reveal button */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+      display: none;
+    }
+
+    input[type="password"]::-webkit-contacts-auto-fill-button,
+    input[type="password"]::-webkit-credentials-auto-fill-button {
+      visibility: hidden;
+      pointer-events: none;
+      position: absolute;
+      right: 0;
+    }
+
+    /* Fade in animation */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes popUp {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-100%) scale(0.8);
+      }
+
+      70% {
+        transform: translateX(-50%) translateY(0) scale(1.05);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* Only animate on first load */
+    body:not(.loaded) .animate-fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+      opacity: 0;
+    }
+
+    body:not(.loaded) .animate-slide-in {
+      animation: slideIn 0.6s ease-out forwards;
+      opacity: 0;
+    }
+
+    body:not(.loaded) .animate-scale-in {
+      animation: scaleIn 0.7s ease-out forwards;
+      opacity: 0;
+    }
+
+    body:not(.loaded) .form-field {
+      animation: slideIn 0.5s ease-out forwards;
+      opacity: 0;
+    }
+
+    body:not(.loaded) .form-field:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    body:not(.loaded) .form-field:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    body:not(.loaded) .form-field:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    body:not(.loaded) .form-field:nth-child(4) {
+      animation-delay: 0.4s;
+    }
+
+    body:not(.loaded) .form-field:nth-child(5) {
+      animation-delay: 0.5s;
+    }
+
+    body:not(.loaded) .form-field:nth-child(6) {
+      animation-delay: 0.6s;
+    }
+
+    /* Already loaded - show immediately */
+    body.loaded .animate-fade-in,
+    body.loaded .animate-slide-in,
+    body.loaded .animate-scale-in,
+    body.loaded .form-field {
+      opacity: 1;
+    }
+
+    /* Toast notification styles */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 16px 24px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      z-index: 10000;
+      animation: popUp 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      max-width: 400px;
+      min-width: 300px;
+      text-align: center;
+    }
+
+    .toast.success {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .toast.error {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .toast.info {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+
+    /* Logo pulse animation - only on first load */
+    @keyframes pulse {
+      0% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    body:not(.loaded) .logo-placeholder {
+      animation: pulse 1s ease-out forwards;
+      opacity: 0;
+    }
+
+    body.loaded .logo-placeholder {
+      opacity: 1;
     }
   </style>
 </head>
@@ -46,97 +233,125 @@
     <div class="flex flex-col items-center justify-center min-h-screen p-4">
       <div class="w-full max-w-sm">
 
-        <h1 class="text-white tracking-light text-[32px] font-bold leading-tight px-4 text-center pb-8 pt-6">
+        <!-- Logo Placeholder -->
+        <div class="flex justify-center mb-8 logo-placeholder">
+          <div
+            class="w-32 h-32 bg-gradient-to-br from-primary to-yellow-200 rounded-2xl flex items-center justify-center shadow-2xl">
+            <img src="mine logo.png" alt="MSA Logo" class="w-32 h-32 rounded-2xl" />
+          </div>
+        </div>
+
+        <h1 class="text-white tracking-light text-[32px] font-bold leading-tight px-4 text-center pb-8 animate-fade-in">
           Mine Safety App
         </h1>
 
-        <div class="w-full max-w-sm mb-6">
+        <!-- Login/Signup Toggle -->
+        <div class="w-full max-w-sm mb-6 animate-scale-in">
           <div class="flex rounded-lg bg-[#233748] p-1 justify-center space-x-1">
-            <button
-              class="flex-1 rounded-md py-2 px-4 text-white text-center transition-all duration-200 user-login-btn bg-primary text-background-dark">
-              User Login
+            <button type="button" id="loginTab"
+              class="flex-1 rounded-md py-2 px-4 text-white text-center transition-all duration-300 bg-primary text-background-dark">
+              Login
             </button>
-            <button
-              class="flex-1 rounded-md py-2 px-4 text-white text-center transition-all duration-200 admin-login-btn">
-              Admin Login
+            <button type="button" id="signupTab"
+              class="flex-1 rounded-md py-2 px-4 text-white text-center transition-all duration-300">
+              Sign Up
             </button>
           </div>
         </div>
 
-        <form class="user-login-form" id="userLoginForm">
-          <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+        <!-- Combined Auth Form -->
+        <form id="authForm" class="animate-slide-in">
+          <!-- Email Field (always visible) -->
+          <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3 form-field">
             <label class="flex flex-col min-w-40 flex-1">
               <p class="text-white text-base font-medium leading-normal pb-2">Email</p>
-              <input id="user-email" type="email" required
-                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-[#233748] focus:border-none h-14 placeholder:text-[#92b0c9] p-4 text-base font-normal leading-normal"
+              <input id="auth-email" type="email" required
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-[#233748] focus:border-none h-14 placeholder:text-[#92b0c9] p-4 text-base font-normal leading-normal transition-all duration-300"
                 placeholder="Enter your email" />
             </label>
           </div>
-          <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+
+          <!-- Signup-only Fields -->
+          <div id="signupFields" class="hidden">
+            <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3 form-field">
+              <label class="flex flex-col min-w-40 flex-1">
+                <p class="text-white text-base font-medium leading-normal pb-2">Full Name</p>
+                <input id="auth-fullname" type="text"
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-[#233748] focus:border-none h-14 placeholder:text-[#92b0c9] p-4 text-base font-normal leading-normal transition-all duration-300"
+                  placeholder="Enter your full name" />
+              </label>
+            </div>
+            <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3 form-field">
+              <label class="flex flex-col min-w-40 flex-1">
+                <p class="text-white text-base font-medium leading-normal pb-2">Username</p>
+                <input id="auth-username" type="text"
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-[#233748] focus:border-none h-14 placeholder:text-[#92b0c9] p-4 text-base font-normal leading-normal transition-all duration-300"
+                  placeholder="Choose a username" />
+              </label>
+            </div>
+            <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3 form-field">
+              <label class="flex flex-col min-w-40 flex-1">
+                <p class="text-white text-base font-medium leading-normal pb-2">Phone</p>
+                <input id="auth-phone" type="tel"
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-[#233748] focus:border-none h-14 placeholder:text-[#92b0c9] p-4 text-base font-normal leading-normal transition-all duration-300"
+                  placeholder="Enter your phone number" />
+              </label>
+            </div>
+          </div>
+
+          <!-- Password Field -->
+          <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3 form-field">
             <label class="flex flex-col min-w-40 flex-1">
               <p class="text-white text-base font-medium leading-normal pb-2">Password</p>
-              <div class="flex w-full flex-1 items-stretch rounded-lg">
-                <input id="user-password" type="password" required
-                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-[#233748] focus:border-none h-14 placeholder:text-[#92b0c9] p-4 rounded-r-none border-r-0 pr-2 text-base font-normal leading-normal"
+              <div class="flex w-full flex-1 items-stretch rounded-lg h-14">
+                <input id="auth-password" type="password" required
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden text-white focus:outline-0 focus:ring-0 border-none bg-[#233748] focus:border-none placeholder:text-[#92b0c9] p-4 rounded-lg text-base font-normal leading-normal transition-all duration-300"
                   placeholder="Enter your password" />
-                <div
-                  class="text-[#92b0c9] flex border-none bg-[#233748] items-center justify-center pr-4 rounded-r-lg border-l-0">
-                  <span class="material-symbols-outlined visibility-toggle">visibility</span>
-                </div>
+                <button type="button"
+                  class="absolute right-8 mt-4 text-[#92b0c9] hover:text-white transition-colors duration-200 visibility-toggle"
+                  data-target="auth-password">
+                  <span class="material-symbols-outlined mr-10">visibility</span>
+                </button>
               </div>
             </label>
           </div>
-          <div class="flex items-center justify-between px-4 mt-4">
-            <div class="flex items-center gap-2">
-              <input
-                class="h-5 w-5 rounded border-[#324f67] border-2 bg-transparent text-primary checked:bg-primary checked:border-primary focus:ring-0 focus:ring-offset-0 focus:border-[#324f67] focus:outline-none"
-                id="remember-me" type="checkbox" />
-              <label class="text-white text-base font-normal leading-normal" for="remember-me">Remember me</label>
-            </div>
-            <a class="text-primary text-base font-medium leading-normal" href="#">Forgot Password?</a>
-          </div>
-          <div class="px-4 py-8">
-            <button type="submit"
-              class="w-full bg-primary text-background-dark font-bold text-lg rounded-lg h-14 flex items-center justify-center transition-transform duration-200 hover:scale-105">
-              Login
-            </button>
-            <div class="text-center mt-6">
-              <p class="text-white text-sm">Don't have an account?</p>
-              <button type="button" onclick="showCreateAccount()"
-                class="text-primary text-base font-medium mt-2 hover:underline">Create New Account</button>
-            </div>
-          </div>
-        </form>
 
-        <form class="hidden admin-login-form" id="adminLoginForm">
-          <h1 class="text-white tracking-light text-[32px] font-bold leading-tight px-4 text-center pb-8 pt-6">
-            Admin Login</h1>
-          <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+          <!-- Confirm Password (Signup only) -->
+          <div id="confirmPasswordField"
+            class="hidden flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3 form-field">
             <label class="flex flex-col min-w-40 flex-1">
-              <p class="text-white text-base font-medium leading-normal pb-2">Admin Email</p>
-              <input id="admin-email" type="email" required
-                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-[#233748] focus:border-none h-14 placeholder:text-[#92b0c9] p-4 text-base font-normal leading-normal"
-                placeholder="Enter admin email" />
-            </label>
-          </div>
-          <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
-            <label class="flex flex-col min-w-40 flex-1">
-              <p class="text-white text-base font-medium leading-normal pb-2">Admin Password</p>
-              <div class="flex w-full flex-1 items-stretch rounded-lg">
-                <input id="admin-password" type="password" required
-                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-[#233748] focus:border-none h-14 placeholder:text-[#92b0c9] p-4 rounded-r-none border-r-0 pr-2 text-base font-normal leading-normal"
-                  placeholder="Enter admin password" />
-                <div
-                  class="text-[#92b0c9] flex border-none bg-[#233748] items-center justify-center pr-4 rounded-r-lg border-l-0">
-                  <span class="material-symbols-outlined visibility-toggle">visibility</span>
-                </div>
+              <p class="text-white text-base font-medium leading-normal pb-2">Confirm Password</p>
+              <div class="flex w-full flex-1 items-stretch rounded-lg h-14">
+                <input id="auth-confirm-password" type="password"
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden text-white focus:outline-0 focus:ring-0 border-none bg-[#233748] focus:border-none placeholder:text-[#92b0c9] p-4 rounded-lg text-base font-normal leading-normal transition-all duration-300"
+                  placeholder="Confirm your password" />
+                <button type="button"
+                  class="absolute right-8 mt-4 text-[#92b0c9] hover:text-white transition-colors duration-200 visibility-toggle"
+                  data-target="auth-confirm-password">
+                  <span class="material-symbols-outlined mr-10">visibility</span>
+                </button>
               </div>
             </label>
           </div>
+
+          <!-- Remember Me & Forgot Password (Login only) -->
+          <div id="loginExtras" class="flex items-center justify-center px-4 mt-4">
+            <a class="text-primary text-base font-medium leading-normal hover:underline transition-all duration-200"
+              href="#">Forgot Password?</a>
+          </div>
+
+          <!-- Submit Button -->
           <div class="px-4 py-8">
-            <button type="submit"
-              class="w-full bg-primary text-background-dark font-bold text-lg rounded-lg h-14 flex items-center justify-center transition-transform duration-200 hover:scale-105">
-              Admin Login
+            <button type="submit" id="submitBtn"
+              class="w-full bg-primary text-background-dark font-bold text-lg rounded-lg h-14 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+              <span id="submitBtnText">Login</span>
+              <svg id="submitBtnLoader" class="hidden animate-spin ml-2 h-5 w-5 text-background-dark"
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
             </button>
           </div>
         </form>
@@ -145,189 +360,180 @@
     </div>
   </div>
 
-  <div id="createAccountModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-[#111a22] rounded-xl p-6 w-full max-w-md mx-4">
-      <h2 class="text-white text-2xl font-bold mb-6">Create New Account</h2>
-      <form id="registerForm" class="space-y-4">
-        <div>
-          <label class="text-white text-sm font-medium block mb-2" for="register-fullname">Full Name</label>
-          <input type="text" id="register-fullname" required
-            class="w-full bg-[#233748] rounded-lg text-white p-3 focus:outline-none" placeholder="Enter your full name">
-        </div>
-        <div>
-          <label class="text-white text-sm font-medium block mb-2" for="register-username">Username</label>
-          <input type="text" id="register-username" required
-            class="w-full bg-[#233748] rounded-lg text-white p-3 focus:outline-none" placeholder="Enter your username">
-        </div>
-        <div>
-          <label class="text-white text-sm font-medium block mb-2" for="register-email">Email</label>
-          <input type="email" id="register-email" required
-            class="w-full bg-[#233748] rounded-lg text-white p-3 focus:outline-none" placeholder="Enter your email">
-        </div>
-        <div>
-          <label class="text-white text-sm font-medium block mb-2" for="register-phone">Phone</label>
-          <input type="tel" id="register-phone" required
-            class="w-full bg-[#233748] rounded-lg text-white p-3 focus:outline-none"
-            placeholder="Enter your phone number">
-        </div>
-        <div>
-          <label class="text-white text-sm font-medium block mb-2" for="register-password">Password</label>
-          <input type="password" id="register-password" required
-            class="w-full bg-[#233748] rounded-lg text-white p-3 focus:outline-none" placeholder="Create a password">
-        </div>
-        <div>
-          <label class="text-white text-sm font-medium block mb-2" for="register-confirm-password">Confirm
-            Password</label>
-          <input type="password" id="register-confirm-password" required
-            class="w-full bg-[#233748] rounded-lg text-white p-3 focus:outline-none"
-            placeholder="Confirm your password">
-        </div>
-        <div class="flex justify-end space-x-4 mt-6">
-          <button type="button" onclick="hideCreateAccount()"
-            class="px-6 py-2 rounded-lg text-white bg-[#233748] hover:bg-[#2c4459]">Cancel</button>
-          <button type="submit"
-            class="px-6 py-2 rounded-lg bg-primary text-background-dark font-medium hover:scale-105 transition-transform">Create
-            Account</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <script src="api.client.js"></script>
 
   <script>
-    // Toggle between User and Admin login
-    const userLoginBtn = document.querySelector('.user-login-btn');
-    const adminLoginBtn = document.querySelector('.admin-login-btn');
-    const userLoginForm = document.querySelector('.user-login-form');
-    const adminLoginForm = document.querySelector('.admin-login-form');
-
-    userLoginBtn.addEventListener('click', () => {
-      userLoginBtn.classList.add('bg-primary', 'text-background-dark');
-      adminLoginBtn.classList.remove('bg-primary', 'text-background-dark');
-      userLoginForm.classList.remove('hidden');
-      adminLoginForm.classList.add('hidden');
-    });
-
-    adminLoginBtn.addEventListener('click', () => {
-      adminLoginBtn.classList.add('bg-primary', 'text-background-dark');
-      userLoginBtn.classList.remove('bg-primary', 'text-background-dark');
-      adminLoginForm.classList.remove('hidden');
-      userLoginForm.classList.add('hidden');
-    });
-
-    // Create Account Modal Functions
-    function showCreateAccount() {
-      const modal = document.getElementById('createAccountModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+    // Mark page as loaded after animations complete
+    const hasVisited = sessionStorage.getItem('hasVisited');
+    if (hasVisited) {
+      document.body.classList.add('loaded');
+    } else {
+      sessionStorage.setItem('hasVisited', 'true');
+      // Add loaded class after animations complete
+      setTimeout(() => {
+        document.body.classList.add('loaded');
+      }, 1200);
     }
 
-    function hideCreateAccount() {
-      const modal = document.getElementById('createAccountModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+    // Toast notification function
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        toast.style.transition = 'all 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
     }
 
-    // Close modal when clicking outside
-    document.getElementById('createAccountModal').addEventListener('click', (e) => {
-      if (e.target.id === 'createAccountModal') {
-        hideCreateAccount();
-      }
+    // Toggle between Login and Signup
+    const loginTab = document.getElementById('loginTab');
+    const signupTab = document.getElementById('signupTab');
+    const signupFields = document.getElementById('signupFields');
+    const confirmPasswordField = document.getElementById('confirmPasswordField');
+    const loginExtras = document.getElementById('loginExtras');
+    const submitBtnText = document.getElementById('submitBtnText');
+    const authForm = document.getElementById('authForm');
+
+    let isLoginMode = true;
+
+    loginTab.addEventListener('click', () => {
+      isLoginMode = true;
+      loginTab.classList.add('bg-primary', 'text-background-dark');
+      signupTab.classList.remove('bg-primary', 'text-background-dark');
+      signupFields.classList.add('hidden');
+      confirmPasswordField.classList.add('hidden');
+      loginExtras.classList.remove('hidden');
+      submitBtnText.textContent = 'Login';
+
+      // Clear signup-only fields
+      document.getElementById('auth-fullname').value = '';
+      document.getElementById('auth-username').value = '';
+      document.getElementById('auth-phone').value = '';
+      document.getElementById('auth-confirm-password').value = '';
+
+      // Remove required from signup fields
+      document.getElementById('auth-fullname').removeAttribute('required');
+      document.getElementById('auth-username').removeAttribute('required');
+      document.getElementById('auth-phone').removeAttribute('required');
+      document.getElementById('auth-confirm-password').removeAttribute('required');
     });
 
-    // --- API Integration Logic ---
-    document.addEventListener("DOMContentLoaded", () => {
-      // Handle User Login
-      const userForm = document.getElementById("userLoginForm");
-      userForm.addEventListener("submit", async (e) => {
+    signupTab.addEventListener('click', () => {
+      isLoginMode = false;
+      signupTab.classList.add('bg-primary', 'text-background-dark');
+      loginTab.classList.remove('bg-primary', 'text-background-dark');
+      signupFields.classList.remove('hidden');
+      confirmPasswordField.classList.remove('hidden');
+      loginExtras.classList.add('hidden');
+      submitBtnText.textContent = 'Create Account';
+
+      // Add required to signup fields
+      document.getElementById('auth-fullname').setAttribute('required', 'required');
+      document.getElementById('auth-username').setAttribute('required', 'required');
+      document.getElementById('auth-phone').setAttribute('required', 'required');
+      document.getElementById('auth-confirm-password').setAttribute('required', 'required');
+    });
+
+    // Password visibility toggle
+    document.querySelectorAll('.visibility-toggle').forEach(toggle => {
+      toggle.addEventListener('click', (e) => {
         e.preventDefault();
-        const email = document.getElementById("user-email").value;
-        const password = document.getElementById("user-password").value;
+        const targetId = toggle.getAttribute('data-target');
+        const passwordInput = document.getElementById(targetId);
+        const icon = toggle.querySelector('.material-symbols-outlined');
 
-        try {
+        if (passwordInput.type === 'password') {
+          passwordInput.type = 'text';
+          icon.textContent = 'visibility_off';
+        } else {
+          passwordInput.type = 'password';
+          icon.textContent = 'visibility';
+        }
+      });
+    });
+
+    // Handle form submission
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById('submitBtn');
+      const submitBtnText = document.getElementById('submitBtnText');
+      const submitBtnLoader = document.getElementById('submitBtnLoader');
+
+      // Disable button and show loader
+      submitBtn.disabled = true;
+      submitBtnText.classList.add('hidden');
+      submitBtnLoader.classList.remove('hidden');
+
+      const email = document.getElementById('auth-email').value;
+      const password = document.getElementById('auth-password').value;
+
+      try {
+        if (isLoginMode) {
+          // Login logic
           const response = await authAPI.login({ email, password });
           console.log("Login successful:", response);
-          // On success, store token and user info, then redirect
+
           localStorage.setItem("token", response.data.accessToken);
           localStorage.setItem("user", JSON.stringify(response.data.user));
-          window.location.href = "/features_pages/updated-home-page.html"; // Redirect to the user dashboard
-        } catch (error) {
-          alert("Login failed: " + error.message);
-        }
-      });
 
-      // Handle Admin Login (assuming it uses the same login endpoint)
-      const adminForm = document.getElementById("adminLoginForm");
-      adminForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const email = document.getElementById("admin-email").value;
-        const password = document.getElementById("admin-password").value;
+          showToast('Login successful! Redirecting...', 'success');
 
-        try {
-          const response = await authAPI.login({ email, password });
-          console.log("Admin login successful:", response);
-          localStorage.setItem("token", response.data.accessToken);
-          localStorage.setItem("user", JSON.stringify(response.data.user));
-          window.location.href = "admin/admin-home.html"; // Redirect to the admin dashboard
-        } catch (error) {
-          alert("Admin login failed: " + error.message);
-        }
-      });
+          setTimeout(() => {
+            window.location.href = "/features_pages/updated-home-page.html";
+          }, 1500);
 
-      // Handle New User Registration
-      const registerForm = document.getElementById("registerForm");
-      registerForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const fullName = document.getElementById("register-fullname").value;
-        const username = document.getElementById("register-username").value;
-        const email = document.getElementById("register-email").value;
-        const phone = document.getElementById("register-phone").value;
-        const password = document.getElementById("register-password").value;
-        const confirmPassword = document.getElementById("register-confirm-password").value;
+        } else {
+          // Signup logic
+          const fullName = document.getElementById('auth-fullname').value;
+          const username = document.getElementById('auth-username').value;
+          const phone = document.getElementById('auth-phone').value;
+          const confirmPassword = document.getElementById('auth-confirm-password').value;
 
-        if (password !== confirmPassword) {
-          alert("Passwords do not match!");
-          return;
-        }
+          if (password !== confirmPassword) {
+            showToast('Passwords do not match!', 'error');
+            submitBtn.disabled = false;
+            submitBtnText.classList.remove('hidden');
+            submitBtnLoader.classList.add('hidden');
+            return;
+          }
 
-        const data = {
-          userName: username,
-          fullName: fullName,
-          email: email,
-          phone: phone,
-          language_pref: "en", // Default value
-          password: password
-        };
+          const data = {
+            userName: username,
+            fullName: fullName,
+            email: email,
+            phone: phone,
+            language_pref: "en",
+            password: password
+          };
 
-        try {
           const response = await authAPI.register(data);
           console.log("Registration successful:", response);
-          alert("Account created successfully! Please log in.");
-          hideCreateAccount();
-        } catch (error) {
-          alert("Registration failed: " + error.message);
-        }
-      });
 
-      // NEW: Password Visibility Toggle
-      const visibilityToggles = document.querySelectorAll(".visibility-toggle");
-      visibilityToggles.forEach(toggle => {
-        toggle.addEventListener("click", () => {
-          const passwordInput = toggle.parentElement.previousElementSibling;
-          if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            toggle.textContent = "visibility_off";
-          } else {
-            passwordInput.type = "password";
-            toggle.textContent = "visibility";
-          }
-        });
-      });
+          showToast('Account created successfully! Please log in.', 'success');
+
+          // Switch to login mode and clear form
+          setTimeout(() => {
+            loginTab.click();
+            authForm.reset();
+          }, 2000);
+        }
+
+      } catch (error) {
+        console.error("Auth error:", error);
+        showToast(error.message || `${isLoginMode ? 'Login' : 'Registration'} failed. Please try again.`, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtnText.classList.remove('hidden');
+        submitBtnLoader.classList.add('hidden');
+      }
     });
   </script>
-
-
 
   <!-- =======================
      Loader Section
@@ -416,9 +622,17 @@
   <script>
     function loaderAnimation() {
       const loader = document.querySelector("#loader");
-      setTimeout(() => {
-        loader.style.top = "-100%";
-      }, 4200);
+      const hasSeenLoader = sessionStorage.getItem('hasSeenLoader');
+
+      if (hasSeenLoader) {
+        // Skip loader if already seen in this session
+        loader.style.display = 'none';
+      } else {
+        sessionStorage.setItem('hasSeenLoader', 'true');
+        setTimeout(() => {
+          loader.style.top = "-100%";
+        }, 4200);
+      }
     }
     window.addEventListener("load", loaderAnimation);
   </script>

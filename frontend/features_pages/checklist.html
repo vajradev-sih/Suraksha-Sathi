@@ -59,8 +59,8 @@
         <button id="backBtn" class="text-white"><span class="material-symbols-rounded">arrow_back</span></button>
       </div>
       <div class="flex-1 flex justify-center">
-        <h1 id="checklist-title" class="text-lg text-center sm:text-xl font-[Orbitron] tracking-widest text-white">
-          Checklist</h1>
+        <h1 id="checklist-title" class="text-lg text-center sm:text-xl font-[Orbitron] tracking-widest text-white" data-translate-key="checklist_page_title">
+          Pre-Shift Vehicle Inspection</h1>
       </div>
       <div class="flex w-12 items-center justify-end">
         <button id="historyBtn" class="text-white"><span class="material-symbols-rounded">history</span></button>
@@ -69,7 +69,7 @@
 
     <div class="flex flex-col gap-3 p-4">
       <div class="flex justify-between items-center">
-        <p class="text-gray-600 text-sm font-normal">Overall Progress</p>
+        <p class="text-gray-600 text-sm font-normal" data-translate-key="overall_progress">Overall Progress</p>
         <p id="overallProgressText" class="text-gray-800 text-sm font-bold">0% completed</p>
       </div>
       <div class="rounded-full bg-gray-200">
@@ -78,7 +78,7 @@
     </div>
 
     <div id="checklistContainer" class="px-4 flex-grow bg-white mx-4 rounded-xl shadow-sm overflow-hidden">
-      <div class="text-center py-10 text-gray-500">Loading checklist...</div>
+      <div class="text-center py-10 text-gray-500" data-translate-key="loading_checklist">Loading checklist...</div>
     </div>
 
     <div
@@ -86,10 +86,10 @@
       <button id="addNoteBtn"
         class="flex w-full items-center justify-center rounded-lg h-10 px-4 bg-blue-600 text-white gap-2 hover:bg-blue-700 transition-colors">
         <span class="material-symbols-outlined text-xl">add_comment</span>
-        <span>Add Note</span>
+        <span data-translate-key="add_note_btn">Add Note</span>
       </button>
       <button id="submitBtn"
-        class="w-full rounded-lg h-12 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors">
+        class="w-full rounded-lg h-12 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors" data-translate-key="submit_report_btn">
         Submit Report
       </button>
     </div>
@@ -131,6 +131,7 @@
   </div>
 
   <script src="../api.client.js"></script>
+  <script src="language-toggle.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // --- 1. AUTHENTICATION & ELEMENT SELECTION ---
@@ -167,49 +168,10 @@
       const noteText = document.getElementById("noteText");
       
       let currentChecklistId = null;
-      let translations = {};
-      let currentLang = localStorage.getItem('lang') || 'en';
       // Add notes array to store the notes
       let checklistNotes = [];
 
-      // --- 3. TRANSLATIONS ---
-      translations = {
-        title: { en: "Pre-Shift Vehicle Inspection", hi: "प्री-शिफ्ट वाहन निरीक्षण" },
-        daily_completion: { en: "Daily Completion", hi: "दैनिक समापन" },
-        compliance_streak: { en: "Your compliance streak this week.", hi: "इस सप्ताह आपकी अनुपालन श्रृंखला।" },
-        overall_progress: { en: "Overall Progress", hi: "समग्र प्रगति" },
-        percent_completed: { en: "{percent}% completed", hi: "{percent}% पूरा हुआ" },
-        days_completed: { en: "{checked}/{total} Days", hi: "{checked}/{total} दिन" },
-        task_tire: { en: "Check tire pressure", hi: "टायर दबाव की जाँच करें" },
-        task_hydraulic: { en: "Inspect hydraulic lines for leaks", hi: "रिसाव के लिए हाइड्रोलिक लाइनों का निरीक्षण करें" },
-        task_comms: { en: "Verify communication equipment", hi: "संचार उपकरण सत्यापित करें" },
-        task_fluids: { en: "Check fluid levels (oil, coolant, etc.)", hi: "द्रव स्तर की जाँच करें (तेल, शीतलक, आदि)" },
-        task_lights: { en: "Inspect lights and signals", hi: "रोशनी और संकेतों का निरीक्षण करें" },
-        task_brakes: { en: "Test braking system", hi: "ब्रेकिंग सिस्टम का परीक्षण करें" },
-        add_note: { en: "Add Note", hi: "नोट जोड़ें" },
-        submit_report: { en: "Submit Report", hi: "रिपोर्ट सबमिट करें" },
-        past_inspections: { en: "Past Inspections", hi: "पिछले निरीक्षण" },
-        add_note_modal: { en: "Add Note", hi: "नोट जोड़ें" },
-        cancel_button: { en: "Cancel", hi: "रद्द करें" },
-        save_button: { en: "Save", hi: "सहेजें" }
-      };
-
       // --- 4. FUNCTIONS ---
-      function applyLanguage(lang) {
-        document.documentElement.lang = lang;
-        document.querySelectorAll('[data-translate-key]').forEach(element => {
-          const key = element.getAttribute('data-translate-key');
-          if (translations[key] && translations[key][lang]) {
-            element.textContent = translations[key][lang];
-          }
-        });
-        const titleKey = 'title';
-        if (translations[titleKey] && translations[titleKey][lang]) {
-          document.title = translations[titleKey][lang];
-        }
-        updateProgress(); // Update dynamic text with translations
-      }
-
       const renderChecklistItems = (items) => {
         checklistContainer.innerHTML = ""; // Clear loader
         if (!items || items.length === 0) {
@@ -250,10 +212,11 @@
 
         overallProgressBar.style.width = `${percent}%`;
         
-        const completedText = translations.percent_completed && translations.percent_completed[currentLang]
-          ? translations.percent_completed[currentLang].replace('{percent}', percent)
-          : `${percent}% completed`;
-        overallProgressText.textContent = completedText;
+        const currentLang = window.getCurrentLanguage ? window.getCurrentLanguage() : 'en';
+        const completedTemplate = window.translations && window.translations.percent_completed 
+            ? window.translations.percent_completed[currentLang] 
+            : "{percent}% completed";
+        overallProgressText.textContent = completedTemplate.replace('{percent}', percent);
       };
 
       const updateChecklistItemStatus = async (itemId, isChecked) => {

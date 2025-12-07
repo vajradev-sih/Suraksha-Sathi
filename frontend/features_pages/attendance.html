@@ -38,7 +38,7 @@
                 </a>
             </div>
             <div class="flex-1 flex justify-center">
-                <h1 class="text-2xl sm:text-3xl font-[Orbitron] tracking-widest text-white">
+                <h1 class="text-2xl sm:text-3xl font-[Orbitron] tracking-widest text-white" data-translate-key="attendance_page_title">
                     Attendance
                 </h1>
             </div>
@@ -53,16 +53,16 @@
         <main class="px-4 pt-6 space-y-6">
 
             <div class="bg-white rounded-2xl p-4 shadow-card border border-neutral-200">
-                <h2 class="text-lg font-bold text-neutral-800 mb-3">Mark Today's Attendance</h2>
-                <p id="attendance-subtext" class="text-sm text-neutral-500 mb-4">Tap the button below to mark your
+                <h2 class="text-lg font-bold text-neutral-800 mb-3" data-translate-key="mark_today_attendance">Mark Today's Attendance</h2>
+                <p id="attendance-subtext" class="text-sm text-neutral-500 mb-4" data-translate-key="mark_attendance_subtext">Tap the button below to mark your
                     presence. Your current location will be recorded for verification.</p>
                 <button id="mark-presence-btn"
                     class="w-full bg-primary text-white p-4 rounded-xl font-bold text-base shadow-md hover:bg-primary-dark flex items-center justify-center gap-2 transition-all">
                     <span class="material-symbols-rounded">location_on</span>
-                    <span>Mark Presence</span>
+                    <span data-translate-key="mark_presence_button">Mark Presence</span>
                 </button>
                 <div id="loader" class="hidden text-center p-4">
-                    <p class="text-primary animate-pulse">Fetching your location...</p>
+                    <p class="text-primary animate-pulse" data-translate-key="fetching_location">Fetching your location...</p>
                 </div>
             </div>
 
@@ -70,38 +70,38 @@
                 style="display: none;">
                 <h3 class="text-lg font-bold text-neutral-800 mb-3 flex items-center gap-2">
                     <span class="material-symbols-rounded text-success-green">check_circle</span>
-                    Today's Status
+                    <span data-translate-key="todays_status">Today's Status</span>
                 </h3>
                 <div class="bg-neutral-50 rounded-lg p-3">
-                    <p class="font-medium text-neutral-700">You are marked <span
-                            class="text-success-green font-bold">PRESENT</span>.</p>
-                    <p class="text-sm text-neutral-500 mt-1">Checked-in at: <span id="checkin-time"
+                    <p class="font-medium text-neutral-700"><span data-translate-key="you_are_marked">You are marked</span> <span
+                            class="text-success-green font-bold" data-translate-key="present_caps">PRESENT</span>.</p>
+                    <p class="text-sm text-neutral-500 mt-1"><span data-translate-key="checked_in_at">Checked-in at:</span> <span id="checkin-time"
                             class="font-semibold">--:-- AM</span></p>
-                    <p class="text-sm text-neutral-500">Location: <span id="checkin-location" class="font-semibold">Not
+                    <p class="text-sm text-neutral-500"><span data-translate-key="location_label">Location:</span> <span id="checkin-location" class="font-semibold">Not
                             available</span></p>
                 </div>
             </div>
 
             <div>
-                <h2 class="text-lg font-bold mb-2 text-neutral-800">Monthly Summary</h2>
+                <h2 class="text-lg font-bold mb-2 text-neutral-800" data-translate-key="monthly_summary">Monthly Summary</h2>
                 <div class="grid grid-cols-3 gap-3">
                     <div class="bg-white p-3 rounded-xl shadow-card border border-neutral-200 text-center">
                         <p id="present-count" class="text-2xl font-bold text-success-green">0</p>
-                        <p class="text-xs text-neutral-500 font-medium">Present</p>
+                        <p class="text-xs text-neutral-500 font-medium" data-translate-key="present_label">Present</p>
                     </div>
                     <div class="bg-white p-3 rounded-xl shadow-card border border-neutral-200 text-center">
                         <p id="absent-count" class="text-2xl font-bold text-alert-red">0</p>
-                        <p class="text-xs text-neutral-500 font-medium">Absent</p>
+                        <p class="text-xs text-neutral-500 font-medium" data-translate-key="absent_label">Absent</p>
                     </div>
                     <div class="bg-white p-3 rounded-xl shadow-card border border-neutral-200 text-center">
                         <p id="leave-count" class="text-2xl font-bold text-person-blue">0</p>
-                        <p class="text-xs text-neutral-500 font-medium">Leaves</p>
+                        <p class="text-xs text-neutral-500 font-medium" data-translate-key="leaves_label">Leaves</p>
                     </div>
                 </div>
             </div>
 
             <div>
-                <h2 id="calendar-title" class="text-lg font-bold mb-2 text-neutral-800">Month</h2>
+                <h2 id="calendar-title" class="text-lg font-bold mb-2 text-neutral-800" data-translate-key="month_label">Month</h2>
                 <div class="bg-white p-4 rounded-2xl shadow-card border border-neutral-200">
                     <div class="grid grid-cols-7 text-center text-xs font-semibold text-neutral-500 mb-3">
                         <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
@@ -114,6 +114,7 @@
     </div>
 
     <script src="../api.client.js"></script>
+    <script src="language-toggle.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -175,10 +176,18 @@
                     checkinTimeEl.textContent = timeString;
                     checkinLocationEl.textContent = `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
 
-                    markPresenceBtn.innerHTML = `<span class="material-symbols-rounded">check_circle</span> <span>Presence Marked</span>`;
+                    const currentLang = window.getCurrentLanguage ? window.getCurrentLanguage() : 'en';
+                    const presenceMarkedText = window.translations && window.translations.presence_marked_success 
+                        ? window.translations.presence_marked_success[currentLang] 
+                        : "Presence Marked";
+                    const attendanceRecordedText = window.translations && window.translations.attendance_recorded_msg 
+                        ? window.translations.attendance_recorded_msg[currentLang] 
+                        : "Your attendance for today has been recorded.";
+
+                    markPresenceBtn.innerHTML = `<span class="material-symbols-rounded">check_circle</span> <span>${presenceMarkedText}</span>`;
                     markPresenceBtn.classList.remove('bg-primary');
                     markPresenceBtn.classList.add('bg-success-green');
-                    attendanceSubtext.textContent = 'Your attendance for today has been recorded.';
+                    attendanceSubtext.textContent = attendanceRecordedText;
 
                     // Refresh calendar and summary after marking presence
                     fetchAttendanceData();
