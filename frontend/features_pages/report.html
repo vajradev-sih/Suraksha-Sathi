@@ -261,7 +261,7 @@
         </button>
       </div>
       <div class="flex-1 flex justify-center">
-        <h1 class="text-xl sm:text-2xl font-[Orbitron] tracking-widest text-white" data-translate-key="title">
+        <h1 class="text-xl sm:text-2xl font-[Orbitron] tracking-widest text-white" data-translate-key="report_hazard_title">
           Report a Hazard
         </h1>
       </div>
@@ -322,7 +322,7 @@
               <input type="text" id="location" name="location" placeholder=" "
                 class="w-full rounded-lg border-charcoal-gray/30 dark:border-[#324f67] bg-light-gray dark:bg-[#192833] py-3 pl-3 pr-3 text-base text-charcoal-gray dark:text-white mb-2 transition"
                 readonly />
-              <label for="location" data-translate-key="location_label">Location</label>
+              <label for="location" data-translate-key="location_step_title">Location</label>
             </div>
             <div id="map" class="mb-2"></div>
             <div id="locationSkeleton" class="skeleton h-6 w-2/3 rounded mb-2 hidden"></div>
@@ -332,7 +332,7 @@
         <!-- Step 3: Photo/Video Upload -->
         <div class="step" id="step3">
           <div class="glass-card dark:glass-card-dark p-6 mb-4 shadow-severity">
-            <label class="block text-sm font-bold mb-2" data-translate-key="add_photos_label">Add Photo(s)</label>
+            <label class="block text-sm font-bold mb-2" data-translate-key="upload_photo_title">Add Photo(s)</label>
             <div class="flex items-center justify-center gap-4">
               <button type="button" id="uploadBtn"
                 class="flex h-20 w-20 flex-col items-center justify-center rounded-lg border-2 border-dashed border-charcoal-gray/30 dark:border-[#324f67] bg-light-gray dark:bg-[#192833] hover:bg-safety-yellow/10 transition shadow">
@@ -353,28 +353,28 @@
           <div class="glass-card dark:glass-card-dark p-6 mb-4 shadow-severity">
             <h3 class="text-lg font-bold mb-2 flex items-center gap-2">
               <span class="material-symbols-outlined text-safety-yellow">preview</span> <span
-                data-translate-key="preview_report_title">Preview Report</span>
+                data-translate-key="review_step_title">Preview Report</span>
             </h3>
             <div class="mb-2">
-              <span class="font-bold" data-translate-key="preview_desc">Description:</span>
+              <span class="font-bold" data-translate-key="describe_hazard_label">Description:</span>
               <span id="previewDesc" class="ml-2"></span>
             </div>
             <div class="mb-2">
-              <span class="font-bold" data-translate-key="preview_severity">Severity:</span>
+              <span class="font-bold" data-translate-key="severity_level_label">Severity:</span>
               <span id="previewSeverity" class="ml-2"></span>
             </div>
             <div class="mb-2">
-              <span class="font-bold" data-translate-key="preview_location">Location:</span>
+              <span class="font-bold" data-translate-key="location_step_title">Location:</span>
               <span id="previewLocation" class="ml-2"></span>
             </div>
             <div class="mb-2">
-              <span class="font-bold" data-translate-key="preview_photos">Photos:</span>
+              <span class="font-bold" data-translate-key="upload_photo_title">Photos:</span>
               <div id="previewPhotos" class="flex gap-2 mt-2"></div>
             </div>
             <button type="button" id="saveDraftBtn"
               class="mt-4 px-4 py-2 rounded-lg bg-brand-yellow text-charcoal-gray font-bold shadow hover:bg-yellow-400 transition">
               <span class="material-symbols-outlined text-base mr-1">save</span> <span
-                data-translate-key="save_draft_button">Save Draft</span>
+                data-translate-key="save_btn">Save Draft</span>
             </button>
           </div>
         </div>
@@ -418,6 +418,7 @@
     </div>
 
     <script src="../api.client.js"></script>
+    <script src="language-toggle.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         // --- AUTH CHECK ---
