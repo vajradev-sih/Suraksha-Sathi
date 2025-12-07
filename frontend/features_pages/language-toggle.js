@@ -368,7 +368,20 @@ document.addEventListener("DOMContentLoaded", () => {
         popup_root_cause: { en: "Root Cause:", hi: "मूल कारण:" },
         popup_dgms_ref: { en: "DGMS Reference:", hi: "DGMS संदर्भ:" },
         popup_safety_measures: { en: "DGMS Safety Measures", hi: "DGMS सुरक्षा उपाय" },
-        popup_view_circulars: { en: "View DGMS Safety Circulars", hi: "DGMS सुरक्षा परिपत्र देखें" }
+        popup_view_circulars: { en: "View DGMS Safety Circulars", hi: "DGMS सुरक्षा परिपत्र देखें" },
+
+        // Chatbot
+        chatbot_title: { en: "Suraksha Sathi", hi: "सुरक्षा सारथी" },
+        chatbot_initial_msg: { 
+            en: "Hello 👋 I am <b>Suraksha Sathi</b> — your safety guide! I can help you with mine safety information and navigating the website. How can I assist you today?", 
+            hi: "नमस्ते 👋 मैं <b>सुरक्षा सारथी</b> हूँ — आपका सुरक्षा मार्गदर्शक! मैं खदान सुरक्षा से जुड़ी जानकारी देने और वेबसाइट पर सही जगह तक पहुँचाने में आपकी मदद कर सकता हूँ। बताइए, आज मैं आपकी क्या सहायता कर सकता हूँ?" 
+        },
+        chatbot_placeholder: { en: "Type your question...", hi: "अपना सवाल लिखें..." },
+        quick_btn_report: { en: "⚠️ Report Incident", hi: "⚠️ रिपोर्ट करो" },
+        quick_btn_checklist: { en: "📋 Checklist", hi: "📋 चेकलिस्ट" },
+        quick_btn_map: { en: "🗺️ Safety Map", hi: "🗺️ मानचित्र" },
+        quick_btn_video: { en: "🎥 Video Library", hi: "🎥 वीडियो" },
+        chatbot_error: { en: "Sorry, I am having trouble answering right now.", hi: "क्षमा करें, अभी उत्तर देने में समस्या हो रही है।" }
     };
 
     // Load saved language (default English)

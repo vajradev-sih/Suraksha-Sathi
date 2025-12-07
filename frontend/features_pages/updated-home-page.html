@@ -1224,7 +1224,7 @@
                 class="flex items-center justify-between p-4 bg-gradient-to-br from-sky-600 to-sky-700 text-white rounded-t-2xl shadow-md">
                 <div class="flex items-center gap-3">
                     <span class="material-symbols-rounded text-3xl text-sky-200">smart_toy</span>
-                    <h3 class="font-bold text-lg">सुरक्षा सारथी</h3>
+                    <h3 class="font-bold text-lg" data-translate-key="chatbot_title">Suraksha Sathi</h3>
                 </div>
                 <button id="close-chat-btn" class="p-1 rounded-full hover:bg-white/20">
                     <span class="material-symbols-rounded">close</span>
@@ -1234,18 +1234,16 @@
             <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50">
                 <div class="flex justify-start gap-2.5">
                     <div class="chat-bubble chat-bubble-bot p-3 rounded-xl rounded-tl-none">
-                        <p>नमस्ते 👋 मैं <b>सुरक्षा सारथी</b> हूँ — आपका सुरक्षा मार्गदर्शक!
-                            मैं खदान सुरक्षा से जुड़ी जानकारी देने और वेबसाइट पर सही जगह तक
-                            पहुँचाने में आपकी मदद कर
-                            सकता हूँ।
-                            बताइए, आज मैं आपकी क्या सहायता कर सकता हूँ?</p>
+                        <p data-translate-key="chatbot_initial_msg">Hello 👋 I am <b>Suraksha Sathi</b> — your safety guide!
+                            I can help you with mine safety information and navigating the website.
+                            How can I assist you today?</p>
                     </div>
                 </div>
             </div>
 
             <div class="p-3 border-t border-slate-200 bg-white rounded-b-2xl">
                 <form id="chat-form" class="flex items-center gap-2 mb-2">
-                    <input id="chat-input" type="text" placeholder="अपना सवाल लिखें..."
+                    <input id="chat-input" type="text" placeholder="Type your question..." data-translate-key="chatbot_placeholder"
                         class="flex-1 px-4 py-2 bg-slate-100 border border-transparent rounded-full focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
                     <button id="chat-submit-btn" type="submit"
                         class="p-2 w-10 h-10 flex items-center justify-center bg-sky-600 text-white rounded-full hover:bg-sky-700 transition">
@@ -1256,16 +1254,16 @@
                 <div class="grid grid-cols-2 gap-2">
                     <button
                         class="quick-btn bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-full py-2 text-sm font-medium"
-                        data-message="घटना रिपोर्ट करो">⚠️ रिपोर्ट करो</button>
+                        data-translate-key="quick_btn_report">⚠️ Report Incident</button>
                     <button
                         class="quick-btn bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-full py-2 text-sm font-medium"
-                        data-message="चेकलिस्ट खोलो">📋 चेकलिस्ट</button>
+                        data-translate-key="quick_btn_checklist">📋 Checklist</button>
                     <button
                         class="quick-btn bg-green-100 hover:bg-green-200 text-green-700 rounded-full py-2 text-sm font-medium"
-                        data-message="सुरक्षा मानचित्र दिखाओ">🗺️ मानचित्र</button>
+                        data-translate-key="quick_btn_map">🗺️ Safety Map</button>
                     <button
                         class="quick-btn bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-full py-2 text-sm font-medium"
-                        data-message="वीडियो लाइब्रेरी दिखाओ">🎥 वीडियो</button>
+                        data-translate-key="quick_btn_video">🎥 Video Library</button>
                 </div>
             </div>
         </div>
@@ -1299,7 +1297,8 @@
             closeBtn.addEventListener('click', toggleChat);
             chatForm.addEventListener('submit', sendMessage);
             quickBtns.forEach(btn => btn.addEventListener('click', () => {
-                chatInput.value = btn.dataset.message;
+                // Use the text content of the button which is already translated
+                chatInput.value = btn.innerText.replace(/^[^\w\s\u0900-\u097F]+/, '').trim(); // Remove emoji prefix if needed
                 chatForm.requestSubmit();
             }));
 
@@ -1336,7 +1335,10 @@
                     const reply = await getBotReply(text);
                     appendMsg(reply, 'bot');
                 } catch (err) {
-                    appendMsg("क्षमा करें, अभी उत्तर देने में समस्या हो रही है।", 'bot');
+                    const currentLang = localStorage.getItem("lang") || "en";
+                    const errorMsg = window.translations && window.translations.chatbot_error ? 
+                        window.translations.chatbot_error[currentLang] : "Sorry, I am having trouble answering right now.";
+                    appendMsg(errorMsg, 'bot');
                     console.error(err);
                 } finally {
                     removeThinking();
@@ -1373,8 +1375,12 @@
             }
 
             async function getBotReply(userInput) {
-                // NOTE: The prompt has been slightly adjusted to use the latest model reference.
-                const sysPrompt = `
+                const currentLang = localStorage.getItem("lang") || "en";
+                
+                let sysPrompt = "";
+                
+                if (currentLang === "hi") {
+                    sysPrompt = `
                     आप "सुरक्षा सारथी" नामक एक मित्रवत और पेशेवर एआई चैटबॉट हैं।
                     आपका काम उपयोगकर्ताओं को खदान सुरक्षा से जुड़ी जानकारी देने और वेबसाइट पर सही पेज तक पहुँचाने में मदद करना है।
                     उपलब्ध पेज:
@@ -1395,6 +1401,29 @@
                     उदाहरण: "<a href='report.html' class='font-bold underline text-sky-700'>रिपोर्ट पेज</a>"।
                     3. उत्तर संक्षिप्त, सहायक और विनम्र रखें।
                     4. यदि प्रश्न अस्पष्ट हो, तो पूछें: "क्या आप इसे थोड़ा स्पष्ट कर सकते हैं?"`;
+                } else {
+                    sysPrompt = `
+                    You are "Suraksha Sathi", a friendly and professional AI chatbot.
+                    Your job is to help users with mine safety information and navigate the website.
+                    Available pages:
+                    - "Home": updated-home-page.html
+                    - "Report": report.html
+                    - "Checklist": checklist.html
+                    - "Safety Map": map.html
+                    - "Leaderboard": leaderboard.html
+                    - "Video Library": video_library.html
+                    - "Shorts": shorts.html
+                    - "Profile": profile_setting.html
+                    - "Admin Home": admin-home.html
+                    - "Login": login.html
+
+                    Rules:
+                    1. Always answer in English.
+                    2. If the user wants to go to a page, provide an HTML link.
+                    Example: "<a href='report.html' class='font-bold underline text-sky-700'>Report Page</a>".
+                    3. Keep answers concise, helpful, and polite.
+                    4. If the question is unclear, ask: "Could you please clarify that?"`;
+                }
 
                 chatHistory.push({
                     role: "user",
@@ -1429,7 +1458,9 @@
                         text: reply
                     }]
                 });
-                return reply || "मुझे यह समझ नहीं आया, कृपया दोबारा बताएँ।";
+                
+                const defaultError = currentLang === "hi" ? "मुझे यह समझ नहीं आया, कृपया दोबारा बताएँ।" : "I didn't understand that, please try again.";
+                return reply || defaultError;
             }
         });
     </script>
