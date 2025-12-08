@@ -108,6 +108,14 @@ document.addEventListener("DOMContentLoaded", () => {
             en: "Attendance",
             hi: "उपस्थिति"
         },
+        checklist_card: {
+            en: "Checklist",
+            hi: "चेकलिस्ट"
+        },
+        complete_checklist: {
+            en: "Complete your checklist",
+            hi: "अपनी चेकलिस्ट पूरी करें"
+        },
         mark_presence: {
             en: "Mark your presence",
             hi: "अपनी उपस्थिति दर्ज करें"
