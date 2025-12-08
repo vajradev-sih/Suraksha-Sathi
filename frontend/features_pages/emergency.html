@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>EMERGENCY MODE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,700,1,0"
+        rel="stylesheet" />
+
+    <style>
+        /* Force full screen lock */
+        body,
+        html {
+            height: 100%;
+            overflow: hidden;
+            background-color: #dc2626;
+            touch-action: none;
+        }
+
+        .high-brightness-mode {
+            filter: brightness(1.2) contrast(1.2);
+        }
+
+        /* Pulse Animation */
+        @keyframes urgent-pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1.05);
+            }
+        }
+
+        .animate-urgent {
+            animation: urgent-pulse 0.8s infinite ease-in-out;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col items-center justify-center text-white high-brightness-mode">
+
+    <div class="absolute inset-0 bg-red-500 animate-ping opacity-30 pointer-events-none"></div>
+
+    <div class="relative z-10 flex flex-col items-center text-center px-6 w-full max-w-md">
+
+        <span class="material-symbols-rounded text-9xl mb-6 drop-shadow-lg animate-bounce">warning</span>
+
+        <h1 class="text-5xl font-[Orbitron] tracking-widest mb-2 drop-shadow-md text-white">EMERGENCY</h1>
+        <p id="status-text" class="text-xl mb-12 font-bold opacity-90">Initializing Sequence...</p>
+
+        <div class="relative flex items-center justify-center w-40 h-40 mb-12">
+            <svg class="absolute w-full h-full transform -rotate-90 drop-shadow-xl">
+                <circle cx="80" cy="80" r="70" stroke="rgba(255,255,255,0.2)" stroke-width="12" fill="transparent" />
+                <circle id="countdown-circle" cx="80" cy="80" r="70" stroke="white" stroke-width="12" fill="transparent"
+                    stroke-dasharray="440" stroke-dashoffset="0" stroke-linecap="round"
+                    class="transition-all duration-1000 ease-linear" />
+            </svg>
+            <span id="countdown-text" class="text-6xl font-black font-[Orbitron]">3</span>
+        </div>
+
+        <button id="action-btn"
+            class="bg-white text-red-600 px-12 py-5 rounded-full font-black text-2xl shadow-2xl hover:scale-105 active:scale-95 transition-transform w-full">
+            ABORT
+        </button>
+    </div>
+
+    <script src="../api.client.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Config ---
+            const EMERGENCY_CATEGORY_ID = "6936a0109b41dce756cd7a74";
+            const SEVERITY_ID = "68eeb92475ccea5ae394ed9c";
+
+            // --- Elements ---
+            const statusText = document.getElementById('status-text');
+            const countdownText = document.getElementById('countdown-text');
+            const countdownCircle = document.getElementById('countdown-circle');
+            const actionBtn = document.getElementById('action-btn');
+
+            // --- Audio ---
+            const alarmSound = new Audio('https://www.soundjay.com/buttons/sounds/button-10.mp3');
+            alarmSound.loop = true;
+
+            let countdownVal = 3;
+            let timer = null;
+
+            // --- Helper: Get Location ---
+            const getCurrentLocation = () => {
+                return new Promise((resolve) => {
+                    if (!navigator.geolocation) { resolve({ latitude: 0, longitude: 0 }); return; }
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+                        (err) => resolve({ latitude: 0, longitude: 0 }),
+                        { enableHighAccuracy: true, timeout: 5000 }
+                    );
+                });
+            };
+
+            // --- 1. Start Sequence Automatically ---
+            const startSequence = async () => {
+                // Try to play sound (Browser might block autoplay without interaction, but we try)
+                alarmSound.play().catch(() => console.log("Autoplay blocked - tap needed"));
+                if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
+
+                statusText.innerText = "Sending Alert in...";
+
+                // Animation
+                setTimeout(() => {
+                    countdownCircle.style.transition = 'stroke-dashoffset 3s linear';
+                    countdownCircle.style.strokeDashoffset = '440'; // Empty
+                }, 100);
+
+                timer = setInterval(() => {
+                    countdownVal--;
+                    if (countdownVal > 0) {
+                        countdownText.innerText = countdownVal;
+                        if (navigator.vibrate) navigator.vibrate(200);
+                    } else {
+                        clearInterval(timer);
+                        sendReport();
+                    }
+                }, 1000);
+            };
+
+            // --- 2. Send API Report ---
+            const sendReport = async () => {
+                statusText.innerText = "Transmitting Data...";
+                countdownText.innerHTML = "<span class='material-symbols-rounded text-6xl animate-spin'>sync</span>";
+
+                try {
+                    const userStr = localStorage.getItem('user');
+                    const user = userStr ? JSON.parse(userStr) : { _id: "unknown" };
+                    const loc = await getCurrentLocation();
+                    const locationString = `${loc.latitude}, ${loc.longitude}`;
+
+                    const payload = {
+                        user_id: user._id || user.id,
+                        reported_at: new Date().toISOString(),
+                        location: locationString,
+                        category_id: EMERGENCY_CATEGORY_ID,
+                        severity_id: SEVERITY_ID,
+                        description: "IMMEDIATE SOS: Automated Trigger"
+                    };
+
+                    // API Call
+                    if (typeof hazardReportAPI !== 'undefined') {
+                        await hazardReportAPI.create(payload);
+                    } else {
+                        // Fallback fetch if wrapper missing
+                        await fetch('https://mining-project.onrender.com/api/v1/hazard-reports', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                            body: JSON.stringify(payload)
+                        });
+                    }
+
+                    // --- Success State ---
+                    statusText.innerText = "Help is on the way.";
+                    countdownText.innerHTML = "<span class='material-symbols-rounded text-7xl'>check</span>";
+                    actionBtn.innerText = "CLOSE APP";
+                    actionBtn.classList.replace('text-red-600', 'text-green-600');
+
+                    // Sound continues until user clicks Close
+                    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 500]);
+
+                    actionBtn.onclick = () => {
+                        alarmSound.pause();
+                        window.location.href = 'updated-home-page.html'; // Go back
+                    };
+
+                } catch (error) {
+                    console.error(error);
+                    statusText.innerText = "Connection Failed. Use Radio.";
+                    alarmSound.pause();
+                    actionBtn.innerText = "RETRY";
+                    actionBtn.onclick = () => window.location.reload();
+                }
+            };
+
+            // --- 3. Abort/Back Logic ---
+            actionBtn.onclick = () => {
+                clearInterval(timer);
+                alarmSound.pause();
+                window.location.href = 'updated-home-page.html'; // Go back
+            };
+
+            // Start immediately
+            startSequence();
+        });
+    </script>
+</body>
+
+</html>

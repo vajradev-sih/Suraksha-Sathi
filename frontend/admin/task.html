@@ -151,7 +151,7 @@
             <div class="flex justify-between items-center border-b border-neutral-200 pb-3 mb-4">
                 <h3 class="text-xl font-bold text-neutral-800 flex items-center gap-2">
                     <span class="material-symbols-rounded text-primary">add_task</span>
-                    Assign New Task
+                    Assign Task
                 </h3>
                 <button id="closeModal" class="text-neutral-400 hover:text-neutral-600">
                     <span class="material-symbols-rounded text-2xl">close</span>
@@ -163,16 +163,20 @@
                         Worker</label>
                     <select id="worker-select" name="worker-select" required
                         class="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary">
-                        <option>Loading workers...</option>
+                        <option value="">Loading workers...</option>
                     </select>
                 </div>
+
                 <div>
-                    <label for="task-description" class="block text-sm font-medium text-neutral-600 mb-2">Task
-                        Description</label>
-                    <textarea id="task-description" name="task-description" rows="3" required
-                        class="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary"
-                        placeholder="e.g., Inspect ventilation in Sector 4"></textarea>
+                    <label for="task-select" class="block text-sm font-medium text-neutral-600 mb-2">Select Task
+                        Type</label>
+                    <select id="task-select" name="task-select" required
+                        class="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">Loading tasks...</option>
+                    </select>
+                    <p class="text-xs text-neutral-400 mt-1">Select from existing task definitions</p>
                 </div>
+
                 <div>
                     <label for="dueDate" class="block text-sm font-medium text-neutral-600 mb-2">Due Date</label>
                     <input type="date" id="dueDate" name="dueDate" required
@@ -206,12 +210,17 @@
             const alertMessage = document.getElementById('alertMessage');
             const taskListContainer = document.getElementById('task-list');
             const emptyState = document.getElementById('emptyState');
+
+            // Dropdowns
             const workerSelect = document.getElementById('worker-select');
+            const taskSelect = document.getElementById('task-select');
+
             const searchInput = document.getElementById('search-tasks');
             const statusFilter = document.getElementById('filter-status');
 
             // Store data
             let allUsers = [];
+            let availableTasks = [];
             let allAssignments = [];
 
             // --- 3. UI FUNCTIONS ---
@@ -243,10 +252,10 @@
                 // Filter Logic
                 const filtered = allAssignments.filter(item => {
                     const workerName = (item.workerName || '').toLowerCase();
-                    const taskDesc = (item.taskDescription || '').toLowerCase();
                     const taskName = (item.taskName || '').toLowerCase();
+                    const taskDesc = (item.taskDescription || '').toLowerCase();
 
-                    const matchesSearch = workerName.includes(searchTerm) || taskDesc.includes(searchTerm) || taskName.includes(searchTerm);
+                    const matchesSearch = workerName.includes(searchTerm) || taskName.includes(searchTerm) || taskDesc.includes(searchTerm);
                     const matchesStatus = selectedStatus === 'all' || item.status === selectedStatus;
 
                     return matchesSearch && matchesStatus;
@@ -292,7 +301,7 @@
                             <div class="flex items-center gap-4 text-xs text-neutral-400">
                                 <span class="flex items-center gap-1">
                                     <span class="material-symbols-rounded text-sm">calendar_today</span>
-                                    Assigned: ${assignedDateStr}
+                                    ${assignedDateStr}
                                 </span>
                                 <span class="flex items-center gap-1">
                                     <span class="material-symbols-rounded text-sm">event_busy</span>
@@ -313,11 +322,18 @@
             // --- 5. API INTEGRATION ---
             const initializePage = async () => {
                 try {
-                    // 1. Fetch Users
-                    const usersResponse = await userManagementAPI.getAll(1, 100);
+                    // 1. Fetch Users & Tasks in parallel
+                    const [usersResponse, tasksResponse] = await Promise.all([
+                        userManagementAPI.getAll(1, 100),
+                        taskAPI.getAll(1, 100)
+                    ]);
+
                     allUsers = usersResponse.data.users || usersResponse.data || [];
 
-                    // Populate Dropdown
+                    // Handle tasks pagination structure (tasksResponse.data.tasks or just tasksResponse.data)
+                    availableTasks = tasksResponse.data.tasks || tasksResponse.data || [];
+
+                    // Populate Worker Dropdown
                     workerSelect.innerHTML = '<option value="">Select a Worker</option>';
                     allUsers.forEach(user => {
                         const option = document.createElement('option');
@@ -326,8 +342,17 @@
                         workerSelect.appendChild(option);
                     });
 
-                    // 2. Fetch Assignments (Loop through users)
-                    // Note: Ideally backend should have getAllAssignments endpoint. Using user loop as workaround.
+                    // Populate Task Dropdown
+                    taskSelect.innerHTML = '<option value="">Select a Task</option>';
+                    availableTasks.forEach(task => {
+                        const option = document.createElement('option');
+                        option.value = task._id;
+                        // Show Name and start of description
+                        option.textContent = `${task.taskName} - ${task.description.substring(0, 30)}...`;
+                        taskSelect.appendChild(option);
+                    });
+
+                    // 2. Fetch Assignments (Loop through users to find their assignments)
                     if (allUsers.length === 0) return;
 
                     const promises = allUsers.map(user =>
@@ -340,9 +365,9 @@
                         const user = allUsers[index];
                         return (res.data || []).map(assign => ({
                             assignmentId: assign._id,
-                            user_id: user._id,
+                            user_id: user.id,
                             workerName: user.fullName || user.userName,
-                            task_id: assign.task_id?._id,
+                            task_id: assign.task_id?.id,
                             taskName: assign.task_id?.taskName || 'Unnamed Task',
                             taskDescription: assign.task_id?.description || '',
                             status: assign.status || 'Pending',
@@ -369,33 +394,24 @@
             searchInput.addEventListener('input', renderTasks);
             statusFilter.addEventListener('change', renderTasks);
 
-            // Handle Create & Assign
+            // Handle Assign
             taskForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
                 const userId = workerSelect.value;
-                const description = document.getElementById('task-description').value;
+                const taskId = taskSelect.value;
                 const dueDate = document.getElementById('dueDate').value;
 
-                if (!userId || !description || !dueDate) {
-                    showAlert("Please fill all fields", "error");
+                if (!userId || !taskId || !dueDate) {
+                    showAlert("Please select worker, task and due date", "error");
                     return;
                 }
 
                 try {
-                    // 1. Create Task Definition
-                    // Backend requires 'taskName'. We generate a unique one.
-                    const uniqueName = (description.length > 20 ? description.substring(0, 20) : description) + `-${Date.now()}`;
-
-                    const taskResponse = await taskAPI.create({
-                        taskName: uniqueName,
-                        description: description
-                    });
-
-                    // 2. Assign to User
-                    const assignResponse = await userTaskAssignmentAPI.assign({
+                    // Assign Existing Task to User
+                    await userTaskAssignmentAPI.assign({
                         user_id: userId,
-                        task_id: taskResponse.data._id,
+                        task_id: taskId,
                         assigned_date: new Date().toISOString(),
                         due_date: new Date(dueDate).toISOString(),
                         status: 'Pending'
