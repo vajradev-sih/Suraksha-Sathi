@@ -40,6 +40,7 @@ import escalationRouter from './routes/escalation.routes.js';
 import attendanceRouter from './routes/attendance.routes.js';
 import payrollRouter from './routes/payroll.routes.js';
 import pushSubscriptionRouter from './routes/pushSubscription.routes.js';
+import workerVideoRouter from './routes/workerVideo.routes.js';
 
 
 
@@ -67,6 +68,7 @@ app.use('/api/v1/escalations', escalationRouter);
 app.use('/api/v1/attendance', attendanceRouter);
 app.use('/api/v1/payroll', payrollRouter);
 app.use('/api/v1/push', pushSubscriptionRouter);
+app.use('/api/v1/worker-videos', workerVideoRouter);
 
 
 
