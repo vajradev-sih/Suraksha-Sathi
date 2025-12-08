@@ -517,7 +517,7 @@
                             <span class="material-symbols-rounded">settings</span>
                             <span data-translate-key="settings">Settings</span>
                         </a>
-                        <a href="attendece.html"
+                        <a href="attendance.html"
                             class="flex items-center space-x-3 text-white/90 hover:bg-white/15 hover:text-white p-2 rounded-md transition-colors duration-150 relative">
                             <span class="material-symbols-rounded">history</span>
                             <span data-translate-key="attendance">Attendance</span>
@@ -1527,10 +1527,11 @@
                 const badge = document.getElementById("active-alerts-badge");
                 const currentCount = container.children.length; // Get total count of items in the list
                 if (badge) {
-                    const currentLang = localStorage.getItem("language") || "en";
+                    const currentLang = localStorage.getItem("lang") || "en";
                     const activeText = window.translations && window.translations.active_alerts ? 
                         window.translations.active_alerts[currentLang] : "active";
-                    badge.textContent = `${currentCount} ${activeText}`;
+                    // Use innerHTML to separate the number from the translatable text
+                    badge.innerHTML = `${currentCount} <span data-translate-key="active_alerts">${activeText}</span>`;
                 }
             };
 
