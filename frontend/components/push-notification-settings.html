@@ -1,0 +1,362 @@
+<!-- Push Notification Settings Component -->
+<!-- Include this in settings or profile page -->
+
+<style>
+  .push-notification-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin: 20px 0;
+  }
+
+  .push-notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .push-notification-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .notification-icon {
+    width: 24px;
+    height: 24px;
+    fill: #f39c12;
+  }
+
+  .push-toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 26px;
+  }
+
+  .push-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .push-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 26px;
+  }
+
+  .push-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+  }
+
+  input:checked + .push-toggle-slider {
+    background-color: #27ae60;
+  }
+
+  input:checked + .push-toggle-slider:before {
+    transform: translateX(24px);
+  }
+
+  .push-status {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+  }
+
+  .push-status.enabled {
+    color: #27ae60;
+  }
+
+  .push-status.disabled {
+    color: #e74c3c;
+  }
+
+  .push-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .push-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .push-btn-primary {
+    background: #3498db;
+    color: white;
+  }
+
+  .push-btn-primary:hover {
+    background: #2980b9;
+  }
+
+  .push-btn-success {
+    background: #27ae60;
+    color: white;
+  }
+
+  .push-btn-success:hover {
+    background: #229954;
+  }
+
+  .push-btn-danger {
+    background: #e74c3c;
+    color: white;
+  }
+
+  .push-btn-danger:hover {
+    background: #c0392b;
+  }
+
+  .push-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .push-info {
+    background: #ecf0f1;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #555;
+    margin-top: 15px;
+  }
+
+  .push-error {
+    background: #fadbd8;
+    color: #c0392b;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  .push-error.show {
+    display: block;
+  }
+</style>
+
+<div class="push-notification-card">
+  <div class="push-notification-header">
+    <h3>
+      <svg class="notification-icon" viewBox="0 0 24 24">
+        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+      </svg>
+      Push Notifications
+    </h3>
+    <label class="push-toggle-switch">
+      <input type="checkbox" id="pushToggle">
+      <span class="push-toggle-slider"></span>
+    </label>
+  </div>
+
+  <p class="push-status" id="pushStatus">Checking status...</p>
+
+  <div class="push-actions">
+    <button class="push-btn push-btn-success" id="pushEnableBtn" style="display: none;">
+      Enable Notifications
+    </button>
+    <button class="push-btn push-btn-danger" id="pushDisableBtn" style="display: none;">
+      Disable Notifications
+    </button>
+    <button class="push-btn push-btn-primary" id="pushTestBtn" style="display: none;">
+      Send Test Notification
+    </button>
+  </div>
+
+  <div class="push-error" id="pushError"></div>
+
+  <div class="push-info">
+    <strong>About Notifications:</strong><br>
+    Get instant alerts for hazard reports, task assignments, safety updates, and important announcements. You can manage notification preferences here.
+  </div>
+</div>
+
+<script>
+// Push Notification UI Controller
+(async function() {
+  const pushToggle = document.getElementById('pushToggle');
+  const pushStatus = document.getElementById('pushStatus');
+  const pushEnableBtn = document.getElementById('pushEnableBtn');
+  const pushDisableBtn = document.getElementById('pushDisableBtn');
+  const pushTestBtn = document.getElementById('pushTestBtn');
+  const pushError = document.getElementById('pushError');
+
+  // Wait for pushManager to be available
+  if (!window.pushManager) {
+    console.warn('[Push UI] Push manager not available yet, waiting...');
+    await new Promise(resolve => {
+      const checkInterval = setInterval(() => {
+        if (window.pushManager) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 100);
+    });
+  }
+
+  // Initialize UI
+  async function updateUI() {
+    const isSubscribed = await window.pushManager.checkSubscription();
+    const permission = window.pushManager.getPermissionStatus();
+
+    if (permission === 'unsupported') {
+      pushStatus.textContent = 'Push notifications not supported on this device';
+      pushStatus.className = 'push-status disabled';
+      pushToggle.disabled = true;
+      return;
+    }
+
+    if (isSubscribed) {
+      pushStatus.textContent = '✓ Notifications enabled - You will receive alerts';
+      pushStatus.className = 'push-status enabled';
+      pushToggle.checked = true;
+      pushEnableBtn.style.display = 'none';
+      pushDisableBtn.style.display = 'inline-block';
+      pushTestBtn.style.display = 'inline-block';
+    } else {
+      if (permission === 'denied') {
+        pushStatus.textContent = '✗ Notifications blocked - Enable in browser settings';
+        pushStatus.className = 'push-status disabled';
+        pushToggle.checked = false;
+        pushToggle.disabled = true;
+        pushEnableBtn.style.display = 'none';
+        pushDisableBtn.style.display = 'none';
+        pushTestBtn.style.display = 'none';
+      } else {
+        pushStatus.textContent = '○ Notifications disabled - Enable to receive alerts';
+        pushStatus.className = 'push-status disabled';
+        pushToggle.checked = false;
+        pushEnableBtn.style.display = 'inline-block';
+        pushDisableBtn.style.display = 'none';
+        pushTestBtn.style.display = 'none';
+      }
+    }
+  }
+
+  // Enable notifications
+  async function enableNotifications() {
+    try {
+      pushError.classList.remove('show');
+      pushEnableBtn.disabled = true;
+      pushEnableBtn.textContent = 'Enabling...';
+
+      await window.pushManager.subscribe();
+      
+      pushEnableBtn.textContent = 'Enable Notifications';
+      pushEnableBtn.disabled = false;
+      
+      await updateUI();
+      
+      // Show success message
+      if (window.offlineUI) {
+        window.offlineUI.showToast('Notifications enabled successfully!', 'success');
+      }
+    } catch (error) {
+      console.error('[Push UI] Enable failed:', error);
+      pushError.textContent = `Failed to enable notifications: ${error.message}`;
+      pushError.classList.add('show');
+      pushEnableBtn.textContent = 'Enable Notifications';
+      pushEnableBtn.disabled = false;
+    }
+  }
+
+  // Disable notifications
+  async function disableNotifications() {
+    try {
+      pushError.classList.remove('show');
+      pushDisableBtn.disabled = true;
+      pushDisableBtn.textContent = 'Disabling...';
+
+      await window.pushManager.unsubscribe();
+      
+      pushDisableBtn.textContent = 'Disable Notifications';
+      pushDisableBtn.disabled = false;
+      
+      await updateUI();
+      
+      // Show success message
+      if (window.offlineUI) {
+        window.offlineUI.showToast('Notifications disabled', 'info');
+      }
+    } catch (error) {
+      console.error('[Push UI] Disable failed:', error);
+      pushError.textContent = `Failed to disable notifications: ${error.message}`;
+      pushError.classList.add('show');
+      pushDisableBtn.textContent = 'Disable Notifications';
+      pushDisableBtn.disabled = false;
+    }
+  }
+
+  // Send test notification
+  async function sendTestNotification() {
+    try {
+      pushError.classList.remove('show');
+      pushTestBtn.disabled = true;
+      pushTestBtn.textContent = 'Sending...';
+
+      await window.pushManager.sendTestNotification();
+      
+      pushTestBtn.textContent = 'Send Test Notification';
+      pushTestBtn.disabled = false;
+      
+      // Show success message
+      if (window.offlineUI) {
+        window.offlineUI.showToast('Test notification sent! Check your notifications.', 'success');
+      }
+    } catch (error) {
+      console.error('[Push UI] Test notification failed:', error);
+      pushError.textContent = `Failed to send test: ${error.message}`;
+      pushError.classList.add('show');
+      pushTestBtn.textContent = 'Send Test Notification';
+      pushTestBtn.disabled = false;
+    }
+  }
+
+  // Event listeners
+  pushToggle.addEventListener('change', async () => {
+    if (pushToggle.checked) {
+      await enableNotifications();
+    } else {
+      await disableNotifications();
+    }
+  });
+
+  pushEnableBtn.addEventListener('click', enableNotifications);
+  pushDisableBtn.addEventListener('click', disableNotifications);
+  pushTestBtn.addEventListener('click', sendTestNotification);
+
+  // Listen for subscription status changes
+  window.addEventListener('push-subscription-status', (event) => {
+    updateUI();
+  });
+
+  // Initialize
+  await updateUI();
+})();
+</script>
