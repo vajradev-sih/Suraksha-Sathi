@@ -12,10 +12,16 @@ import { authorizeRoles } from '../middlewares/authorizeRoles.js';
 
 const router = Router();
 
-router.post('/upload', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer'), upload.single('file'), uploadSafetyVideo);
-router.get('/', verifyJWT, getAllSafetyVideos);
-router.get('/:id', verifyJWT, getSafetyVideoById);
-router.put('/:id', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer'), updateSafetyVideo);
-router.delete('/:id', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer'), deleteSafetyVideo);
+// Apply authentication to all routes
+router.use(verifyJWT);
+
+// Admin/SafetyOfficer only routes
+router.post('/upload', authorizeRoles('Admin', 'SafetyOfficer'), upload.single('file'), uploadSafetyVideo);
+router.put('/:id', authorizeRoles('Admin', 'SafetyOfficer'), updateSafetyVideo);
+router.delete('/:id', authorizeRoles('Admin', 'SafetyOfficer'), deleteSafetyVideo);
+
+// Authenticated user routes
+router.get('/', getAllSafetyVideos);
+router.get('/:id', getSafetyVideoById);
 
 export default router;

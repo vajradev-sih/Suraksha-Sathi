@@ -6,7 +6,8 @@ import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import cloudinary from '../utils/cloudinary.js';
 import fs from 'fs/promises';
-import { moderateCloudinaryContent, shouldAutoReject, getModerationSummary } from '../middlewares/contentModeration.middleware.js';
+import { moderateCloudinaryContent } from '../middlewares/contentModeration.middleware.js';
+import { shouldAutoReject, getModerationSummary } from '../utils/contentModeration.js';
 
 // Worker uploads video (pending approval)
 const uploadWorkerVideo = asyncHandler(async (req, res) => {
@@ -20,49 +21,23 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Title is required');
   }
 
-  try {
-    // Upload video to Cloudinary with moderation enabled
-    const result = await cloudinary.uploader.upload(req.file.path, { 
-      folder: 'worker_videos',
-      resource_type: 'video',
-      moderation: 'aws_rek:explicit_nudity:suggestive:violence:visually_disturbing' // Enable AI moderation
-    });
+  // Upload video to Cloudinary with moderation enabled
+  const result = await cloudinary.uploader.upload(req.file.path, { 
+    folder: 'worker_videos',
+    resource_type: 'video',
+    moderation: 'aws_rek:explicit_nudity:suggestive:violence:visually_disturbing' // Enable AI moderation
+  });
 
-    // Delete local file after upload
-    await fs.unlink(req.file.path);
+  // Delete local file after upload
+  await fs.unlink(req.file.path);
 
-    // Perform comprehensive content moderation
-    const moderationResult = await moderateCloudinaryContent(result, title, description);
+  // Perform comprehensive content moderation
+  const moderationResult = await moderateCloudinaryContent(result, title, description);
 
-    // Check if content should be auto-rejected
-    if (shouldAutoReject(moderationResult)) {
-      // Create record as auto-rejected for audit trail
-      const rejectedVideo = await WorkerVideo.create({
-        uploaded_by: req.user._id,
-        title,
-        description,
-        video_url: result.secure_url,
-        thumbnail_url: result.thumbnail_url || result.secure_url.replace(/\.[^.]+$/, '.jpg'),
-        category: category || 'other',
-        duration: duration || result.duration,
-        approval_status: 'auto_rejected',
-        moderation_status: 'auto_rejected',
-        moderation_score: moderationResult.confidence || 0,
-        moderation_flags: moderationResult.reasons,
-        rejection_reason: getModerationSummary(moderationResult)
-      });
-
-      // Optionally delete from Cloudinary to save storage
-      // await cloudinary.uploader.destroy(result.public_id, { resource_type: 'video' });
-
-      throw new ApiError(
-        400,
-        `Upload rejected by automated moderation: ${getModerationSummary(moderationResult)}. Please ensure your content follows community guidelines.`
-      );
-    }
-
-    // Create video record with pending status and moderation info
-    const video = await WorkerVideo.create({
+  // Check if content should be auto-rejected
+  if (shouldAutoReject(moderationResult)) {
+    // Create record as auto-rejected for audit trail
+    const rejectedVideo = await WorkerVideo.create({
       uploaded_by: req.user._id,
       title,
       description,
@@ -70,34 +45,48 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
       thumbnail_url: result.thumbnail_url || result.secure_url.replace(/\.[^.]+$/, '.jpg'),
       category: category || 'other',
       duration: duration || result.duration,
-      approval_status: 'pending',
-      moderation_status: moderationResult.requiresReview ? 'flagged' : 'passed',
-      moderation_score: moderationResult.confidence || 1,
+      approval_status: 'auto_rejected',
+      moderation_status: 'auto_rejected',
+      moderation_score: moderationResult.confidence || 0,
       moderation_flags: moderationResult.reasons,
-      requires_manual_review: moderationResult.requiresReview || false
+      rejection_reason: getModerationSummary(moderationResult)
     });
 
-    const populatedVideo = await WorkerVideo.findById(video._id)
-      .populate('uploaded_by', 'fullName email role_name');
+    // Optionally delete from Cloudinary to save storage
+    // await cloudinary.uploader.destroy(result.public_id, { resource_type: 'video' });
 
-    const message = moderationResult.requiresReview
-      ? 'Video uploaded successfully. Flagged for additional review before admin approval.'
-      : 'Video uploaded successfully and pending approval';
-
-    res.status(201).json(
-      new ApiResponse(201, populatedVideo, message)
+    throw new ApiError(
+      400,
+      `Upload rejected by automated moderation: ${getModerationSummary(moderationResult)}. Please ensure your content follows community guidelines.`
     );
-  } catch (err) {
-    // Clean up file on error
-    if (req.file) {
-      await fs.unlink(req.file.path).catch(() => {});
-    }
-    
-    if (err instanceof ApiError) {
-      throw err;
-    }
-    throw new ApiError(500, `Upload failed: ${err.message}`);
   }
+
+  // Create video record with pending status and moderation info
+  const video = await WorkerVideo.create({
+    uploaded_by: req.user._id,
+    title,
+    description,
+    video_url: result.secure_url,
+    thumbnail_url: result.thumbnail_url || result.secure_url.replace(/\.[^.]+$/, '.jpg'),
+    category: category || 'other',
+    duration: duration || result.duration,
+    approval_status: 'pending',
+    moderation_status: moderationResult.requiresReview ? 'flagged' : 'passed',
+    moderation_score: moderationResult.confidence || 1,
+    moderation_flags: moderationResult.reasons,
+    requires_manual_review: moderationResult.requiresReview || false
+  });
+
+  const populatedVideo = await WorkerVideo.findById(video._id)
+    .populate('uploaded_by', 'fullName email role_name');
+
+  const message = moderationResult.requiresReview
+    ? 'Video uploaded successfully. Flagged for additional review before admin approval.'
+    : 'Video uploaded successfully and pending approval';
+
+  res.status(201).json(
+    new ApiResponse(201, populatedVideo, message)
+  );
 });
 
 // Admin approves video

@@ -5,23 +5,40 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import cloudinary from '../utils/cloudinary.js';
 import fs from 'fs/promises';
 
-const uploadSafetyVideo = async (req, res, next) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: 'File not provided' });
+const uploadSafetyVideo = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    throw new ApiError(400, 'File not provided');
+  }
 
-    const result = await cloudinary.uploader.upload(req.file.path, { folder: 'safety_videos' });
+  try {
+    const result = await cloudinary.uploader.upload(req.file.path, { 
+      folder: 'safety_videos',
+      resource_type: 'video'
+    });
 
     // Delete local file after upload
     await fs.unlink(req.file.path);
 
-    // Save the safety video record as usual here
+    // Create safety video record
+    const video = await SafetyVideo.create({
+      external_integration_id: req.body.external_integration_id,
+      title: req.body.title || 'Untitled Safety Video',
+      description: req.body.description,
+      url: result.secure_url,
+      thumbnail_url: result.thumbnail_url || result.secure_url.replace(/\.[^.]+$/, '.jpg')
+    });
 
-    res.status(201).json({ message: 'Safety video uploaded', url: result.secure_url });
+    res.status(201).json(
+      new ApiResponse(201, video, 'Safety video uploaded successfully')
+    );
   } catch (err) {
-    if (req.file) await fs.unlink(req.file.path).catch(() => {});
-    next(err);
+    // Clean up file on error
+    if (req.file && req.file.path) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
+    throw new ApiError(500, `Upload failed: ${err.message}`);
   }
-};
+});
 
 const getAllSafetyVideos = asyncHandler(async (req, res) => {
   const videos = await SafetyVideo.find().populate('external_integration_id').sort({ createdAt: -1 });
