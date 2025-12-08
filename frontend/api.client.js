@@ -1,6 +1,37 @@
 // API Configuration
 const API_BASE_URL = "https://mining-project.onrender.com"; // Change to your actual API base URL
 
+// --- Offline Support ---
+let isOnline = navigator.onLine;
+let offlineQueue = [];
+let syncInProgress = false;
+
+// Monitor online/offline status
+window.addEventListener('online', handleOnline);
+window.addEventListener('offline', handleOffline);
+
+function handleOnline() {
+  isOnline = true;
+  console.log('[Offline] Back online, syncing queued requests...');
+  document.dispatchEvent(new CustomEvent('connection-status-changed', { detail: { online: true } }));
+  syncOfflineQueue();
+}
+
+function handleOffline() {
+  isOnline = false;
+  console.log('[Offline] Network connection lost');
+  document.dispatchEvent(new CustomEvent('connection-status-changed', { detail: { online: false } }));
+}
+
+// Service Worker message handler
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SYNC_OFFLINE_QUEUE') {
+      syncOfflineQueue();
+    }
+  });
+}
+
 // --- Utility Functions ---
 
 // Helper function with retry logic
@@ -49,6 +80,35 @@ const apiRequest = async (endpoint, options = {}) => {
     delete config.headers;
   }
 
+  // Define endpoints that should NOT be queued when offline (require immediate server response)
+  const noQueueEndpoints = [
+    '/api/v1/user/login',
+    '/api/v1/user/register',
+    '/api/v1/user/logout',
+    '/api/v1/user/refresh-token',
+    '/api/v1/user/current-user',
+    '/api/v1/push/public-key'
+  ];
+
+  const shouldNotQueue = noQueueEndpoints.some(path => endpoint.includes(path));
+
+  // Check if offline and handle accordingly
+  // Don't queue authentication/critical endpoints - they need immediate server response
+  if (!isOnline && options.method !== 'GET' && !shouldNotQueue) {
+    console.log('[Offline] Queueing request:', endpoint);
+    return await queueOfflineRequest(endpoint, config);
+  }
+  
+  // Handle offline login specially - try local authentication
+  if (!isOnline && endpoint.includes('/api/v1/user/login')) {
+    return await handleOfflineLogin(config.body);
+  }
+  
+  // If offline and other critical endpoints, throw error
+  if (!isOnline && shouldNotQueue && !endpoint.includes('/api/v1/user/login')) {
+    throw new Error('This action requires internet connection. Please check your network and try again.');
+  }
+
   try {
     const response = await fetchWithRetry(`${API_BASE_URL}${endpoint}`, config);
     const text = await response.text();
@@ -66,59 +126,377 @@ const apiRequest = async (endpoint, options = {}) => {
       throw new Error(data.message || `HTTP error! status: ${response.status}`);
     }
 
+    // Cache successful GET responses
+    if (options.method === 'GET' && typeof offlineDB !== 'undefined') {
+      try {
+        await offlineDB.cacheResponse(endpoint, data, 3600000); // 1 hour TTL
+      } catch (e) {
+        console.warn('[Cache] Failed to cache response:', e);
+      }
+    }
+
     return data;
   } catch (error) {
     console.error("API request failed:", error);
+    
+    // If offline or network error, try to get cached data for GET requests
+    if (options.method === 'GET' && typeof offlineDB !== 'undefined') {
+      try {
+        const cached = await offlineDB.getCachedResponse(endpoint);
+        if (cached) {
+          console.log('[Offline] Using cached response for:', endpoint);
+          return { ...cached, _fromCache: true };
+        }
+      } catch (e) {
+        console.warn('[Cache] Failed to get cached response:', e);
+      }
+    }
+    
     throw error;
   }
 };
+
+// Queue offline requests for later sync
+async function queueOfflineRequest(endpoint, config) {
+  const requestData = {
+    endpoint,
+    method: config.method || 'POST',
+    body: config.body,
+    headers: config.headers,
+    timestamp: Date.now()
+  };
+
+  // Store in memory queue
+  offlineQueue.push(requestData);
+  
+  // Also store in IndexedDB for persistence
+  if (typeof offlineDB !== 'undefined') {
+    try {
+      await offlineDB.queueRequest(
+        endpoint,
+        config.method || 'POST',
+        config.body,
+        config.headers
+      );
+    } catch (e) {
+      console.error('[Offline] Failed to queue in IndexedDB:', e);
+    }
+  }
+
+  // Dispatch event for UI updates
+  document.dispatchEvent(new CustomEvent('request-queued', { 
+    detail: { endpoint, method: config.method } 
+  }));
+
+  return {
+    success: true,
+    message: 'Request queued for sync when online',
+    offline: true,
+    queued: true
+  };
+}
+
+// Sync offline queue when back online
+async function syncOfflineQueue() {
+  if (syncInProgress || !isOnline) return;
+  
+  syncInProgress = true;
+  console.log('[Offline] Starting sync...');
+  
+  // Load queued requests from IndexedDB
+  if (typeof offlineDB !== 'undefined') {
+    try {
+      const dbQueue = await offlineDB.getQueuedRequests();
+      offlineQueue = [...offlineQueue, ...dbQueue];
+    } catch (e) {
+      console.error('[Offline] Failed to load queue from IndexedDB:', e);
+    }
+  }
+
+  const queue = [...offlineQueue];
+  offlineQueue = [];
+  
+  let successCount = 0;
+  let failCount = 0;
+
+  for (const request of queue) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${request.endpoint}`, {
+        method: request.method,
+        headers: request.headers,
+        body: request.body
+      });
+
+      if (response.ok) {
+        successCount++;
+        
+        // Remove from IndexedDB
+        if (typeof offlineDB !== 'undefined' && request.id) {
+          await offlineDB.delete('offlineQueue', request.id);
+        }
+        
+        console.log('[Offline] Synced:', request.endpoint);
+      } else {
+        failCount++;
+        offlineQueue.push(request); // Re-queue failed request
+      }
+    } catch (error) {
+      console.error('[Offline] Sync failed for:', request.endpoint, error);
+      failCount++;
+      offlineQueue.push(request); // Re-queue on error
+    }
+  }
+
+  syncInProgress = false;
+  
+  // Dispatch sync complete event
+  document.dispatchEvent(new CustomEvent('sync-completed', {
+    detail: { successCount, failCount, remaining: offlineQueue.length }
+  }));
+  
+  console.log(`[Offline] Sync complete: ${successCount} succeeded, ${failCount} failed, ${offlineQueue.length} remaining`);
+}
+
+// Get offline queue status
+function getOfflineQueueStatus() {
+  return {
+    isOnline,
+    queueLength: offlineQueue.length,
+    syncInProgress
+  };
+}
+
+// Clear offline queue
+async function clearOfflineQueue() {
+  offlineQueue = [];
+  if (typeof offlineDB !== 'undefined') {
+    try {
+      await offlineDB.clear('offlineQueue');
+    } catch (e) {
+      console.error('[Offline] Failed to clear queue:', e);
+    }
+  }
+}
+
+// --- Offline Authentication ---
+
+// Store user credentials hash for offline login
+async function storeOfflineCredentials(email, password, userData, token) {
+    try {
+        const passwordHash = await simpleHash(password);
+        const offlineAuth = {
+            email: email.toLowerCase(),
+            passwordHash: passwordHash,
+            userData: userData,
+            token: token,
+            lastSync: Date.now()
+        };
+        localStorage.setItem('offlineAuth', JSON.stringify(offlineAuth));
+        // Also save standard user data for easy access
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', token);
+        console.log('[Offline Auth] Credentials securely cached.');
+    } catch (e) {
+        console.error('[Offline Auth] Failed to cache credentials:', e);
+    }
+}
+
+// Simple hash function for password verification (client-side only)
+async function simpleHash(text) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Handle offline login using cached credentials
+async function handleOfflineLogin(bodyString) {
+  console.log('[Offline Auth] Attempting offline login...');
+  
+  try {
+    const loginData = typeof bodyString === 'string' ? JSON.parse(bodyString) : bodyString;
+    const { email, password } = loginData;
+    
+    if (!email || !password) {
+      throw new Error('Email and password are required');
+    }
+    
+    // Get cached credentials
+    const offlineAuthStr = localStorage.getItem('offlineAuth');
+    if (!offlineAuthStr) {
+      throw new Error('No offline login data available. Please connect to internet and login first.');
+    }
+    
+    const offlineAuth = JSON.parse(offlineAuthStr);
+    
+    // Verify email matches
+    if (email.toLowerCase() !== offlineAuth.email) {
+      throw new Error('Invalid credentials');
+    }
+    
+    // Hash the provided password and compare
+    const providedHash = await simpleHash(password);
+    if (providedHash !== offlineAuth.passwordHash) {
+      throw new Error('Invalid credentials');
+    }
+    
+    // Credentials match! Return cached user data
+    console.log('[Offline Auth] Offline login successful');
+    
+    return {
+      success: true,
+      data: {
+        accessToken: offlineAuth.token,
+        user: offlineAuth.userData
+      },
+      message: 'Logged in offline mode',
+      offline: true
+    };
+    
+  } catch (error) {
+    console.error('[Offline Auth] Offline login failed:', error);
+    throw error;
+  }
+}
+
+// Enhanced login wrapper to cache credentials on successful online login
+async function loginWithCaching(loginData) {
+  if (isOnline) {
+    // Online login - use server
+    try {
+      const response = await apiRequest("/api/v1/user/login", {
+        method: "POST",
+        body: JSON.stringify(loginData),
+      });
+      
+      // Cache credentials for offline use
+      if (response.success && response.data.accessToken) {
+        const passwordHash = await simpleHash(loginData.password);
+        storeOfflineCredentials(
+          loginData.email,
+          passwordHash,
+          response.data.user,
+          response.data.accessToken
+        );
+      }
+      
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  } else {
+    // Offline login - use cached credentials
+    return await handleOfflineLogin(loginData);
+  }
+}
+
 
 // --- API Client Objects ---
 
 // 1. User Authentication and Self-Management API
 // Based on user.controller.js logic (register, login, etc.)
 const authAPI = {
-  // Auth endpoints are often simpler paths like /register, /login
-  register: (data) =>
-    apiRequest("/api/v1/user/register", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-  login: (data) =>
-    apiRequest("/api/v1/user/login", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-  logout: () =>
-    apiRequest("/api/v1/user/logout", {
-      method: "POST",
-    }),
-  getCurrentUser: () =>
-    apiRequest("/api/v1/user/current-user", {
-      // Assumed path from controller logic
-      method: "GET",
-    }),
-  updateAccount: (data) =>
-    apiRequest("/api/v1/user/update-account", {
-      // Assumed path
-      method: "PATCH",
-      body: JSON.stringify(data),
-    }),
-  changePassword: (data) =>
-    apiRequest("/api/v1/user/change-password", {
-      // Assumed path
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-  // Placeholder methods for completeness based on controller logic
-  getWatchHistory: (userId) =>
-    apiRequest(`/api/v1/user/watch-history/${userId}`, {
-      method: "GET",
-    }),
-  getPublicUserInfo: (userId) =>
-    apiRequest(`/api/v1/user/public/${userId}`, {
-      method: "GET",
-    }),
+    login: async (credentials) => {
+        const { email, password } = credentials;
+
+        // SCENARIO A: ONLINE
+        if (navigator.onLine) {
+            try {
+                // 1. Call Real API
+                const response = await apiRequest("/api/v1/user/login", {
+                    method: "POST",
+                    body: JSON.stringify(credentials),
+                });
+
+                // 2. If successful, cache the credentials for future offline use
+                if (response.success && response.data) {
+                    storeOfflineCredentials(
+                        email, 
+                        password, 
+                        response.data.user, 
+                        response.data.accessToken
+                    );
+                }
+                return response;
+            } catch (error) {
+                throw error;
+            }
+        } 
+        
+        // SCENARIO B: OFFLINE
+        else {
+            console.log("[Auth] System is Offline. Attempting local verification...");
+            
+            // 1. Check if we have cached data
+            const cachedData = localStorage.getItem('offlineAuth');
+            if (!cachedData) {
+                throw new Error("No offline login data available. Please connect to internet and login at least once.");
+            }
+
+            const offlineAuth = JSON.parse(cachedData);
+
+            // 2. Verify Email
+            if (email.toLowerCase() !== offlineAuth.email) {
+                throw new Error("Invalid credentials (Offline Mode)");
+            }
+
+            // 3. Verify Password Hash
+            const inputHash = await simpleHash(password);
+            if (inputHash !== offlineAuth.passwordHash) {
+                throw new Error("Invalid credentials (Offline Mode)");
+            }
+
+            // 4. Return Mock Success Response
+            return {
+                success: true,
+                message: "Logged in via Offline Mode",
+                data: {
+                    user: offlineAuth.userData,
+                    accessToken: offlineAuth.token
+                },
+                offline: true // Flag to let UI know we are offline
+            };
+        }
+    },
+    
+    register: (data) => apiRequest("/api/v1/user/register", { method: "POST", body: JSON.stringify(data) }),
+    
+    logout: () => {
+        // Clear sensitive offline data on logout
+        localStorage.removeItem('offlineAuth');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return apiRequest("/api/v1/user/logout", { method: "POST" });
+    },
+    
+    // UPDATED: Get Current User (Network First, Cache Fallback)
+    getCurrentUser: async () => {
+        if (navigator.onLine) {
+            try {
+                const res = await apiRequest("/api/v1/user/current-user", { method: "GET" });
+                // Update local storage with fresh data
+                localStorage.setItem('user', JSON.stringify(res.data));
+                return res;
+            } catch (e) {
+                console.warn("Online fetch failed, falling back to local data");
+            }
+        }
+        
+        // Fallback to localStorage if offline or API failed
+        const localUser = localStorage.getItem('user');
+        if (localUser) {
+            return { 
+                success: true, 
+                data: JSON.parse(localUser), 
+                offline: true 
+            };
+        }
+        throw new Error("No user data found");
+    },
+
+    updateAccount: (data) => apiRequest("/api/v1/user/update-account", { method: "PATCH", body: JSON.stringify(data) }),
+    changePassword: (data) => apiRequest("/api/v1/user/change-password", { method: "POST", body: JSON.stringify(data) }),
 };
 
 // 2. User Management API (Admin/Manager CRUD)
@@ -173,24 +551,24 @@ const taskAPI = {
     }),
 };
 
-// 4. User Task Assignment API
+// 4. User Task Assignment API (CORRECTED PATH)
 const userTaskAssignmentAPI = {
   assign: (data) =>
-    apiRequest("/api/v1/user-tasks", {
+    apiRequest("/api/v1/assignments", { // Changed from /user-tasks to /assignments
       method: "POST",
       body: JSON.stringify(data),
     }),
   getForUser: (userId) =>
-    apiRequest(`/api/v1/user-tasks/${userId}`, {
+    apiRequest(`/api/v1/assignments/${userId}`, { // Changed from /user-tasks to /assignments
       method: "GET",
     }),
   update: (id, data) =>
-    apiRequest(`/api/v1/user-tasks/${id}`, {
+    apiRequest(`/api/v1/assignments/${id}`, { // Changed from /user-tasks to /assignments
       method: "PUT",
       body: JSON.stringify(data),
     }),
   delete: (id) =>
-    apiRequest(`/api/v1/user-tasks/${id}`, {
+    apiRequest(`/api/v1/assignments/${id}`, { // Changed from /user-tasks to /assignments
       method: "DELETE",
     }),
 };
@@ -665,4 +1043,11 @@ window.safetyPromptAPI = safetyPromptAPI;
 window.safetyVideoAPI = safetyVideoAPI;
 window.severityTagAPI = severityTagAPI;
 
-console.log("API client loaded with all project modules.");
+// Export offline utilities
+window.getOfflineQueueStatus = getOfflineQueueStatus;
+window.syncOfflineQueue = syncOfflineQueue;
+window.clearOfflineQueue = clearOfflineQueue;
+window.isAppOnline = () => isOnline;
+
+console.log("API client loaded with all project modules and offline support.");
+

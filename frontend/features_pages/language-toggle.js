@@ -300,13 +300,19 @@ document.addEventListener("DOMContentLoaded", () => {
         // --- Attendance Page ---
         attendance_page_title: { en: "Attendance", hi: "उपस्थिति" },
         mark_today_attendance: { en: "Mark Today's Attendance", hi: "आज की उपस्थिति दर्ज करें" },
-        mark_attendance_subtext: { en: "Tap the button below to mark your presence. Your current location will be recorded for verification.", hi: "अपनी उपस्थिति दर्ज करने के लिए नीचे दिए गए बटन पर टैप करें। सत्यापन के लिए आपका वर्तमान स्थान रिकॉर्ड किया जाएगा।" },
+        mark_attendance_subtext: { en: "Tap the button below to mark your presence.", hi: "अपनी उपस्थिति दर्ज करने के लिए नीचे दिए गए बटन पर टैप करें।" },
         mark_presence_button: { en: "Mark Presence", hi: "उपस्थिति दर्ज करें" },
-        fetching_location: { en: "Fetching your location...", hi: "आपका स्थान प्राप्त किया जा रहा है..." },
+        job_start_button: { en: "Job Start", hi: "कार्य शुरू करें" },
+        end_job_button: { en: "End Job", hi: "कार्य समाप्त करें" },
+        job_started_msg: { en: "Job Started", hi: "कार्य शुरू हो गया" },
+        job_ended_msg: { en: "Job Ended", hi: "कार्य समाप्त हो गया" },
+        job_start_subtext: { en: "Click 'Job Start' to clock in for your shift.", hi: "अपनी शिफ्ट शुरू करने के लिए 'कार्य शुरू करें' पर क्लिक करें।" },
+        fetching_location: { en: "Processing...", hi: "प्रक्रिया चल रही है..." },
         todays_status: { en: "Today's Status", hi: "आज की स्थिति" },
         you_are_marked: { en: "You are marked ", hi: "आप चिह्नित हैं " },
         present_caps: { en: "PRESENT", hi: "उपस्थित" },
         checked_in_at: { en: "Checked-in at:", hi: "चेक-इन समय:" },
+        checked_out_at: { en: "Checked-out at:", hi: "चेक-आउट समय:" },
         location_label: { en: "Location:", hi: "स्थान:" },
         monthly_summary: { en: "Monthly Summary", hi: "मासिक सारांश" },
         present_label: { en: "Present", hi: "उपस्थित" },
@@ -317,7 +323,7 @@ document.addEventListener("DOMContentLoaded", () => {
         attendance_recorded_msg: { en: "Your attendance for today has been recorded.", hi: "आज के लिए आपकी उपस्थिति दर्ज कर ली गई है।" },
 
         // --- Checklist Page ---
-        checklist_page_title: { en: "Pre-Shift Vehicle Inspection", hi: "प्री-शिफ्ट वाहन निरीक्षण" },
+        checklist_page_title: { en: "checklist", hi: "जांच सूची" },
         daily_completion: { en: "Daily Completion", hi: "दैनिक समापन" },
         compliance_streak: { en: "Your compliance streak this week.", hi: "इस सप्ताह आपकी अनुपालन श्रृंखला।" },
         overall_progress: { en: "Overall Progress", hi: "कुल प्रगति" },
@@ -381,7 +387,17 @@ document.addEventListener("DOMContentLoaded", () => {
         quick_btn_checklist: { en: "📋 Checklist", hi: "📋 चेकलिस्ट" },
         quick_btn_map: { en: "🗺️ Safety Map", hi: "🗺️ मानचित्र" },
         quick_btn_video: { en: "🎥 Video Library", hi: "🎥 वीडियो" },
-        chatbot_error: { en: "Sorry, I am having trouble answering right now.", hi: "क्षमा करें, अभी उत्तर देने में समस्या हो रही है।" }
+        chatbot_error: { en: "Sorry, I am having trouble answering right now.", hi: "क्षमा करें, अभी उत्तर देने में समस्या हो रही है।" },
+
+        // Current Location
+        current_location: { en: "Current Location", hi: "वर्तमान स्थान" },
+        show_my_location: { en: "Show My Location", hi: "मेरा स्थान दिखाएं" },
+        fetching_address: { en: "Fetching address...", hi: "पता लाया जा रहा है..." },
+        
+        // Status Labels
+        job_in_label: { en: "Job In", hi: "कार्य शुरू" },
+        job_out_label: { en: "Job Out", hi: "कार्य समाप्त" },
+        total_duration: { en: "Total Duration", hi: "कुल अवधि" }
     };
 
     // Load saved language (default English)

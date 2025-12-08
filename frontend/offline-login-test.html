@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline Login Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .status {
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    .online {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .offline {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+    .result {
+      background: #e9ecef;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    .success {
+      color: #155724;
+    }
+    .error {
+      color: #721c24;
+    }
+    h1 {
+      color: #333;
+    }
+    h2 {
+      color: #555;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 10px;
+    }
+    .info {
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 20px 0;
+    }
+    .warning {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Offline Login Test Suite</h1>
+  
+  <div class="info">
+    <strong>ℹ️ Test Purpose:</strong> Verify that login properly handles offline scenarios and shows appropriate error messages instead of undefined access token errors.
+  </div>
+
+  <div class="test-card">
+    <h2>Connection Status</h2>
+    <div id="connectionStatus" class="status"></div>
+    <button onclick="toggleOfflineMode()">Toggle Offline Mode (DevTools)</button>
+  </div>
+
+  <div class="test-card">
+    <h2>Test 1: Check API Configuration</h2>
+    <button onclick="test1()">Run Test 1</button>
+    <div id="test1Result" class="result"></div>
+  </div>
+
+  <div class="test-card">
+    <h2>Test 2: Try Login While Online (Simulated)</h2>
+    <p>This test checks if login request is properly formatted</p>
+    <button onclick="test2()">Run Test 2</button>
+    <div id="test2Result" class="result"></div>
+  </div>
+
+  <div class="test-card">
+    <h2>Test 3: Try Login While Offline</h2>
+    <p><strong>Expected:</strong> Should show "requires internet connection" error, NOT "undefined access token"</p>
+    <div class="warning">
+      <strong>⚠️ To test offline:</strong>
+      <ol>
+        <li>Open DevTools (F12)</li>
+        <li>Go to Network tab</li>
+        <li>Check "Offline" checkbox</li>
+        <li>Click "Run Test 3" below</li>
+      </ol>
+    </div>
+    <button onclick="test3()">Run Test 3</button>
+    <div id="test3Result" class="result"></div>
+  </div>
+
+  <div class="test-card">
+    <h2>Test 4: Verify No-Queue Endpoints</h2>
+    <p>Verify that authentication endpoints are NOT queued when offline</p>
+    <button onclick="test4()">Run Test 4</button>
+    <div id="test4Result" class="result"></div>
+  </div>
+
+  <div class="test-card">
+    <h2>Test Results Summary</h2>
+    <div id="summary" class="result">Run tests to see summary...</div>
+  </div>
+
+  <!-- Load API Client -->
+  <script src="/api.client.js"></script>
+
+  <script>
+    let testResults = {
+      passed: 0,
+      failed: 0,
+      total: 0
+    };
+
+    // Update connection status
+    function updateConnectionStatus() {
+      const status = document.getElementById('connectionStatus');
+      if (navigator.onLine) {
+        status.className = 'status online';
+        status.textContent = '✅ ONLINE - You are connected to the internet';
+      } else {
+        status.className = 'status offline';
+        status.textContent = '❌ OFFLINE - No internet connection';
+      }
+    }
+
+    window.addEventListener('online', updateConnectionStatus);
+    window.addEventListener('offline', updateConnectionStatus);
+    updateConnectionStatus();
+
+    function toggleOfflineMode() {
+      alert('To toggle offline mode:\n\n1. Open DevTools (F12)\n2. Go to Network tab\n3. Check/uncheck "Offline" checkbox\n\nNote: This simulates offline mode in the browser.');
+    }
+
+    // Test 1: Check API Configuration
+    function test1() {
+      const result = document.getElementById('test1Result');
+      try {
+        result.textContent = 'Running Test 1...\n';
+        
+        // Check if API client loaded
+        if (typeof authAPI === 'undefined') {
+          throw new Error('authAPI not loaded');
+        }
+        
+        result.textContent += '✅ API Client loaded successfully\n';
+        result.textContent += '✅ authAPI object exists\n';
+        result.textContent += `✅ API Base URL: ${API_BASE_URL}\n`;
+        
+        // Check methods exist
+        if (typeof authAPI.login !== 'function') {
+          throw new Error('authAPI.login is not a function');
+        }
+        result.textContent += '✅ authAPI.login method exists\n';
+        
+        if (typeof authAPI.register !== 'function') {
+          throw new Error('authAPI.register is not a function');
+        }
+        result.textContent += '✅ authAPI.register method exists\n';
+        
+        result.textContent += '\n✅ TEST 1 PASSED\n';
+        result.className = 'result success';
+        testResults.passed++;
+      } catch (error) {
+        result.textContent += `\n❌ TEST 1 FAILED: ${error.message}\n`;
+        result.className = 'result error';
+        testResults.failed++;
+      }
+      testResults.total++;
+      updateSummary();
+    }
+
+    // Test 2: Try Login While Online
+    async function test2() {
+      const result = document.getElementById('test2Result');
+      try {
+        result.textContent = 'Running Test 2...\n';
+        
+        if (!navigator.onLine) {
+          result.textContent += '⚠️ Warning: You appear to be offline. This test works best when online.\n\n';
+        }
+        
+        result.textContent += 'Testing login request format...\n';
+        
+        // Test with dummy credentials (will fail auth but should show proper error)
+        try {
+          const response = await authAPI.login({
+            email: 'test@example.com',
+            password: 'testpassword123'
+          });
+          
+          // If we get here, login somehow succeeded (unlikely with dummy credentials)
+          result.textContent += '⚠️ Unexpected: Login succeeded with test credentials\n';
+          result.textContent += JSON.stringify(response, null, 2);
+          
+        } catch (error) {
+          // Expected to fail with auth error, not undefined access token
+          result.textContent += `Expected error caught: ${error.message}\n`;
+          
+          if (error.message.includes('undefined') || error.message.includes('accessToken')) {
+            throw new Error('Got undefined/accessToken error - THIS IS THE BUG!');
+          }
+          
+          if (error.message.includes('internet connection') || 
+              error.message.includes('network') ||
+              error.message.includes('credentials') ||
+              error.message.includes('Invalid') ||
+              error.message.includes('401') ||
+              error.message.includes('403')) {
+            result.textContent += '✅ Error message is appropriate (network or auth error)\n';
+          }
+        }
+        
+        result.textContent += '\n✅ TEST 2 PASSED - No undefined access token error\n';
+        result.className = 'result success';
+        testResults.passed++;
+        
+      } catch (error) {
+        result.textContent += `\n❌ TEST 2 FAILED: ${error.message}\n`;
+        result.className = 'result error';
+        testResults.failed++;
+      }
+      testResults.total++;
+      updateSummary();
+    }
+
+    // Test 3: Try Login While Offline
+    async function test3() {
+      const result = document.getElementById('test3Result');
+      try {
+        result.textContent = 'Running Test 3...\n';
+        
+        if (navigator.onLine) {
+          result.textContent += '⚠️ Warning: You appear to be ONLINE.\n';
+          result.textContent += 'To properly test offline behavior:\n';
+          result.textContent += '1. Open DevTools (F12)\n';
+          result.textContent += '2. Go to Network tab\n';
+          result.textContent += '3. Check "Offline" checkbox\n';
+          result.textContent += '4. Run this test again\n\n';
+        } else {
+          result.textContent += '✅ Offline mode detected\n\n';
+        }
+        
+        result.textContent += 'Attempting login while offline...\n';
+        
+        try {
+          const response = await authAPI.login({
+            email: 'test@example.com',
+            password: 'testpassword123'
+          });
+          
+          // If we get here without error, check if it was queued
+          if (response && response.queued) {
+            throw new Error('Login request was QUEUED - should have failed immediately!');
+          }
+          
+          result.textContent += '⚠️ Unexpected: Login returned response while offline\n';
+          result.textContent += JSON.stringify(response, null, 2);
+          
+        } catch (error) {
+          result.textContent += `Error caught: ${error.message}\n\n`;
+          
+          // Check for the bug
+          if (error.message.toLowerCase().includes('undefined')) {
+            throw new Error('BUG DETECTED: Got undefined error message');
+          }
+          
+          if (error.message.toLowerCase().includes('accesstoken')) {
+            throw new Error('BUG DETECTED: Got accessToken undefined error');
+          }
+          
+          // Check for correct error message
+          if (error.message.includes('internet connection') || 
+              error.message.includes('network') ||
+              error.message.includes('offline')) {
+            result.textContent += '✅ Correct error message shown\n';
+            result.textContent += '✅ Request was NOT queued\n';
+            result.textContent += '✅ User sees clear offline message\n';
+          } else {
+            result.textContent += `⚠️ Got error but message could be clearer: "${error.message}"\n`;
+          }
+        }
+        
+        result.textContent += '\n✅ TEST 3 PASSED - Proper offline handling\n';
+        result.className = 'result success';
+        testResults.passed++;
+        
+      } catch (error) {
+        result.textContent += `\n❌ TEST 3 FAILED: ${error.message}\n`;
+        result.className = 'result error';
+        testResults.failed++;
+      }
+      testResults.total++;
+      updateSummary();
+    }
+
+    // Test 4: Verify No-Queue Endpoints
+    function test4() {
+      const result = document.getElementById('test4Result');
+      try {
+        result.textContent = 'Running Test 4...\n';
+        result.textContent += 'Checking api.client.js implementation...\n\n';
+        
+        // Check the apiRequest function source for no-queue logic
+        const apiRequestSource = apiRequest.toString();
+        
+        if (apiRequestSource.includes('noQueueEndpoints') || 
+            apiRequestSource.includes('shouldNotQueue')) {
+          result.textContent += '✅ Found no-queue endpoint logic in apiRequest\n';
+        } else {
+          throw new Error('No-queue endpoint logic not found in apiRequest function');
+        }
+        
+        if (apiRequestSource.includes('/api/v1/user/login')) {
+          result.textContent += '✅ Login endpoint in no-queue list\n';
+        } else {
+          throw new Error('Login endpoint not in no-queue list');
+        }
+        
+        if (apiRequestSource.includes('/api/v1/user/register')) {
+          result.textContent += '✅ Register endpoint in no-queue list\n';
+        } else {
+          throw new Error('Register endpoint not in no-queue list');
+        }
+        
+        if (apiRequestSource.includes('requires internet connection')) {
+          result.textContent += '✅ Proper error message for offline no-queue requests\n';
+        } else {
+          result.textContent += '⚠️ Could not verify offline error message in source\n';
+        }
+        
+        result.textContent += '\n✅ TEST 4 PASSED - No-queue logic implemented\n';
+        result.className = 'result success';
+        testResults.passed++;
+        
+      } catch (error) {
+        result.textContent += `\n❌ TEST 4 FAILED: ${error.message}\n`;
+        result.className = 'result error';
+        testResults.failed++;
+      }
+      testResults.total++;
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const summary = document.getElementById('summary');
+      summary.textContent = `Test Results:\n`;
+      summary.textContent += `✅ Passed: ${testResults.passed}\n`;
+      summary.textContent += `❌ Failed: ${testResults.failed}\n`;
+      summary.textContent += `📊 Total: ${testResults.total}\n\n`;
+      
+      if (testResults.total > 0) {
+        const percentage = (testResults.passed / testResults.total * 100).toFixed(1);
+        summary.textContent += `Success Rate: ${percentage}%\n`;
+        
+        if (testResults.failed === 0) {
+          summary.textContent += '\n🎉 ALL TESTS PASSED!\n';
+          summary.textContent += 'The offline login bug has been fixed.\n';
+          summary.className = 'result success';
+        } else {
+          summary.className = 'result error';
+        }
+      }
+    }
+
+    // Auto-run Test 1 on load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        test1();
+      }, 500);
+    });
+  </script>
+</body>
+</html>

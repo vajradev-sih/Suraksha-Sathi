@@ -1,0 +1,57 @@
+{
+  "name": "Suraksha Sathi Mine Safety",
+  "short_name": "Suraksha Sathi",
+  "description": "Mining safety and hazard reporting application with offline capabilities",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#0284c7",
+  "scope": "./",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "mine logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+   },
+    {
+      "src": "mine logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Report Hazard",
+      "short_name": "Report",
+      "description": "Quickly report a safety hazard",
+      "url": "./features_pages/report.html",
+      "icons": [
+        {
+          "src": "mine logo.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "short_name": "Attendance",
+      "description": "Mark your attendance",
+      "url": "./features_pages/attendance.html",
+      "icons": [
+        {
+          "src": "mine logo.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
+}

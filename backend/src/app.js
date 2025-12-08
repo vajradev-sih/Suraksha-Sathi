@@ -39,13 +39,13 @@ import notificationRouter from './routes/notification.routes.js';
 import escalationRouter from './routes/escalation.routes.js';
 import attendanceRouter from './routes/attendance.routes.js';
 import payrollRouter from './routes/payroll.routes.js';
+import pushSubscriptionRouter from './routes/pushSubscription.routes.js';
 
 
 
 // http://localhost:8000/api/v1/users/
 //routes declaration 
 app.use("/api/v1/user", userRouter)
-app.use('/api/v1/roles', roleRouter);
 app.use('/api/v1/roles', roleRouter);
 app.use('/api/v1/tasks', taskRouter);
 app.use('/api/v1/checklists', checklistRouter);
@@ -66,6 +66,7 @@ app.use('/api/v1/notifications', notificationRouter);
 app.use('/api/v1/escalations', escalationRouter);
 app.use('/api/v1/attendance', attendanceRouter);
 app.use('/api/v1/payroll', payrollRouter);
+app.use('/api/v1/push', pushSubscriptionRouter);
 
 
 

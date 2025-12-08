@@ -224,6 +224,13 @@
       opacity: 1;
     }
   </style>
+
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Suraksha Sathi">
 </head>
 
 <body class="bg-background-light dark:bg-background-dark font-display">
@@ -244,6 +251,20 @@
         <h1 class="text-white tracking-light text-[32px] font-bold leading-tight px-4 text-center pb-8 animate-fade-in">
           Mine Safety App
         </h1>
+
+        <!-- Offline Warning Banner -->
+        <div id="loginOfflineWarning" class="hidden w-full max-w-md mx-auto mb-4 px-4">
+          <div class="bg-blue-500 text-white rounded-lg p-3 flex items-center gap-3 shadow-lg">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="flex-1">
+              <p class="font-semibold text-sm">Offline Mode</p>
+              <p class="text-xs opacity-90">Using cached credentials to login</p>
+            </div>
+          </div>
+        </div>
 
         <!-- Login/Signup Toggle -->
         <div class="w-full max-w-sm mb-6 animate-scale-in">
@@ -375,6 +396,35 @@
       }, 1200);
     }
 
+    // Offline warning for login page
+    const loginOfflineWarning = document.getElementById('loginOfflineWarning');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function updateLoginOfflineStatus() {
+      const isOffline = !navigator.onLine;
+      const hasOfflineAuth = localStorage.getItem('offlineAuth');
+
+      if (loginOfflineWarning) {
+        if (isOffline) {
+          loginOfflineWarning.classList.remove('hidden');
+          // Don't disable login if we have cached credentials
+          if (submitBtn && !hasOfflineAuth) {
+            submitBtn.disabled = true;
+          }
+        } else {
+          loginOfflineWarning.classList.add('hidden');
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      }
+    }
+
+    // Check initial status
+    updateLoginOfflineStatus();
+
+    // Listen for online/offline events
+    window.addEventListener('online', updateLoginOfflineStatus);
+    window.addEventListener('offline', updateLoginOfflineStatus);
+
     // Toast notification function
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
@@ -475,21 +525,38 @@
 
       try {
         if (isLoginMode) {
-          // Login logic
+          // --- LOGIN LOGIC ---
+          // This calls our updated authAPI.login which handles online/offline internally
           const response = await authAPI.login({ email, password });
-          console.log("Login successful:", response);
+          console.log("Login response:", response);
 
+          // Store token/user (redundant if storeOfflineCredentials worked, but good for safety)
           localStorage.setItem("token", response.data.accessToken);
           localStorage.setItem("user", JSON.stringify(response.data.user));
 
-          showToast('Login successful! Redirecting...', 'success');
+          // Custom Message for Offline vs Online Mode
+          if (response.offline) {
+            showToast('Offline Mode: Logging in with saved credentials...', 'info');
+          } else {
+            showToast('Login successful! Redirecting...', 'success');
+          }
 
+          // Redirect logic based on user role
           setTimeout(() => {
-            window.location.href = "/features_pages/updated-home-page.html";
+            const roleName = response.data.user.role_name;
+            let redirectUrl = "/features_pages/updated-home-page.html"; // Default (Worker)
+
+            if (roleName === 'Admin') {
+              redirectUrl = "/admin/admin-home.html";
+            } else if (roleName === 'Worker') {
+              redirectUrl = "/features_pages/updated-home-page.html";
+            }
+
+            window.location.href = redirectUrl;
           }, 1500);
 
         } else {
-          // Signup logic
+          // --- SIGNUP LOGIC ---
           const fullName = document.getElementById('auth-fullname').value;
           const username = document.getElementById('auth-username').value;
           const phone = document.getElementById('auth-phone').value;
@@ -497,6 +564,7 @@
 
           if (password !== confirmPassword) {
             showToast('Passwords do not match!', 'error');
+            // Reset button state immediately for retry
             submitBtn.disabled = false;
             submitBtnText.classList.remove('hidden');
             submitBtnLoader.classList.add('hidden');
@@ -528,11 +596,17 @@
         console.error("Auth error:", error);
         showToast(error.message || `${isLoginMode ? 'Login' : 'Registration'} failed. Please try again.`, 'error');
       } finally {
-        submitBtn.disabled = false;
-        submitBtnText.classList.remove('hidden');
-        submitBtnLoader.classList.add('hidden');
+        // Always re-enable button (unless redirecting after successful login)
+        // If successful login, the page will redirect, so button state doesn't matter much.
+        // But if error, we need to re-enable.
+        if (!isLoginMode || (isLoginMode && document.querySelector('.toast.error'))) {
+          submitBtn.disabled = false;
+          submitBtnText.classList.remove('hidden');
+          submitBtnLoader.classList.add('hidden');
+        }
       }
     });
+
   </script>
 
   <!-- =======================
@@ -635,6 +709,40 @@
       }
     }
     window.addEventListener("load", loaderAnimation);
+  </script>
+
+  <!-- Offline DB and Service Worker Registration -->
+  <script src="./offline-db.js"></script>
+  <script src="./offline-ui.js"></script>
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('./sw.js');
+          console.log('[SW] Service Worker registered:', registration.scope);
+
+          // Initialize offline database
+          if (typeof offlineDB !== 'undefined') {
+            await offlineDB.init();
+            console.log('[OfflineDB] Database initialized');
+          }
+
+          // Check for updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[SW] New version available! Refresh to update.');
+                // You could show a notification to the user here
+              }
+            });
+          });
+        } catch (error) {
+          console.error('[SW] Service Worker registration failed:', error);
+        }
+      });
+    }
   </script>
 
 </body>

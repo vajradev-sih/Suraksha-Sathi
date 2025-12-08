@@ -4,10 +4,12 @@ import fs from 'fs';
 
 const imagesDir = path.join(process.cwd(), 'src', 'media', 'images');
 const videosDir = path.join(process.cwd(), 'src', 'media', 'videos');
+const audioDir = path.join(process.cwd(), 'src', 'media', 'audio');
 
 // Ensure directories exist
 if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
 if (!fs.existsSync(videosDir)) fs.mkdirSync(videosDir, { recursive: true });
+if (!fs.existsSync(audioDir)) fs.mkdirSync(audioDir, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -16,6 +18,8 @@ const storage = multer.diskStorage({
       cb(null, imagesDir);
     } else if (mimeType.startsWith('video/')) {
       cb(null, videosDir);
+    } else if (mimeType.startsWith('audio/')) {
+      cb(null, audioDir);
     } else {
       cb(new Error('Unsupported file type'), null);
     }
@@ -27,7 +31,11 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/avi', 'video/mov'];
+  const allowedTypes = [
+    'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+    'video/mp4', 'video/avi', 'video/mov', 'video/webm',
+    'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/mp4'
+  ];
   if (allowedTypes.includes(file.mimetype)) cb(null, true);
   else cb(new Error('Unsupported file type'), false);
 };

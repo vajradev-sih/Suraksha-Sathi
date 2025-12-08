@@ -490,6 +490,10 @@
             Object.values(dynamicBehaviors).forEach(init => init());
         });
     </script>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0284c7">
 </head>
 
 <body class="bg-gradient-to-br from-neutral-50 to-neutral-100 font-sans text-neutral-800 min-h-screen pb-20">
@@ -512,16 +516,8 @@
                             class="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none rounded-lg">
                         </div>
 
-                        <a href="profile_setting.html"
-                            class="flex items-center space-x-3 text-white/90 hover:bg-white/15 hover:text-white p-2 rounded-md transition-colors duration-150 relative">
-                            <span class="material-symbols-rounded">settings</span>
-                            <span data-translate-key="settings">Settings</span>
-                        </a>
-                        <a href="attendece.html"
-                            class="flex items-center space-x-3 text-white/90 hover:bg-white/15 hover:text-white p-2 rounded-md transition-colors duration-150 relative">
-                            <span class="material-symbols-rounded">history</span>
-                            <span data-translate-key="attendance">Attendance</span>
-                        </a>
+
+
                         <a href="video_library.html"
                             class="flex items-center space-x-3 text-white/90 hover:bg-white/15 hover:text-white p-2 rounded-md transition-colors duration-150 relative">
                             <span class="material-symbols-rounded">video_library</span>
@@ -549,12 +545,6 @@
                                     class="absolute -top-7 left-1/2 -translate-x-1/2 text-xs font-medium text-white select-none">EN</span>
                             </div>
                         </div>
-
-                        <a href="#"
-                            class="flex items-center space-x-3 text-white/90 hover:bg-white/15 hover:text-white p-2 rounded-md transition-colors duration-150 relative">
-                            <span class="material-symbols-rounded">help</span>
-                            <span data-translate-key="help_support">Help & Support</span>
-                        </a>
 
                         <a href="#"
                             class="flex items-center space-x-3 text-red-400 hover:bg-red-500/20 hover:text-red-300 p-2 rounded-md transition-colors duration-150 relative mt-6"
@@ -660,15 +650,27 @@
         <main class="relative z-20 -mt-12 px-4 pb-20">
 
             <div class="grid grid-cols-2 gap-4 mb-6 animate-slideInUp">
-                <div onclick="toggleEmergencyModal()"
-                    class="cursor-pointer bg-white/95 backdrop-blur-sm rounded-2xl p-5 text-center shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col items-center group">
-                    <div
-                        class="size-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                        <span class="material-symbols-rounded text-3xl">sos</span>
+                <a href="report.html" class="block w-full max-w-xs bg-white/95 backdrop-blur-sm rounded-2xl p-5 shadow-card
+           hover:shadow-card-hover transition-all duration-300
+           flex flex-col items-center text-center group cursor-pointer
+           active:scale-95 sm:max-w-sm md:max-w-md">
+
+                    <div class="size-14 sm:size-16 md:size-20 rounded-full bg-primary-light/30 text-primary-dark
+               flex items-center justify-center mb-3
+               group-hover:scale-110 transition-transform duration-300">
+                        <span class="material-symbols-rounded text-3xl sm:text-4xl md:text-5xl">sos</span>
                     </div>
-                    <p class="font-semibold text-neutral-700" data-translate-key="emergency">SOS</p>
-                    <p class="text-xs text-neutral-500 mt-1" data-translate-key="report_incident">Emergency Contacts</p>
-                </div>
+
+                    <p class="font-semibold text-neutral-700 text-sm sm:text-base md:text-lg"
+                        data-translate-key="emergency">
+                        Emergency
+                    </p>
+
+                    <p class="text-xs sm:text-sm text-neutral-500 mt-1" data-translate-key="report_incident">
+                        Report an incident
+                    </p>
+                </a>
+
                 <a href="attendance.html"
                     class="bg-white/95 backdrop-blur-sm rounded-2xl p-5 text-center shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col items-center group">
                     <div
@@ -1525,9 +1527,16 @@
 
                 container.insertAdjacentHTML('afterbegin', alertsHTML);
 
-                // Update the "2 active" badge text if it exists
-                const badge = document.querySelector(".badge.bg-alert-red\\/10");
-                if (badge) badge.textContent = `${alerts.length} active`;
+                // Update the active alerts count badge
+                const badge = document.getElementById("active-alerts-badge");
+                const currentCount = container.children.length; // Get total count of items in the list
+                if (badge) {
+                    const currentLang = localStorage.getItem("lang") || "en";
+                    const activeText = window.translations && window.translations.active_alerts ?
+                        window.translations.active_alerts[currentLang] : "active";
+                    // Use innerHTML to separate the number from the translatable text
+                    badge.innerHTML = `${currentCount} <span data-translate-key="active_alerts">${activeText}</span>`;
+                }
             };
 
             const appendRecentActivity = (activities) => {
@@ -1570,67 +1579,61 @@
 
             // --- 3. API CALLS & PAGE POPULATION ---
 
+            // frontend/features_pages/updated-home-page.html
+
             const initializeDashboard = async () => {
                 try {
-                    // 1. Get Fresh User Data DIRECTLY from API
+                    // 1. Get User Data (Using our updated smart function)
+                    // This will return local data immediately if offline
                     const currentUserResponse = await authAPI.getCurrentUser();
+                    const currentUserData = currentUserResponse.data || currentUserResponse.user;
 
-                    // CRITICAL FIX: Extract user data and ID correctly from the response
-                    const userData = currentUserResponse.data;
-                    const userId = userData.id;
+                    renderWelcomeHeader(currentUserData);
 
-                    // Verify we have an ID before proceeding
-                    if (!userId) {
-                        console.error("Could not find user ID in response:", currentUserResponse);
-                        return;
-                    }
+                    // 2. Load Content (Network First, Cache Fallback)
+                    if (navigator.onLine) {
+                        // ONLINE: Fetch fresh data
+                        try {
+                            const [notifRes, videoRes] = await Promise.all([
+                                notificationAPI.getForUser(currentUserData._id),
+                                dailyVideoAPI.getForUser(currentUserData._id)
+                            ]);
 
-                    renderWelcomeHeader(userData);
+                            // Cache this data for next time we go offline
+                            if (typeof offlineDB !== 'undefined') {
+                                await offlineDB.cacheResponse('dashboard_notifications', notifRes.data);
+                                await offlineDB.cacheResponse('dashboard_video', videoRes.data);
+                            }
 
-                    // 2. Use the FRESH userId for Notifications (This fixes the 'undefined' error)
-                    try {
-                        const notificationResponse = await notificationAPI.getForUser(userId);
-                        if (notificationResponse && notificationResponse.data) {
-                            const criticalAlerts = notificationResponse.data.filter(n => n.type === 'alert');
-                            const recentActivities = notificationResponse.data.filter(n => n.type !== 'alert');
+                            // Render Fresh Data
+                            renderNotifications(notifRes.data);
+                            if (videoRes.data && videoRes.data.length > 0) renderVideoOfTheDay(videoRes.data[0]);
 
-                            appendCriticalAlerts(criticalAlerts);
-                            appendRecentActivity(recentActivities);
+                        } catch (apiError) {
+                            console.warn("API Error online:", apiError);
                         }
-                    } catch (notifError) {
-                        console.warn("Failed to load notifications:", notifError);
-                    }
+                    } else {
+                        // OFFLINE: Load from IndexedDB or LocalStorage
+                        console.log("App is Offline. Loading dashboard from cache...");
+                        showToast("You are offline. Showing cached data.", "info");
 
-                    // 3. Use the FRESH userId for Reports
-                    try {
-                        // Assuming getById in your API expects a User ID to filter reports
-                        const reportsResponse = await hazardReportAPI.getById(userId);
-                        console.log("User Reports:", reportsResponse);
-                    } catch (reportError) {
-                        console.warn("Failed to load reports (or no specific endpoint for user reports):", reportError);
-                    }
+                        if (typeof offlineDB !== 'undefined') {
+                            const cachedNotifs = await offlineDB.getCachedResponse('dashboard_notifications');
+                            if (cachedNotifs) renderNotifications(cachedNotifs);
 
-                    // 4. Use the FRESH userId for Daily Video
-                    try {
-                        const videoResponse = await dailyVideoAPI.getForUser(userId);
-                        if (videoResponse && videoResponse.data) {
-                            renderVideoOfTheDay(videoResponse.data);
+                            const cachedVideo = await offlineDB.getCachedResponse('dashboard_video');
+                            if (cachedVideo && cachedVideo.length > 0) renderVideoOfTheDay(cachedVideo[0]);
                         }
-                    } catch (videoError) {
-                        console.log("No daily video assigned today.");
                     }
 
                 } catch (error) {
-                    console.error("Failed to initialize dashboard:", error);
-                    if (error.message && error.message.includes("401")) {
-                        // Session expired
-                        localStorage.removeItem("token");
-                        localStorage.removeItem("user");
+                    console.error("Dashboard Init Error:", error);
+                    // Only redirect to login if we strictly have NO user data
+                    if (!localStorage.getItem('user')) {
                         window.location.href = "../index.html";
                     }
                 }
             };
-
             // --- 4. EVENT LISTENERS ---
 
             const logoutButton = document.getElementById("logout-button");
@@ -1654,62 +1657,19 @@
         });
     </script>
 
-    <!-- Emergency Modal -->
-    <div id="emergency-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <!-- Background backdrop -->
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="toggleEmergencyModal()"></div>
-
-        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                        <div class="sm:flex sm:items-start">
-                            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                                <span class="material-symbols-rounded text-red-600">warning</span>
-                            </div>
-                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                                <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">Emergency Contacts</h3>
-                                <div class="mt-4 space-y-3">
-                                    <a href="tel:100" class="flex items-center justify-between w-full p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
-                                        <span class="font-medium text-red-900">Police</span>
-                                        <span class="text-red-700 font-bold">100</span>
-                                    </a>
-                                    <a href="tel:101" class="flex items-center justify-between w-full p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
-                                        <span class="font-medium text-red-900">Fire</span>
-                                        <span class="text-red-700 font-bold">101</span>
-                                    </a>
-                                    <a href="tel:102" class="flex items-center justify-between w-full p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
-                                        <span class="font-medium text-red-900">Ambulance</span>
-                                        <span class="text-red-700 font-bold">102</span>
-                                    </a>
-                                    <a href="tel:108" class="flex items-center justify-between w-full p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
-                                        <span class="font-medium text-red-900">Disaster Management</span>
-                                        <span class="text-red-700 font-bold">108</span>
-                                    </a>
-                                     <a href="tel:1066" class="flex items-center justify-between w-full p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
-                                        <span class="font-medium text-red-900">Mine Safety</span>
-                                        <span class="text-red-700 font-bold">1066</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                        <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto" onclick="toggleEmergencyModal()">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- Offline DB and Service Worker -->
+    <script src="../offline-db.js"></script>
+    <script src="../offline-ui.js"></script>
     <script>
-        function toggleEmergencyModal() {
-            const modal = document.getElementById('emergency-modal');
-            if (modal.classList.contains('hidden')) {
-                modal.classList.remove('hidden');
-            } else {
-                modal.classList.add('hidden');
-            }
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('../sw.js')
+                .then(reg => console.log('[SW] Registered:', reg.scope))
+                .catch(err => console.error('[SW] Registration failed:', err));
+        }
+
+        // Initialize offline DB
+        if (typeof offlineDB !== 'undefined') {
+            offlineDB.init().then(() => console.log('[OfflineDB] Ready'));
         }
     </script>
 

@@ -20,50 +20,22 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#0284c7", // sky-600
-                        "primary-dark": "#0369a1", // sky-700
-                        "primary-light": "#7dd3fc", // sky-300
-                        "secondary": "#f97316", // orange-500
-                        "background-light": "#f8fafc", // slate-50
-                        "surface-light": "#ffffff",
-                        "surface-light-alt": "#f1f5f9", // slate-100
-                        "alert-red": "#ef4444", // red-500
-                        "success-green": "#22c55e", // green-500
-                        "info-blue": "#3b82f6", // blue-500
-                        "neutral-50": "#f8fafc",
-                        "neutral-100": "#f1f5f9",
-                        "neutral-200": "#e2e8f0",
-                        "neutral-300": "#cbd5e1",
-                        "neutral-400": "#94a3b8",
-                        "neutral-500": "#64748b",
-                        "neutral-600": "#475569",
-                        "neutral-700": "#334155",
-                        "neutral-800": "#1e293b",
+                        "primary": "#0284c7", "primary-dark": "#0369a1", "primary-light": "#7dd3fc",
+                        "secondary": "#f97316", "alert-red": "#ef4444", "success-green": "#22c55e",
+                        "info-blue": "#3b82f6", "neutral-50": "#f8fafc", "neutral-100": "#f1f5f9",
+                        "neutral-200": "#e2e8f0", "neutral-500": "#64748b", "neutral-800": "#1e293b",
                         "neutral-900": "#0f172a",
                     },
                     fontFamily: {
                         "sans": ["Inter", "sans-serif"],
                         "orbitron": ["Orbitron", "sans-serif"],
                     },
-                    borderRadius: { "4xl": "2rem" },
-                    boxShadow: {
-                        'card': '0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.03)',
-                        'bottom-sheet': '0 -4px 15px rgba(0,0,0,0.1)',
+                    animation: {
+                        fadeIn: "fadeIn 0.3s ease-out forwards",
                     },
                     keyframes: {
                         fadeIn: { "0%": { opacity: "0" }, "100%": { opacity: "1" } },
-                        fadeOut: { "0%": { opacity: "1" }, "100%": { opacity: "0" } },
-                        slideInUp: { "0%": { transform: "translateY(100%)" }, "100%": { transform: "translateY(0)" } },
-                        slideOutDown: { "0%": { transform: "translateY(0)" }, "100%": { transform: "translateY(100%)" } },
-                        toastIn: { "0%": { transform: "translateY(2rem)", opacity: 0 }, "100%": { transform: "translateY(0)", opacity: 1 } },
-                    },
-                    animation: {
-                        fadeIn: "fadeIn 0.3s ease-out forwards",
-                        fadeOut: "fadeOut 0.3s ease-out forwards",
-                        slideInUp: "slideInUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards",
-                        slideOutDown: "slideOutDown 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards",
-                        toastIn: "toastIn 0.5s ease-out forwards",
-                    },
+                    }
                 },
             },
         };
@@ -72,13 +44,18 @@
         .material-symbols-rounded { font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24; }
         .badge { @apply inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full; }
         .filter-btn.active { @apply bg-primary text-white shadow; }
+        .modal { @apply fixed inset-0 z-50 flex items-center justify-center bg-black/60 opacity-0 pointer-events-none transition-opacity duration-300; }
+        .modal.show { @apply opacity-100 pointer-events-auto; }
+        .modal-content { @apply bg-white rounded-2xl shadow-xl w-full max-w-lg transform scale-95 transition-transform duration-300; }
+        .modal.show .modal-content { @apply scale-100; }
     </style>
 </head>
 
 <body class="bg-gradient-to-br from-neutral-50 to-neutral-100 font-sans text-neutral-800 min-h-screen">
     <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+
         <div
-            class="sticky top-0 z-40 flex items-center bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] px-4 py-3 justify-between shadow-lg shadow-blue-900/40 border-b border-blue-900/40">
+            class="sticky top-0 z-40 flex items-center bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] px-4 py-3 justify-between shadow-lg">
             <div class="flex size-12 shrink-0 items-center justify-start relative">
                 <a href="admin-home.html" class="text-white"><span
                         class="material-symbols-rounded text-2xl">arrow_back</span></a>
@@ -86,28 +63,20 @@
             <div class="flex-1 flex justify-center">
                 <h1 class="text-xl sm:text-2xl font-[Orbitron] tracking-widest text-white">Worker Payroll</h1>
             </div>
-            <div class="flex w-12 items-center justify-end">
-                <button id="add-worker-btn" class="text-white"><span
-                        class="material-symbols-rounded text-2xl">person_add</span></button>
-            </div>
+            <div class="flex w-12 items-center justify-end"></div>
         </div>
 
         <main class="flex-1 flex flex-col">
-            <!-- Month Navigator -->
             <div class="bg-white/80 backdrop-blur-sm p-3 border-b sticky top-[61px] z-30">
                 <div class="flex items-center justify-between max-w-md mx-auto">
                     <button id="prev-month-btn" class="p-2 rounded-full hover:bg-neutral-200 transition-colors"><span
                             class="material-symbols-rounded">chevron_left</span></button>
-                    <div id="month-display" class="text-center">
-                        <p class="font-bold text-lg text-neutral-800">October 2025</p>
-                        <p class="text-sm text-neutral-500">Payroll Cycle</p>
-                    </div>
+                    <div id="month-display" class="text-center"></div>
                     <button id="next-month-btn" class="p-2 rounded-full hover:bg-neutral-200 transition-colors"><span
                             class="material-symbols-rounded">chevron_right</span></button>
                 </div>
             </div>
 
-            <!-- Summary Cards -->
             <div id="summary-cards" class="p-4 grid grid-cols-2 gap-4">
                 <div class="bg-white rounded-2xl p-4 shadow-card border flex items-center gap-3">
                     <div
@@ -128,19 +97,8 @@
                         <p class="text-xs font-medium text-neutral-500">Total Payroll</p>
                     </div>
                 </div>
-                <div class="bg-white rounded-2xl p-4 shadow-card border flex items-center gap-3 col-span-2">
-                    <div
-                        class="w-10 h-10 flex items-center justify-center rounded-full bg-success-green/10 text-success-green">
-                        <span class="material-symbols-rounded">task_alt</span>
-                    </div>
-                    <div>
-                        <p id="payments-processed" class="text-2xl font-bold">0 / 0</p>
-                        <p class="text-xs font-medium text-neutral-500">Payments Processed</p>
-                    </div>
-                </div>
             </div>
 
-            <!-- Worker List -->
             <div class="px-4 pb-4 flex-1 flex flex-col">
                 <div class="flex gap-2 mb-4">
                     <div class="relative flex-1">
@@ -153,38 +111,36 @@
                         <select id="sort-select"
                             class="appearance-none w-full bg-white border-neutral-200 border rounded-xl py-3 pl-4 pr-10 focus:ring-2 focus:ring-primary transition">
                             <option value="name_asc">Name (A-Z)</option>
-                            <option value="payable_desc">Payable (High-Low)</option>
-                            <option value="payable_asc">Payable (Low-High)</option>
+                            <option value="payable_desc">Amount (High-Low)</option>
+                            <option value="payable_asc">Amount (Low-High)</option>
                         </select>
                         <span
                             class="material-symbols-rounded absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">unfold_more</span>
                     </div>
                 </div>
 
-                <!-- Filter Tabs -->
                 <div id="filter-tabs" class="grid grid-cols-3 gap-2 bg-neutral-200/70 p-1 rounded-xl mb-4">
                     <button
                         class="filter-btn py-2 px-2 text-sm font-bold text-neutral-600 rounded-lg transition-all active"
                         data-filter="all">All</button>
                     <button class="filter-btn py-2 px-2 text-sm font-bold text-neutral-600 rounded-lg transition-all"
-                        data-filter="payable">Payable</button>
+                        data-filter="updated">Updated</button>
                     <button class="filter-btn py-2 px-2 text-sm font-bold text-neutral-600 rounded-lg transition-all"
-                        data-filter="paid">Paid</button>
+                        data-filter="pending">Pending</button>
                 </div>
 
                 <div id="worker-list-container" class="flex-1">
                     <div id="worker-list" class="space-y-3">
-                        <!-- Worker cards will be dynamically inserted here -->
                     </div>
                 </div>
 
-                <div id="bulk-actions" class="mt-4 grid grid-cols-2 gap-3">
+                <div id="bulk-actions" class="mt-6 grid grid-cols-2 gap-3 sticky bottom-4 z-10">
                     <button id="process-all-btn"
-                        class="w-full text-center py-3 px-4 bg-success-green text-white font-bold rounded-xl shadow hover:bg-green-600 flex items-center justify-center gap-2 disabled:bg-neutral-300 disabled:cursor-not-allowed">
+                        class="w-full text-center py-3 px-4 bg-success-green text-white font-bold rounded-xl shadow-lg hover:bg-green-600 flex items-center justify-center gap-2 disabled:bg-neutral-300 disabled:cursor-not-allowed transition-colors">
                         <span class="material-symbols-rounded">check_circle</span> Process All
                     </button>
                     <button id="export-csv-btn"
-                        class="w-full text-center py-3 px-4 bg-neutral-600 text-white font-bold rounded-xl shadow hover:bg-neutral-700 flex items-center justify-center gap-2">
+                        class="w-full text-center py-3 px-4 bg-neutral-800 text-white font-bold rounded-xl shadow-lg hover:bg-neutral-900 flex items-center justify-center gap-2 transition-colors">
                         <span class="material-symbols-rounded">download</span> Export CSV
                     </button>
                 </div>
@@ -192,18 +148,73 @@
         </main>
     </div>
 
-    <!-- Modals and Bottom Sheets Container -->
-    <div id="modal-container"
-        class="fixed inset-0 z-50 bg-black/50 flex items-end pointer-events-none opacity-0 transition-opacity duration-300">
-        <div id="bottom-sheet"
-            class="bg-white rounded-t-2xl shadow-bottom-sheet w-full max-w-2xl mx-auto p-5 transform translate-y-full">
-            <!-- Content will be dynamically inserted here -->
+    <div id="payrollModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center p-5 border-b">
+                <h3 class="text-xl font-bold text-neutral-800">Update Salary Details</h3>
+                <button onclick="closePayrollModal()" class="text-neutral-400 hover:text-neutral-600"><span
+                        class="material-symbols-rounded">close</span></button>
+            </div>
+            <form id="payrollForm" class="p-5 space-y-4">
+                <input type="hidden" id="payUserId">
+
+                <div class="bg-neutral-50 p-3 rounded-lg flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-neutral-500">Worker</p>
+                        <p id="payUserName" class="font-bold text-lg">Worker Name</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-neutral-500">Period</p>
+                        <p id="payPeriod" class="font-semibold">Oct 2025</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-600 mb-1">Total Hours</label>
+                        <input type="number" id="payHours" class="w-full rounded-lg border-neutral-300 bg-white"
+                            placeholder="0">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-600 mb-1">Daily Rate (₹)</label>
+                        <input type="number" id="payRate"
+                            class="w-full rounded-lg border-neutral-200 bg-neutral-100 text-neutral-500 cursor-not-allowed"
+                            readonly>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-neutral-600 mb-1">Gross Salary (₹)</label>
+                    <input type="number" id="payGross" class="w-full rounded-lg border-neutral-300 bg-white"
+                        placeholder="0">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-neutral-600 mb-1">Deductions (₹)</label>
+                    <input type="number" id="payDeductions" class="w-full rounded-lg border-neutral-300 bg-white"
+                        placeholder="0">
+                </div>
+
+                <div class="pt-2 border-t mt-2">
+                    <div class="flex justify-between items-center">
+                        <p class="font-bold text-lg text-neutral-700">Net Payable:</p>
+                        <p id="payNet" class="font-bold text-2xl text-primary">₹0</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closePayrollModal()"
+                        class="flex-1 py-3 bg-neutral-200 rounded-xl font-bold text-neutral-700 hover:bg-neutral-300">Cancel</button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-primary rounded-xl font-bold text-white shadow-lg hover:bg-primary-dark">Save
+                        Salary Details</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast"
-        class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-neutral-800 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 z-50 opacity-0 pointer-events-none">
+        class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-neutral-800 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 z-[60] opacity-0 pointer-events-none transition-opacity duration-300">
         <span id="toast-icon" class="material-symbols-rounded text-success-green"></span>
         <p id="toast-message"></p>
     </div>
@@ -211,312 +222,9 @@
     <script src="../api.client.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- DATA (Simulating a database) ---
-            let workersData = [
-                { id: 'USR-001', name: 'Rohan Sharma', rate: 800, seed: 'Rohan', attendance: { '2025-09': { present: 20, absent: 1, leave: 1, paid: true }, '2025-10': { present: 18, absent: 2, leave: 1, paid: false }, '2025-11': { present: 21, absent: 0, leave: 1, paid: false } } },
-                { id: 'USR-002', name: 'Priya Patel', rate: 850, seed: 'Priya', attendance: { '2025-09': { present: 22, absent: 0, leave: 0, paid: true }, '2025-10': { present: 20, absent: 1, leave: 0, paid: false }, '2025-11': { present: 19, absent: 2, leave: 1, paid: false } } },
-                { id: 'USR-003', name: 'Suresh Singh', rate: 900, seed: 'Suresh', attendance: { '2025-09': { present: 18, absent: 2, leave: 2, paid: true }, '2025-10': { present: 15, absent: 3, leave: 3, paid: true }, '2025-11': { present: 17, absent: 4, leave: 1, paid: false } } },
-                { id: 'USR-004', name: 'Anjali Gupta', rate: 750, seed: 'Anjali', attendance: { '2025-09': { present: 21, absent: 1, leave: 0, paid: true }, '2025-10': { present: 21, absent: 0, leave: 0, paid: false }, '2025-11': { present: 22, absent: 0, leave: 0, paid: false } } },
-                { id: 'USR-005', name: 'Vikram Kumar', rate: 820, seed: 'Vikram', attendance: { '2025-09': { present: 22, absent: 0, leave: 0, paid: true }, '2025-10': { present: 19, absent: 2, leave: 0, paid: false }, '2025-11': { present: 20, absent: 1, leave: 1, paid: false } } },
-            ];
-
-            // --- STATE ---
-            let currentDate = new Date('2025-10-15');
-            let searchTerm = '';
-            let sortBy = 'name_asc';
-            let filterBy = 'all'; // 'all', 'payable', 'paid'
-
-            // --- DOM ELEMENTS ---
-            const monthDisplay = document.getElementById('month-display');
-            const prevMonthBtn = document.getElementById('prev-month-btn');
-            const nextMonthBtn = document.getElementById('next-month-btn');
-            const workerList = document.getElementById('worker-list');
-            const searchInput = document.getElementById('search-input');
-            const sortSelect = document.getElementById('sort-select');
-            const modalContainer = document.getElementById('modal-container');
-            const sheet = document.getElementById('bottom-sheet');
-            const addWorkerBtn = document.getElementById('add-worker-btn');
-            const filterTabs = document.getElementById('filter-tabs');
-            const processAllBtn = document.getElementById('process-all-btn');
-            const exportCsvBtn = document.getElementById('export-csv-btn');
-
-            const totalWorkersEl = document.getElementById('total-workers');
-            const totalPayrollEl = document.getElementById('total-payroll');
-            const paymentsProcessedEl = document.getElementById('payments-processed');
-
-            const toast = document.getElementById('toast');
-            const toastIcon = document.getElementById('toast-icon');
-            const toastMessage = document.getElementById('toast-message');
-
-            const getMonthKey = (date) => `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-
-            // --- RENDER FUNCTIONS ---
-            const renderAll = () => {
-                const monthKey = getMonthKey(currentDate);
-                // Simulate loading
-                workerList.innerHTML = `<div class="text-center py-10 text-neutral-500">Loading...</div>`;
-                setTimeout(() => {
-                    renderMonthDisplay();
-                    renderSummaryCards(monthKey);
-                    renderWorkerList(monthKey);
-                    updateBulkActions(monthKey);
-                }, 250); // Small delay to simulate fetch
-            };
-
-            const renderMonthDisplay = () => {
-                const monthName = currentDate.toLocaleString('default', { month: 'long' });
-                const year = currentDate.getFullYear();
-                monthDisplay.innerHTML = `<p class="font-bold text-lg text-neutral-800">${monthName} ${year}</p><p class="text-sm text-neutral-500">Payroll Cycle</p>`;
-            };
-
-            const renderSummaryCards = (monthKey) => {
-                let totalPayroll = 0;
-                let paymentsProcessed = 0;
-                let workersThisMonth = 0;
-                workersData.forEach(w => {
-                    if (w.attendance[monthKey]) {
-                        workersThisMonth++;
-                        totalPayroll += w.attendance[monthKey].present * w.rate;
-                        if (w.attendance[monthKey].paid) paymentsProcessed++;
-                    }
-                });
-                totalWorkersEl.textContent = workersThisMonth;
-                totalPayrollEl.textContent = `₹${(totalPayroll / 1000).toFixed(1).replace('.0', '')}k`;
-                paymentsProcessedEl.textContent = `${paymentsProcessed} / ${workersThisMonth}`;
-            };
-
-            const renderWorkerList = (monthKey) => {
-                workerList.innerHTML = '';
-
-                let filteredWorkers = workersData.filter(w =>
-                    w.name.toLowerCase().includes(searchTerm.toLowerCase()) && w.attendance[monthKey]
-                );
-
-                if (filterBy === 'payable') {
-                    filteredWorkers = filteredWorkers.filter(w => !w.attendance[monthKey].paid);
-                } else if (filterBy === 'paid') {
-                    filteredWorkers = filteredWorkers.filter(w => w.attendance[monthKey].paid);
-                }
-
-                const getPayable = (w) => w.attendance[monthKey].present * w.rate;
-                filteredWorkers.sort((a, b) => {
-                    switch (sortBy) {
-                        case 'payable_desc': return getPayable(b) - getPayable(a);
-                        case 'payable_asc': return getPayable(a) - getPayable(b);
-                        default: return a.name.localeCompare(b.name);
-                    }
-                });
-
-                if (filteredWorkers.length === 0) {
-                    workerList.innerHTML = `<div class="text-center py-10"><p class="font-bold text-neutral-600">No Workers Found</p><p class="text-sm text-neutral-500">No workers match the current filters.</p></div>`;
-                    return;
-                }
-
-                filteredWorkers.forEach(worker => {
-                    const attendance = worker.attendance[monthKey];
-                    const payable = attendance.present * worker.rate;
-                    const totalDays = attendance.present + attendance.absent + attendance.leave;
-
-                    const card = document.createElement('div');
-                    card.className = `worker-card bg-white p-4 rounded-2xl shadow-card border flex items-center gap-4 active:scale-95 transition-all duration-200 ${attendance.paid ? 'bg-neutral-50 opacity-70' : ''}`;
-                    card.dataset.id = worker.id;
-                    card.innerHTML = `
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${worker.seed}" alt="User" class="w-12 h-12 rounded-full">
-                        <div class="flex-1">
-                            <p class="font-bold text-neutral-800">${worker.name}</p>
-                            <p class="text-sm text-neutral-500">Present: ${attendance.present}/${totalDays} Days</p>
-                        </div>
-                        <div class="text-right">
-                             ${attendance.paid ?
-                            `<p class="badge bg-success-green/10 text-success-green font-bold"><span class="material-symbols-rounded text-sm mr-1">check</span>Paid</p>` :
-                            `<p class="font-bold text-lg text-neutral-800">₹${payable.toLocaleString('en-IN')}</p><p class="text-sm font-medium text-neutral-500">Payable</p>`
-                        }
-                        </div>
-                    `;
-                    card.addEventListener('click', () => openSheet('details', { workerId: worker.id, monthKey }));
-                    workerList.appendChild(card);
-                });
-            };
-
-            const updateBulkActions = (monthKey) => {
-                const payableWorkers = workersData.filter(w => w.attendance[monthKey] && !w.attendance[monthKey].paid);
-                processAllBtn.disabled = payableWorkers.length === 0;
-            };
-
-            const openSheet = (type, data = {}) => {
-                if (type === 'details') {
-                    const { workerId, monthKey } = data;
-                    const worker = workersData.find(w => w.id === workerId);
-                    const attendance = worker.attendance[monthKey];
-                    const totalPayable = worker.rate * attendance.present;
-                    sheet.innerHTML = `
-                        <div class="flex justify-between items-center pb-3 border-b mb-4">
-                            <div><h3 class="text-lg font-bold text-neutral-800">${worker.name}</h3><p class="text-sm text-neutral-500">ID: ${worker.id}</p></div>
-                            <button id="close-sheet-btn" class="p-2 -mr-2"><span class="material-symbols-rounded">close</span></button>
-                        </div>
-                        <div class="space-y-4">
-                            <div>
-                                <h4 class="text-base font-bold text-neutral-700 mb-2">Monthly Summary</h4>
-                                <div class="grid grid-cols-3 gap-3 text-center">
-                                    <div class="bg-success-green/10 p-3 rounded-lg"><p class="text-2xl font-bold text-success-green">${attendance.present}</p><p class="text-xs font-medium text-success-green">Present</p></div>
-                                    <div class="bg-alert-red/10 p-3 rounded-lg"><p class="text-2xl font-bold text-alert-red">${attendance.absent}</p><p class="text-xs font-medium text-alert-red">Absent</p></div>
-                                    <div class="bg-info-blue/10 p-3 rounded-lg"><p class="text-2xl font-bold text-info-blue">${attendance.leave}</p><p class="text-xs font-medium text-info-blue">On Leave</p></div>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 class="text-base font-bold text-neutral-700 mb-2">Payroll Calculation</h4>
-                                <div class="bg-neutral-100 p-4 rounded-lg text-center">
-                                    <p class="text-lg text-neutral-600">${attendance.present} Days × ₹${worker.rate} / Day</p>
-                                    <p class="text-3xl font-bold text-primary mt-1">₹${totalPayable.toLocaleString('en-IN')}</p>
-                                </div>
-                            </div>
-                            <div class="flex justify-end gap-3 pt-2">
-                                <button id="cancel-btn" class="px-5 py-3 bg-neutral-200 text-neutral-700 font-bold rounded-xl hover:bg-neutral-300">Close</button>
-                                ${attendance.paid ?
-                            `<button disabled class="px-5 py-3 bg-success-green text-white font-bold rounded-xl flex items-center gap-2 opacity-70 cursor-not-allowed"><span class="material-symbols-rounded">check_circle</span> Payment Processed</button>` :
-                            `<button id="process-payment-btn" class="px-5 py-3 bg-success-green text-white font-bold rounded-xl shadow hover:bg-green-600 flex items-center gap-2"><span class="material-symbols-rounded">check_circle</span> Process Payment</button>`
-                        }
-                            </div>
-                        </div>`;
-                    const processBtn = sheet.querySelector('#process-payment-btn');
-                    if (processBtn) {
-                        processBtn.addEventListener('click', () => {
-                            worker.attendance[monthKey].paid = true;
-                            closeSheet(); renderAll();
-                            showToast(`Payment for ${worker.name} processed.`, 'success');
-                        });
-                    }
-                } else if (type === 'add_worker') {
-                    sheet.innerHTML = `
-                        <div class="flex justify-between items-center pb-3 border-b mb-4">
-                            <h3 class="text-lg font-bold text-neutral-800">Add New Worker</h3>
-                            <button id="close-sheet-btn" class="p-2 -mr-2"><span class="material-symbols-rounded">close</span></button>
-                        </div>
-                        <form id="add-worker-form" class="space-y-4">
-                           <div>
-                                <label for="worker-name" class="block text-sm font-medium text-neutral-600 mb-1">Worker Name</label>
-                                <input type="text" id="worker-name" required class="w-full px-4 py-2 bg-neutral-100 border-transparent rounded-lg focus:ring-2 focus:ring-primary">
-                           </div>
-                           <div>
-                                <label for="worker-rate" class="block text-sm font-medium text-neutral-600 mb-1">Daily Rate (₹)</label>
-                                <input type="number" id="worker-rate" required class="w-full px-4 py-2 bg-neutral-100 border-transparent rounded-lg focus:ring-2 focus:ring-primary">
-                           </div>
-                           <div class="flex justify-end gap-3 pt-2">
-                                <button type="button" id="cancel-btn" class="px-5 py-3 bg-neutral-200 text-neutral-700 font-bold rounded-xl hover:bg-neutral-300">Cancel</button>
-                                <button type="submit" class="px-5 py-3 bg-primary text-white font-bold rounded-xl shadow hover:bg-primary-dark">Add Worker</button>
-                           </div>
-                        </form>
-                    `;
-                    sheet.querySelector('#add-worker-form').addEventListener('submit', (e) => {
-                        e.preventDefault();
-                        const name = document.getElementById('worker-name').value;
-                        const rate = parseInt(document.getElementById('worker-rate').value, 10);
-                        const newId = `USR-${(workersData.length + 1).toString().padStart(3, '0')}`;
-                        const seed = name.split(' ')[0];
-                        const newWorker = {
-                            id: newId, name, rate, seed, attendance: { [getMonthKey(currentDate)]: { present: 0, absent: 0, leave: 0, paid: false } }
-                        };
-                        workersData.push(newWorker);
-                        closeSheet(); renderAll();
-                        showToast(`${name} has been added.`, 'success');
-                    });
-                }
-                modalContainer.classList.remove('pointer-events-none', 'opacity-0');
-                sheet.classList.add('animate-slideInUp');
-                sheet.classList.remove('translate-y-full');
-                sheet.querySelector('#close-sheet-btn').addEventListener('click', closeSheet);
-                sheet.querySelector('#cancel-btn').addEventListener('click', closeSheet);
-            };
-
-            const closeSheet = () => {
-                sheet.classList.add('animate-slideOutDown');
-                modalContainer.classList.add('opacity-0');
-                sheet.addEventListener('animationend', () => {
-                    sheet.classList.remove('animate-slideInUp', 'animate-slideOutDown');
-                    sheet.classList.add('translate-y-full');
-                    modalContainer.classList.add('pointer-events-none');
-                }, { once: true });
-            };
-
-            const showToast = (message, type = 'success') => {
-                toastMessage.textContent = message;
-                toastIcon.textContent = type === 'success' ? 'check_circle' : 'error';
-                toastIcon.className = `material-symbols-rounded ${type === 'success' ? 'text-success-green' : 'text-alert-red'}`;
-                toast.classList.remove('opacity-0', 'pointer-events-none', 'animate-fadeOut');
-                toast.classList.add('animate-toastIn');
-                setTimeout(() => {
-                    toast.classList.add('animate-fadeOut');
-                    toast.addEventListener('animationend', () => {
-                        toast.classList.add('opacity-0', 'pointer-events-none');
-                        toast.classList.remove('animate-toastIn', 'animate-fadeOut');
-                    }, { once: true });
-                }, 3000);
-            };
-
-            const exportToCsv = (monthKey) => {
-                let csvContent = "data:text/csv;charset=utf-8,Worker ID,Worker Name,Present Days,Daily Rate,Total Payable,Status\n";
-                workersData.forEach(w => {
-                    if (w.attendance[monthKey]) {
-                        const att = w.attendance[monthKey];
-                        const payable = att.present * w.rate;
-                        const status = att.paid ? "Paid" : "Payable";
-                        const row = [w.id, w.name, att.present, w.rate, payable, status].join(",");
-                        csvContent += row + "\n";
-                    }
-                });
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `payroll_${monthKey}.csv`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            };
-
-            // --- EVENT LISTENERS ---
-            prevMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderAll(); });
-            nextMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderAll(); });
-            searchInput.addEventListener('input', (e) => { searchTerm = e.target.value; renderAll(); });
-            sortSelect.addEventListener('change', (e) => { sortBy = e.target.value; renderAll(); });
-            modalContainer.addEventListener('click', (e) => { if (e.target === modalContainer) closeSheet(); });
-            addWorkerBtn.addEventListener('click', () => openSheet('add_worker'));
-
-            filterTabs.addEventListener('click', (e) => {
-                if (e.target.matches('.filter-btn')) {
-                    filterBy = e.target.dataset.filter;
-                    filterTabs.querySelector('.active').classList.remove('active');
-                    e.target.classList.add('active');
-                    renderAll();
-                }
-            });
-
-            processAllBtn.addEventListener('click', () => {
-                const monthKey = getMonthKey(currentDate);
-                let processedCount = 0;
-                workersData.forEach(w => {
-                    if (w.attendance[monthKey] && !w.attendance[monthKey].paid) {
-                        w.attendance[monthKey].paid = true;
-                        processedCount++;
-                    }
-                });
-                renderAll();
-                showToast(`${processedCount} payments processed successfully.`, 'success');
-            });
-
-            exportCsvBtn.addEventListener('click', () => {
-                const monthKey = getMonthKey(currentDate);
-                exportToCsv(monthKey);
-            });
-
-            // --- INITIAL RENDER ---
-            renderAll();
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
             // --- 1. AUTH & PRE-FLIGHT ---
             const token = localStorage.getItem("token");
-            const user = JSON.parse(localStorage.getItem("user")); // Assuming admin user is logged in
+            const user = JSON.parse(localStorage.getItem("user"));
             if (!token || !user) {
                 window.location.href = "../index.html";
                 return;
@@ -540,10 +248,15 @@
             const filterTabs = document.getElementById('filter-tabs');
             const totalWorkersEl = document.getElementById('total-workers');
             const totalPayrollEl = document.getElementById('total-payroll');
-            const paymentsProcessedEl = document.getElementById('payments-processed');
             const processAllBtn = document.getElementById('process-all-btn');
+            const exportCsvBtn = document.getElementById('export-csv-btn');
 
-            const getMonthKey = (date) => `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+            // Modal Elements
+            const payrollModal = document.getElementById('payrollModal');
+            const payrollForm = document.getElementById('payrollForm');
+            const payGrossInput = document.getElementById('payGross');
+            const payDeductionsInput = document.getElementById('payDeductions');
+            const payNetDisplay = document.getElementById('payNet');
 
             // --- RENDER & UPDATE FUNCTIONS ---
 
@@ -552,7 +265,9 @@
                 const filteredAndSorted = getFilteredAndSortedWorkers();
                 renderSummaryCards(filteredAndSorted);
                 renderWorkerList(filteredAndSorted);
-                updateBulkActions(filteredAndSorted);
+                // Enable "Process All" if there are workers pending update (no record yet)
+                const pendingCount = filteredAndSorted.filter(w => !w.hasRecord).length;
+                processAllBtn.disabled = pendingCount === 0;
             }
 
             function renderMonthDisplay() {
@@ -564,18 +279,20 @@
             function getFilteredAndSortedWorkers() {
                 let workers = [...processedWorkersData];
                 if (searchTerm) {
-                    workers = workers.filter(w => w.fullName.toLowerCase().includes(searchTerm.toLowerCase()));
+                    workers = workers.filter(w => (w.fullName || "").toLowerCase().includes(searchTerm.toLowerCase()));
                 }
-                if (filterBy === 'payable') {
-                    workers = workers.filter(w => !w.isPaid);
-                } else if (filterBy === 'paid') {
-                    workers = workers.filter(w => w.isPaid);
+                if (filterBy === 'updated') {
+                    workers = workers.filter(w => w.hasRecord);
+                } else if (filterBy === 'pending') {
+                    workers = workers.filter(w => !w.hasRecord);
                 }
                 workers.sort((a, b) => {
+                    const nameA = a.fullName || "";
+                    const nameB = b.fullName || "";
                     switch (sortBy) {
                         case 'payable_desc': return b.payableAmount - a.payableAmount;
                         case 'payable_asc': return a.payableAmount - b.payableAmount;
-                        default: return a.fullName.localeCompare(b.fullName);
+                        default: return nameA.localeCompare(nameB);
                     }
                 });
                 return workers;
@@ -583,51 +300,55 @@
 
             function renderSummaryCards(workers) {
                 const totalPayroll = workers.reduce((sum, w) => sum + w.payableAmount, 0);
-                const paymentsProcessed = workers.filter(w => w.isPaid).length;
-
                 totalWorkersEl.textContent = workers.length;
                 totalPayrollEl.textContent = `₹${(totalPayroll / 1000).toFixed(1).replace('.0', '')}k`;
-                paymentsProcessedEl.textContent = `${paymentsProcessed} / ${workers.length}`;
             }
 
             function renderWorkerList(workers) {
                 workerList.innerHTML = '';
                 if (workers.length === 0) {
-                    workerList.innerHTML = `<div class="text-center py-10"><p class="font-bold text-neutral-600">No Workers Found</p><p class="text-sm text-neutral-500">No workers match the current filters.</p></div>`;
+                    workerList.innerHTML = `<div class="text-center py-10"><p class="font-bold text-neutral-600">No Workers Found</p><p class="text-sm text-neutral-500">Adjust filters to see results.</p></div>`;
                     return;
                 }
                 workers.forEach(worker => {
                     const card = document.createElement('div');
-                    card.className = `worker-card bg-white p-4 rounded-2xl shadow-card border flex items-center gap-4 transition-all ${worker.isPaid ? 'bg-neutral-50 opacity-70' : 'cursor-pointer'}`;
-                    card.dataset.id = worker._id;
+                    const statusClass = worker.hasRecord ? 'bg-green-50 border-green-200' : 'bg-white hover:border-primary/50';
+                    card.className = `worker-card p-4 rounded-2xl shadow-card border flex items-center gap-4 transition-all cursor-pointer ${statusClass}`;
+
+                    const avatarSeed = worker.userName || worker.fullName || 'default';
+                    const statusBadge = worker.hasRecord
+                        ? `<span class="badge bg-green-100 text-green-700">Updated</span>`
+                        : `<span class="badge bg-neutral-100 text-neutral-600">Projected</span>`;
+
+                    const actionText = worker.hasRecord ? "Edit Salary" : "Add Salary";
+                    const actionColor = worker.hasRecord ? "text-neutral-600" : "text-primary";
+
                     card.innerHTML = `
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${worker.userName}" alt="User" class="w-12 h-12 rounded-full">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}" alt="User" class="w-12 h-12 rounded-full border border-neutral-100">
                     <div class="flex-1">
-                        <p class="font-bold text-neutral-800">${worker.fullName}</p>
+                        <div class="flex items-center gap-2">
+                            <p class="font-bold text-neutral-800">${worker.fullName || 'Unknown'}</p>
+                            ${statusBadge}
+                        </div>
                         <p class="text-sm text-neutral-500">Present: ${worker.presentDays} Days</p>
                     </div>
                     <div class="text-right">
-                        ${worker.isPaid ?
-                            `<p class="badge bg-success-green/10 text-success-green font-bold"><span class="material-symbols-rounded text-sm mr-1">check</span>Paid</p>` :
-                            `<p class="font-bold text-lg text-neutral-800">₹${worker.payableAmount.toLocaleString('en-IN')}</p><p class="text-sm font-medium text-neutral-500">Payable</p>`
-                        }
+                        <p class="font-bold text-lg text-neutral-800">₹${worker.payableAmount.toLocaleString('en-IN')}</p>
+                        <button class="text-xs font-bold ${actionColor} hover:underline mt-1">${actionText}</button>
                     </div>`;
+
+                    // Click handler to open salary editor
+                    card.addEventListener('click', () => openPayrollModal(worker));
                     workerList.appendChild(card);
                 });
             }
-
-            function updateBulkActions(workers) {
-                const payableWorkers = workers.filter(w => !w.isPaid);
-                processAllBtn.disabled = payableWorkers.length === 0;
-            }
-
 
             // --- API CALLS ---
             async function fetchAllData() {
                 workerList.innerHTML = `<div class="text-center py-10 text-neutral-500">Loading worker data...</div>`;
                 try {
-                    const usersResponse = await userManagementAPI.getAll();
-                    allWorkers = usersResponse.data.users || [];
+                    const usersResponse = await userManagementAPI.getAll(1, 100);
+                    allWorkers = usersResponse.data.users || usersResponse.data || [];
                     await processAndRenderData();
                 } catch (error) {
                     console.error("Failed to fetch initial worker list:", error);
@@ -637,23 +358,41 @@
 
             async function processAndRenderData() {
                 try {
-                    const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString().split('T')[0];
-                    const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).toISOString().split('T')[0];
+                    const y = currentDate.getFullYear();
+                    const m = currentDate.getMonth();
+                    const startDate = new Date(y, m, 1).toISOString().split('T')[0];
+                    const endDate = new Date(y, m + 1, 0).toISOString().split('T')[0];
 
                     const workerDetailsPromises = allWorkers.map(async (user) => {
                         const [attendanceRes, payrollRes] = await Promise.all([
-                            attendanceAPI.getForUser(user._id, startDate, endDate),
-                            payrollAPI.getForUser(user._id)
+                            attendanceAPI.getForUser(user._id, startDate, endDate).catch(() => ({ data: [] })),
+                            payrollAPI.getForUser(user._id).catch(() => ({ data: [] }))
                         ]);
 
                         const attendanceRecords = attendanceRes.data || [];
                         const payrollRecords = payrollRes.data || [];
-                        const presentDays = attendanceRecords.filter(r => r.status === 'Present').length;
+                        const presentDays = attendanceRecords.filter(r => r.status && r.status.toLowerCase() === 'present').length;
                         const rate = user.rate || 800;
-                        const payableAmount = presentDays * rate;
-                        const isPaid = payrollRecords.some(p => p.period_start.startsWith(getMonthKey(currentDate)) && p.status === 'Paid');
 
-                        return { ...user, presentDays, rate, payableAmount, isPaid };
+                        // Check if a record exists for this specific month/year
+                        const existingRecord = payrollRecords.find(p =>
+                            new Date(p.period_start).getMonth() === m &&
+                            new Date(p.period_start).getFullYear() === y
+                        );
+
+                        let payableAmount;
+                        let hasRecord = false;
+                        let recordDetails = null;
+
+                        if (existingRecord) {
+                            payableAmount = existingRecord.net_salary;
+                            hasRecord = true;
+                            recordDetails = existingRecord;
+                        } else {
+                            payableAmount = presentDays * rate;
+                        }
+
+                        return { ...user, presentDays, rate, payableAmount, hasRecord, recordDetails };
                     });
 
                     processedWorkersData = await Promise.all(workerDetailsPromises);
@@ -663,6 +402,146 @@
                     workerList.innerHTML = `<div class="text-center py-10 text-red-500">Error loading details.</div>`;
                 }
             }
+
+            // --- MODAL LOGIC ---
+            window.openPayrollModal = function (worker) {
+                document.getElementById('payUserId').value = worker._id;
+                document.getElementById('payUserName').textContent = worker.fullName;
+
+                const monthName = currentDate.toLocaleString('default', { month: 'short' });
+                document.getElementById('payPeriod').textContent = `${monthName} ${currentDate.getFullYear()}`;
+                document.getElementById('payRate').value = worker.rate;
+
+                if (worker.hasRecord && worker.recordDetails) {
+                    // Populate from existing saved record
+                    document.getElementById('payHours').value = worker.recordDetails.total_hours;
+                    payGrossInput.value = worker.recordDetails.gross_salary;
+                    payDeductionsInput.value = worker.recordDetails.deductions;
+                } else {
+                    // Populate with auto-calculated values (projected)
+                    document.getElementById('payHours').value = worker.presentDays * 8;
+                    payGrossInput.value = worker.payableAmount; // Gross = auto-calc amount initially
+                    payDeductionsInput.value = 0;
+                }
+
+                updateNetPay();
+                payrollModal.classList.add('show');
+            }
+
+            window.closePayrollModal = function () {
+                payrollModal.classList.remove('show');
+            }
+
+            function updateNetPay() {
+                const gross = parseFloat(payGrossInput.value) || 0;
+                const deductions = parseFloat(payDeductionsInput.value) || 0;
+                const net = gross - deductions;
+                payNetDisplay.textContent = `₹${net.toLocaleString('en-IN')}`;
+            }
+
+            payGrossInput.addEventListener('input', updateNetPay);
+            payDeductionsInput.addEventListener('input', updateNetPay);
+
+            payrollForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const userId = document.getElementById('payUserId').value;
+                const gross = parseFloat(payGrossInput.value);
+                const deductions = parseFloat(payDeductionsInput.value);
+                const hours = parseFloat(document.getElementById('payHours').value);
+
+                const y = currentDate.getFullYear();
+                const m = currentDate.getMonth();
+                const startDate = new Date(y, m, 1);
+                const endDate = new Date(y, m + 1, 0);
+
+                try {
+                    await payrollAPI.createOrUpdate({
+                        user_id: userId,
+                        period_start: startDate,
+                        period_end: endDate,
+                        total_hours: hours,
+                        gross_salary: gross,
+                        deductions: deductions
+                    });
+
+                    showToast("Salary details saved successfully!", "success");
+                    closePayrollModal();
+                    await processAndRenderData(); // Refresh list to show "Updated" status
+                } catch (error) {
+                    console.error("Save failed", error);
+                    showToast(error.message || "Failed to save salary details", "error");
+                }
+            });
+
+            // --- BULK ACTION LISTENERS ---
+
+            // Process All: Loop through users without records and auto-create them using defaults
+            processAllBtn.addEventListener('click', async () => {
+                const pendingWorkers = processedWorkersData.filter(w => !w.hasRecord && w.presentDays > 0);
+
+                if (pendingWorkers.length === 0) {
+                    showToast("No pending records to process.", "info");
+                    return;
+                }
+
+                if (confirm(`Auto-generate salary records for ${pendingWorkers.length} pending workers?`)) {
+                    processAllBtn.disabled = true;
+                    processAllBtn.textContent = "Processing...";
+
+                    const y = currentDate.getFullYear();
+                    const m = currentDate.getMonth();
+                    const startDate = new Date(y, m, 1);
+                    const endDate = new Date(y, m + 1, 0);
+
+                    for (const worker of pendingWorkers) {
+                        try {
+                            await payrollAPI.createOrUpdate({
+                                user_id: worker._id,
+                                period_start: startDate,
+                                period_end: endDate,
+                                total_hours: worker.presentDays * 8,
+                                gross_salary: worker.payableAmount, // Use the calculated default
+                                deductions: 0
+                            });
+                        } catch (err) {
+                            console.error(`Failed to auto-process ${worker.fullName}`, err);
+                        }
+                    }
+
+                    await processAndRenderData();
+                    processAllBtn.disabled = false;
+                    processAllBtn.innerHTML = `<span class="material-symbols-rounded">check_circle</span> Process All`;
+                    showToast("Batch processing complete.", "success");
+                }
+            });
+
+            // Export CSV: Uses the displayed (potentially updated) data
+            exportCsvBtn.addEventListener('click', () => {
+                const headers = ["Worker Name", "ID", "Present Days", "Daily Rate", "Total Payable", "Status"];
+
+                // Map the processed data to rows
+                const rows = processedWorkersData.map(w => [
+                    `"${w.fullName || 'Unknown'}"`,
+                    w._id,
+                    w.presentDays,
+                    w.rate,
+                    w.payableAmount, // This holds the updated net salary if hasRecord is true
+                    w.hasRecord ? "Updated" : "Projected"
+                ]);
+
+                let csvContent = "data:text/csv;charset=utf-8,"
+                    + headers.join(",") + "\n"
+                    + rows.map(e => e.join(",")).join("\n");
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `payroll_export_${currentDate.toISOString().slice(0, 7)}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
 
             // --- EVENT LISTENERS ---
             prevMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); processAndRenderData(); });
@@ -678,6 +557,18 @@
                     renderAll();
                 }
             });
+
+            function showToast(msg, type = "success") {
+                const toast = document.getElementById("toast");
+                document.getElementById("toast-message").textContent = msg;
+                const icon = document.getElementById("toast-icon");
+                icon.textContent = type === "success" ? "check_circle" : type === "info" ? "info" : "error";
+                icon.className = `material-symbols-rounded ${type === "success" ? "text-success-green" : type === "info" ? "text-info-blue" : "text-alert-red"}`;
+                toast.classList.remove("opacity-0", "pointer-events-none");
+                setTimeout(() => {
+                    toast.classList.add("opacity-0", "pointer-events-none");
+                }, 3000);
+            }
 
             // --- INITIALIZATION ---
             fetchAllData();
