@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simple Camera</title>
+    <!-- Tailwind CSS for layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for specific camera behaviors */
+        body {
+            background-color: black;
+            overflow: hidden;
+            touch-action: none; /* Prevent pull-to-refresh on mobile */
+        }
+        
+        #camera-feed {
+            transform: scaleX(-1); /* Mirror the selfie camera */
+            object-fit: cover;
+        }
+
+        /* Animations for the record button */
+        .record-ring {
+            transition: all 0.3s ease;
+        }
+        
+        .record-inner {
+            transition: all 0.3s ease;
+        }
+
+        .recording .record-ring {
+            width: 80px;
+            height: 80px;
+            transform: scale(1.1);
+        }
+
+        .recording .record-inner {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px; /* Turns into a square */
+        }
+    </style>
+</head>
+<body class="h-screen w-full relative text-white font-sans select-none">
+
+    <!-- Error Message (Hidden by default) -->
+    <div id="error-message" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-gray-900 p-6 text-center">
+        <p class="text-gray-400">Camera access denied or unavailable. Please enable permissions.</p>
+    </div>
+
+    <!-- Camera Video Element -->
+    <video id="camera-feed" class="absolute inset-0 h-full w-full" autoplay playsinline muted></video>
+
+    <!-- Bottom Controls -->
+    <div class="absolute bottom-0 left-0 right-0 z-20 flex flex-col items-center pb-12 bg-gradient-to-t from-black/80 via-black/20 to-transparent">
+        
+        <!-- Main Action Area -->
+        <div class="w-full px-8 flex items-center justify-between">
+            
+            <!-- Upload / Gallery Button -->
+            <div class="flex flex-col items-center justify-center w-16">
+                <input type="file" id="file-input" accept="video/*" class="hidden">
+                <button id="upload-btn" class="w-10 h-10 rounded-lg border-2 border-white/80 overflow-hidden bg-gray-800 flex items-center justify-center mb-1 transition-transform active:scale-95">
+                    <!-- Default Icon -->
+                    <svg id="upload-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                        <circle cx="9" cy="9" r="2"/>
+                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                    </svg>
+                    <!-- Thumbnail Preview (Hidden by default) -->
+                    <div id="upload-preview" class="hidden w-full h-full bg-cover bg-center" style="background-image: linear-gradient(45deg, #4f46e5, #ec4899);"></div>
+                </button>
+                <span class="text-xs font-medium text-white shadow-black drop-shadow-md">Add</span>
+            </div>
+
+            <!-- Record Button -->
+            <button id="record-btn" class="relative flex items-center justify-center">
+                <!-- Outer Ring -->
+                <div class="record-ring w-20 h-20 rounded-full border-[4px] border-white/90"></div>
+                <!-- Inner Circle -->
+                <div class="record-inner absolute w-16 h-16 bg-red-600 rounded-full"></div>
+            </button>
+
+            <!-- Spacer for symmetry -->
+            <div class="w-16 flex justify-center opacity-0 pointer-events-none">
+                <div class="w-10 h-10"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const videoElement = document.getElementById('camera-feed');
+            const recordBtn = document.getElementById('record-btn');
+            const uploadBtn = document.getElementById('upload-btn');
+            const fileInput = document.getElementById('file-input');
+            const errorMessage = document.getElementById('error-message');
+            const uploadIcon = document.getElementById('upload-icon');
+            const uploadPreview = document.getElementById('upload-preview');
+
+            let stream = null;
+            let mediaRecorder = null;
+            let chunks = [];
+            let isRecording = false;
+
+            // 1. Initialize Camera
+            async function initCamera() {
+                try {
+                    const constraints = {
+                        video: { 
+                            facingMode: 'user', 
+                            width: { ideal: 1080 },
+                            height: { ideal: 1920 }
+                        },
+                        audio: true
+                    };
+                    
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    videoElement.srcObject = stream;
+                } catch (err) {
+                    console.error("Camera error:", err);
+                    errorMessage.classList.remove('hidden');
+                }
+            }
+
+            initCamera();
+
+            // 2. Recording Logic
+            recordBtn.addEventListener('click', () => {
+                if (!stream) return;
+
+                if (isRecording) {
+                    // STOP RECORDING
+                    mediaRecorder.stop();
+                    isRecording = false;
+                    recordBtn.classList.remove('recording');
+                } else {
+                    // START RECORDING
+                    mediaRecorder = new MediaRecorder(stream);
+                    chunks = [];
+
+                    mediaRecorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) {
+                            chunks.push(e.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(chunks, { type: 'video/webm' });
+                        const url = URL.createObjectURL(blob);
+                        
+                        // Create download link
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = `recording-${Date.now()}.webm`;
+                        document.body.appendChild(a);
+                        a.click();
+                        
+                        // Cleanup
+                        setTimeout(() => {
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                        }, 100);
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordBtn.classList.add('recording');
+                }
+            });
+
+            // 3. File Upload Logic
+            uploadBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    // Show a simple placeholder preview color to indicate selection
+                    // (Generating a real video thumbnail in browser JS is complex)
+                    uploadIcon.classList.add('hidden');
+                    uploadPreview.classList.remove('hidden');
+                    
+                    // Alert user (simulating action)
+                    alert(`Selected video: ${file.name}`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
