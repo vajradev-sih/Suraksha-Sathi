@@ -14,7 +14,7 @@
         rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Removed Chart.js as it is no longer needed for the videos -->
 
     <script id="tailwind-config">
         tailwind.config = {
@@ -81,9 +81,10 @@
                     class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors">
                     <span class="material-symbols-rounded">groups</span> Workforce
                 </a>
-                <a href="attendance_admin_payroll.html"
+                <!-- Updated Sidebar Link -->
+                <a href="upload_video.html"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors">
-                    <span class="material-symbols-rounded">payments</span> Payroll
+                    <span class="material-symbols-rounded">cloud_upload</span> Upload Video
                 </a>
                 <a href="task.html"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors">
@@ -166,13 +167,16 @@
                         </div>
                         <p class="font-bold text-sm text-neutral-700">Workforce</p>
                     </a>
-                    <a href="attendance_admin_payroll.html"
+                    
+                    <!-- Updated Button: Payroll -> Upload Video -->
+                    <a href="upload_video.html"
                         class="bg-white p-4 rounded-2xl shadow-card text-center flex flex-col items-center justify-center gap-2 hover:shadow-lg hover:-translate-y-1 transition-all">
                         <div class="w-12 h-12 flex items-center justify-center bg-primary/10 text-primary rounded-full">
-                            <span class="material-symbols-rounded">payments</span>
+                            <span class="material-symbols-rounded">cloud_upload</span>
                         </div>
-                        <p class="font-bold text-sm text-neutral-700">Payroll</p>
+                        <p class="font-bold text-sm text-neutral-700">Upload Video</p>
                     </a>
+
                     <a href="task.html"
                         class="bg-white p-4 rounded-2xl shadow-card text-center flex flex-col items-center justify-center gap-2 hover:shadow-lg hover:-translate-y-1 transition-all">
                         <div
@@ -201,15 +205,61 @@
                 </div>
             </section>
 
+            <!-- Video Section -->
             <section class="animate-slideInUp delay-300">
-                <h3 class="text-lg font-bold text-neutral-700 mb-3 px-1">Today's Attendance</h3>
-                <div class="bg-white p-4 rounded-2xl shadow-card">
-                    <div class="relative max-w-xs mx-auto">
-                        <canvas id="attendanceChart"></canvas>
-                        <div id="chart-center-text"
-                            class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span class="text-3xl font-bold text-neutral-800"></span>
-                            <span class="text-sm font-medium text-neutral-500">Present</span>
+                <h3 class="text-lg font-bold text-neutral-700 mb-3 px-1 flex items-center gap-2">
+                    <span class="material-symbols-rounded text-primary">play_circle</span>
+                    Featured Safety Training
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Video Card 1 -->
+                    <div class="bg-white p-3 rounded-2xl shadow-card hover:shadow-lg transition-all border border-neutral-100">
+                        <div class="aspect-video w-full bg-black rounded-xl overflow-hidden shadow-inner">
+                            <video controls class="w-full h-full object-cover" poster="https://via.placeholder.com/640x360/000000/FFFFFF?text=Fire+Safety+Protocol">
+                                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                        <div class="mt-3">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="badge bg-red-100 text-red-700">Urgent</span>
+                                <h4 class="font-bold text-sm text-neutral-800">Fire Safety Protocol</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500 line-clamp-2">Essential steps to follow during a fire emergency on site.</p>
+                        </div>
+                    </div>
+
+                    <!-- Video Card 2 -->
+                    <div class="bg-white p-3 rounded-2xl shadow-card hover:shadow-lg transition-all border border-neutral-100">
+                        <div class="aspect-video w-full bg-black rounded-xl overflow-hidden shadow-inner">
+                            <video controls class="w-full h-full object-cover" poster="https://via.placeholder.com/640x360/000000/FFFFFF?text=PPE+Guidelines">
+                                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                        <div class="mt-3">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="badge bg-blue-100 text-blue-700">Mandatory</span>
+                                <h4 class="font-bold text-sm text-neutral-800">PPE Usage Guide</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500 line-clamp-2">Correct usage of helmets, vests, and safety boots.</p>
+                        </div>
+                    </div>
+
+                    <!-- Video Card 3 -->
+                    <div class="bg-white p-3 rounded-2xl shadow-card hover:shadow-lg transition-all border border-neutral-100">
+                        <div class="aspect-video w-full bg-black rounded-xl overflow-hidden shadow-inner">
+                            <video controls class="w-full h-full object-cover" poster="https://via.placeholder.com/640x360/000000/FFFFFF?text=Site+Navigation">
+                                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                        <div class="mt-3">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="badge bg-green-100 text-green-700">New</span>
+                                <h4 class="font-bold text-sm text-neutral-800">Site Navigation</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500 line-clamp-2">Understanding the new layout of Section B.</p>
                         </div>
                     </div>
                 </div>
@@ -386,38 +436,6 @@
                 hazardListContainer.appendChild(viewAllBtn);
             };
 
-            const renderAttendanceChart = (present, total) => {
-                const ctx = document.getElementById('attendanceChart').getContext('2d');
-                const absent = total - present;
-                const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
-
-                // Update center text
-                const centerText = document.querySelector('#chart-center-text span:first-child');
-                if (centerText) centerText.textContent = `${percentage}%`;
-
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Present', 'Absent'],
-                        datasets: [{
-                            data: [present, absent],
-                            backgroundColor: ['#22c55e', '#ef4444'],
-                            borderColor: ['#ffffff', '#ffffff'],
-                            borderWidth: 4,
-                            hoverOffset: 4
-                        }]
-                    },
-                    options: {
-                        cutout: '70%',
-                        responsive: true,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: { enabled: true }
-                        }
-                    }
-                });
-            };
-
             // --- 5. API CALLS & DATA PROCESSING ---
             const initializeDashboard = async () => {
                 try {
@@ -463,7 +481,8 @@
                     // Render UI components
                     renderSummary(summaryData);
                     renderHazardReports(criticalReports);
-                    renderAttendanceChart(presentWorkers, users.length);
+                    
+                    // Removed renderAttendanceChart call as the chart element was removed
 
                 } catch (error) {
                     console.error("Failed to initialize dashboard:", error);
