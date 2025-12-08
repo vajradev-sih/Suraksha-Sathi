@@ -491,8 +491,19 @@
 
           showToast('Login successful! Redirecting...', 'success');
 
+          // --- ROLE BASED REDIRECT LOGIC ---
+          const roleName = response.data.user.role_name;
+          let redirectUrl = "/features_pages/updated-home-page.html"; // Default (Worker)
+
+          if (roleName === 'Admin') {
+            redirectUrl = "/admin/admin-home.html";
+          } else if (roleName === 'Worker') {
+            redirectUrl = "/features_pages/updated-home-page.html";
+          }
+          // ---------------------------------
+
           setTimeout(() => {
-            window.location.href = "/features_pages/updated-home-page.html";
+            window.location.href = redirectUrl;
           }, 1500);
 
         } else {
