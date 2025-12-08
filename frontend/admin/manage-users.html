@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MineSafe - Manage Users</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Public Sans', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #222;
+        }
+
+        .glass-card-dark {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .user-card {
+            transition: all 0.3s;
+        }
+
+        .user-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-admin {
+            background: #dc2626;
+            color: white;
+        }
+
+        .badge-supervisor {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .badge-worker {
+            background: #10b981;
+            color: white;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100%);
+            min-width: 300px;
+            background: rgba(30, 30, 30, 0.95);
+            color: #fff;
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            font-size: 0.9rem;
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .dark .modal-content {
+            background: #1e293b;
+            color: white;
+        }
+
+        .floating-label {
+            position: relative;
+        }
+
+        .floating-label input,
+        .floating-label select {
+            padding-top: 1.5rem;
+            background: #f7fafc;
+            color: #222;
+        }
+
+        .dark .floating-label input,
+        .dark .floating-label select {
+            background: #192833;
+            color: white;
+        }
+
+        .floating-label label {
+            position: absolute;
+            left: 1rem;
+            top: 1rem;
+            font-size: 0.95rem;
+            color: #888;
+            pointer-events: none;
+            transition: all 0.2s;
+        }
+
+        .floating-label input:focus+label,
+        .floating-label input:not(:placeholder-shown)+label,
+        .floating-label select:focus+label,
+        .floating-label select:valid+label {
+            top: 0.2rem;
+            left: 0.8rem;
+            font-size: 0.75rem;
+            color: #d97706;
+            font-weight: 600;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-container input {
+            padding-left: 3rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.4s ease-out;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-slate-900 text-gray-900 dark:text-gray-100">
+
+    <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+
+        <header class="sticky top-0 z-50 flex items-center bg-slate-900 px-4 py-4 justify-between shadow-lg">
+            <div class="flex size-12 shrink-0 items-center justify-start">
+                <button id="backBtn" class="text-white hover:bg-white/10 p-2 rounded-full transition">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </button>
+            </div>
+            <div class="flex-1 flex justify-center">
+                <h1 class="text-lg sm:text-xl font-[Orbitron] tracking-wider text-white uppercase">Manage Users</h1>
+            </div>
+            <div class="flex w-12 items-center justify-end">
+                <button id="addUserBtn" class="text-white hover:bg-white/10 p-2 rounded-full transition">
+                    <span class="material-symbols-outlined">person_add</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 px-4 py-6 pb-8">
+            <div class="max-w-4xl mx-auto">
+
+                <div class="glass-card dark:glass-card-dark p-4 mb-6 shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="search-container">
+                            <span class="material-symbols-outlined search-icon">search</span>
+                            <input type="text" id="searchInput" placeholder="Search by name or email..."
+                                class="w-full rounded-lg border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white h-12 px-4">
+                        </div>
+                        <select id="roleFilter"
+                            class="w-full rounded-lg border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white h-12 px-4">
+                            <option value="">All Roles</option>
+                            <option value="admin">Admin</option>
+                            <option value="supervisor">Supervisor</option>
+                            <option value="worker">Worker</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="usersList" class="space-y-4">
+                </div>
+
+                <div id="emptyState" class="hidden glass-card dark:glass-card-dark p-12 text-center">
+                    <div
+                        class="w-24 h-24 bg-gray-200 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="material-symbols-outlined text-5xl text-gray-400">person_off</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">No Users Found</h3>
+                    <p class="text-gray-500">Try adjusting your search or filters</p>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-green-500">person_add</span>
+                    Add New User
+                </h2>
+                <button onclick="closeAddModal()" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <form id="addUserForm" class="space-y-4">
+                <div class="floating-label">
+                    <input type="text" id="addFullName" placeholder=" " required
+                        class="w-full rounded-lg border-gray-300 dark:border-slate-600 h-14 px-3">
+                    <label for="addFullName">Full Name</label>
+                </div>
+
+                <div class="floating-label">
+                    <input type="text" id="addUsername" placeholder=" " required
+                        class="w-full rounded-lg border-gray-300 dark:border-slate-600 h-14 px-3">
+                    <label for="addUsername">Username</label>
+                </div>
+
+                <div class="floating-label">
+                    <input type="email" id="addEmail" placeholder=" " required
+                        class="w-full rounded-lg border-gray-300 dark:border-slate-600 h-14 px-3">
+                    <label for="addEmail">Email</label>
+                </div>
+
+                <div class="floating-label">
+                    <input type="tel" id="addPhone" placeholder=" " required
+                        class="w-full rounded-lg border-gray-300 dark:border-slate-600 h-14 px-3">
+                    <label for="addPhone">Phone</label>
+                </div>
+
+                <div class="floating-label">
+                    <input type="password" id="addPassword" placeholder=" " required
+                        class="w-full rounded-lg border-gray-300 dark:border-slate-600 h-14 px-3">
+                    <label for="addPassword">Password</label>
+                </div>
+
+                <div class="floating-label">
+                    <select id="addRole" required
+                        class="w-full rounded-lg border-gray-300 dark:border-slate-600 h-14 px-3 appearance-none">
+                        <option value="" disabled selected>Select Role</option>
+                    </select>
+                    <label for="addRole">Role</label>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <span class="material-symbols-outlined">expand_more</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-6">
+                    <button type="button" onclick="closeAddModal()"
+                        class="py-3 rounded-lg bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-slate-600 transition">Cancel</button>
+                    <button type="submit"
+                        class="py-3 rounded-lg font-bold text-white bg-green-600 hover:bg-green-700 shadow-lg transition">Create
+                        User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-amber-500">edit</span>
+                    Edit User
+                </h2>
+                <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <form id="editUserForm" class="space-y-4">
+                <input type="hidden" id="editUserId">
+
+                <div class="floating-label">
+                    <input type="text" id="editFullName" placeholder=" " required
+                        class="w-full rounded-lg border-gray-300 dark:border-slate-600 h-14 px-3">
+                    <label for="editFullName">Full Name</label>
+                </div>
+
+                <div class="floating-label">
+                    <input type="text" id="editUsername" placeholder=" " required
+                        class="w-full rounded-lg border-gray-300 dark:border-slate-600 h-14 px-3">
+                    <label for="editUsername">Username</label>
+                </div>
+
+                <div class="floating-label">
+                    <input type="email" id="editEmail" placeholder=" " required
+                        class="w-full rounded-lg border-gray-300 dark:border-slate-600 h-14 px-3">
+                    <label for="editEmail">Email</label>
+                </div>
+
+                <div class="floating-label">
+                    <input type="tel" id="editPhone" placeholder=" "
+                        class="w-full rounded-lg border-gray-300 dark:border-slate-600 h-14 px-3">
+                    <label for="editPhone">Phone</label>
+                </div>
+
+                <div class="floating-label">
+                    <select id="editRole" required
+                        class="w-full rounded-lg border-gray-300 dark:border-slate-600 h-14 px-3 appearance-none">
+                        <option value="" disabled>Select Role</option>
+                    </select>
+                    <label for="editRole">Role</label>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <span class="material-symbols-outlined">expand_more</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-6">
+                    <button type="button" onclick="closeEditModal()"
+                        class="py-3 rounded-lg bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-slate-600 transition">Cancel</button>
+                    <button type="submit"
+                        class="py-3 rounded-lg font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-lg transition">Save
+                        Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal">
+        <div class="modal-content max-w-sm">
+            <div class="text-center mb-6">
+                <div
+                    class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="material-symbols-outlined text-4xl text-red-600">delete</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Delete User?</h3>
+                <p class="text-gray-500 dark:text-gray-400">This action cannot be undone.</p>
+                <p class="text-sm font-semibold mt-2" id="deleteUserName"></p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="closeDeleteModal()"
+                    class="py-3 rounded-lg bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-slate-600 transition">Cancel</button>
+                <button onclick="confirmDelete()"
+                    class="py-3 rounded-lg font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg transition">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../api.client.js"></script>
+    <script>
+        // --- State ---
+        let allUsers = [];
+        let availableRoles = [];
+        let currentDeleteId = null;
+
+        // --- Initialization ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            // 1. Load Roles first so dropdowns work
+            await loadRoles();
+            // 2. Load Users
+            await loadUsers();
+            // 3. Setup Listeners
+            setupEventListeners();
+        });
+
+        // --- API Calls ---
+
+        async function loadRoles() {
+            try {
+                // Fetch roles from backend to populate dropdowns with valid IDs
+                const response = await roleAPI.getAll();
+                // Handle pagination structure if present (response.data.roles or response.data)
+                availableRoles = response.data.roles || response.data || [];
+
+                populateRoleDropdowns();
+            } catch (error) {
+                console.error("Failed to load roles", error);
+                showToast("Failed to load roles configuration", "error");
+            }
+        }
+
+        function populateRoleDropdowns() {
+            const addSelect = document.getElementById("addRole");
+            const editSelect = document.getElementById("editRole");
+
+            // Clear existing options (except first placeholder)
+            if (addSelect) {
+                addSelect.innerHTML = '<option value="" disabled selected>Select Role</option>';
+                const optionsHTML = availableRoles.map(role =>
+                    `<option value="${role._id}">${role.roleName}</option>`
+                ).join('');
+                addSelect.insertAdjacentHTML('beforeend', optionsHTML);
+            }
+
+            if (editSelect) {
+                editSelect.innerHTML = '<option value="" disabled selected>Select Role</option>';
+                const optionsHTML = availableRoles.map(role =>
+                    `<option value="${role._id}">${role.roleName}</option>`
+                ).join('');
+                editSelect.insertAdjacentHTML('beforeend', optionsHTML);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await userManagementAPI.getAll(1, 100); // Fetch page 1, limit 100
+                // Check structure based on your controller response
+                allUsers = response.data.users || response.data || [];
+                renderUsers(allUsers);
+            } catch (error) {
+                console.error(error);
+                showToast("Failed to load users", "error");
+            }
+        }
+
+        // --- Event Handlers ---
+
+        async function handleAddSubmit(e) {
+            e.preventDefault();
+
+            const newUser = {
+                fullName: document.getElementById("addFullName").value,
+                userName: document.getElementById("addUsername").value,
+                email: document.getElementById("addEmail").value,
+                phone: document.getElementById("addPhone").value,
+                password: document.getElementById("addPassword").value,
+                role_id: document.getElementById("addRole").value,
+                language_pref: "en" // Default requirement from backend
+            };
+
+            try {
+                await userManagementAPI.create(newUser);
+                showToast("User created successfully!", "success");
+                closeAddModal();
+                await loadUsers(); // Refresh list
+            } catch (error) {
+                console.error(error);
+                showToast(error.message || "Failed to create user", "error");
+            }
+        }
+
+        async function handleEditSubmit(e) {
+            e.preventDefault();
+            const userId = document.getElementById("editUserId").value;
+
+            const updatedData = {
+                fullName: document.getElementById("editFullName").value,
+                userName: document.getElementById("editUsername").value,
+                email: document.getElementById("editEmail").value,
+                phone: document.getElementById("editPhone").value,
+                role_id: document.getElementById("editRole").value,
+                language_pref: "en"
+            };
+
+            try {
+                await userManagementAPI.update(userId, updatedData);
+                showToast("User updated successfully!", "success");
+                closeEditModal();
+                await loadUsers();
+            } catch (error) {
+                console.error(error);
+                showToast(error.message || "Failed to update user", "error");
+            }
+        }
+
+        async function confirmDelete() {
+            if (!currentDeleteId) return;
+            try {
+                await userManagementAPI.delete(currentDeleteId);
+                showToast("User deleted successfully!", "success");
+                closeDeleteModal();
+                await loadUsers();
+            } catch (error) {
+                console.error(error);
+                showToast(error.message || "Failed to delete user", "error");
+            }
+        }
+
+        // --- UI Functions ---
+
+        function renderUsers(users) {
+            const container = document.getElementById("usersList");
+            const emptyState = document.getElementById("emptyState");
+
+            if (!users || users.length === 0) {
+                container.innerHTML = "";
+                emptyState.classList.remove("hidden");
+                return;
+            }
+
+            emptyState.classList.add("hidden");
+            container.innerHTML = users.map(user => {
+                // ... (role logic remains the same) ...
+                const roleName = user.role_id ? user.role_id.roleName : (user.role_name || "Worker");
+                let badgeClass = "badge-worker";
+                if (roleName && roleName.toLowerCase().includes('admin')) badgeClass = "badge-admin";
+                else if (roleName && (roleName.toLowerCase().includes('super') || roleName.toLowerCase().includes('manager'))) badgeClass = "badge-supervisor";
+
+                return `
+        <div class="glass-card dark:glass-card-dark p-5 shadow-sm user-card animate-slide-in">
+          <div class="flex items-start justify-between">
+            <div class="flex items-start gap-4 flex-1 min-w-0"> <div class="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-xl shrink-0">
+                ${user.fullName ? user.fullName.charAt(0).toUpperCase() : '?'}
+              </div>
+              <div class="flex-1 min-w-0"> <h3 class="font-bold text-lg mb-1 truncate">${user.fullName || 'Unknown'}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-1 truncate">@${user.userName || 'unknown'}</p>
+                
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-base flex-shrink-0">email</span>
+                  <span class="truncate block" title="${user.email || ''}">
+                    ${user.email || 'No email'}
+                  </span>
+                </p>
+                <div class="mt-3">
+                  <span class="badge ${badgeClass}">${roleName}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex gap-2 ml-4 shrink-0"> <button onclick="openEditModal('${user._id}')" class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition" title="Edit User">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button onclick="openDeleteModal('${user._id}')" class="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 hover:bg-red-200 dark:hover:bg-red-900/50 transition" title="Delete User">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `}).join('');
+        }
+
+        function setupEventListeners() {
+            document.getElementById("searchInput").addEventListener("input", filterUsers);
+            document.getElementById("roleFilter").addEventListener("change", filterUsers);
+
+            document.getElementById("backBtn").addEventListener("click", () => window.history.back());
+
+            // Connect Add User button
+            document.getElementById("addUserBtn").addEventListener("click", openAddModal);
+
+            // Connect Forms
+            document.getElementById("addUserForm").addEventListener("submit", handleAddSubmit);
+            document.getElementById("editUserForm").addEventListener("submit", handleEditSubmit);
+        }
+
+        function filterUsers() {
+            const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+            const roleFilter = document.getElementById("roleFilter").value.toLowerCase();
+
+            const filtered = allUsers.filter(user => {
+                const roleName = user.role_id ? user.role_id.roleName.toLowerCase() : (user.role_name || "").toLowerCase();
+
+                const matchesSearch =
+                    (user.fullName && user.fullName.toLowerCase().includes(searchTerm)) ||
+                    (user.email && user.email.toLowerCase().includes(searchTerm)) ||
+                    (user.userName && user.userName.toLowerCase().includes(searchTerm));
+
+                const matchesRole = !roleFilter || roleName.includes(roleFilter);
+
+                return matchesSearch && matchesRole;
+            });
+
+            renderUsers(filtered);
+        }
+
+        // --- Modal Functions ---
+
+        // Define globally so onclick attributes work
+        window.openAddModal = function () {
+            document.getElementById("addUserForm").reset();
+            document.getElementById("addModal").classList.add("show");
+        }
+
+        window.closeAddModal = function () {
+            document.getElementById("addModal").classList.remove("show");
+        }
+
+        window.openEditModal = function (userId) {
+            const user = allUsers.find(u => u._id === userId);
+            if (!user) return;
+
+            document.getElementById("editUserId").value = user._id;
+            document.getElementById("editFullName").value = user.fullName;
+            document.getElementById("editUsername").value = user.userName;
+            document.getElementById("editEmail").value = user.email;
+            document.getElementById("editPhone").value = user.phone || "";
+
+            // Set role dropdown value using role_id
+            if (user.role_id && user.role_id._id) {
+                document.getElementById("editRole").value = user.role_id._id;
+            }
+
+            document.getElementById("editModal").classList.add("show");
+        }
+
+        window.closeEditModal = function () {
+            document.getElementById("editModal").classList.remove("show");
+        }
+
+        window.openDeleteModal = function (userId) {
+            const user = allUsers.find(u => u._id === userId);
+            if (!user) return;
+
+            currentDeleteId = userId;
+            document.getElementById("deleteUserName").textContent = user.fullName;
+            document.getElementById("deleteModal").classList.add("show");
+        }
+
+        window.closeDeleteModal = function () {
+            document.getElementById("deleteModal").classList.remove("show");
+            currentDeleteId = null;
+        }
+
+        window.confirmDelete = confirmDelete;
+
+        function showToast(msg, type = "info") {
+            const toast = document.getElementById("toast");
+            toast.textContent = msg;
+            toast.style.background = type === "error" ? "#ef4444" : type === "success" ? "#22c55e" : "#1f2937";
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 3000);
+        }
+    </script>
+
+</body>
+
+</html>
