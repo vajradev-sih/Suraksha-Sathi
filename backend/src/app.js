@@ -46,7 +46,6 @@ import payrollRouter from './routes/payroll.routes.js';
 //routes declaration 
 app.use("/api/v1/user", userRouter)
 app.use('/api/v1/roles', roleRouter);
-app.use('/api/v1/roles', roleRouter);
 app.use('/api/v1/tasks', taskRouter);
 app.use('/api/v1/checklists', checklistRouter);
 app.use('/api/v1/checklist-items', checklistItemRouter);
