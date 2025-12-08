@@ -633,20 +633,24 @@
                     <span class="material-symbols-rounded text-3xl">location_on</span>
                     <div>
                         <p class="text-lg font-medium" data-translate-key="location">Delhi, India</p>
-                        <p class="text-xs opacity-70"><span data-translate-key="district">District</span>: Delhi | <span data-translate-key="state">State</span>: Delhi</p>
+                        <p class="text-xs opacity-70"><span data-translate-key="district">District</span>: Delhi | <span
+                                data-translate-key="state">State</span>: Delhi</p>
                     </div>
                 </div>
                 <h2 class="text-3xl font-bold mb-2" id="welcome-message">
                     <span data-translate-key="welcome_word">Welcome</span>, <span id="user-name">John Doe</span>!
                 </h2>
-                <p class="text-sm opacity-90 mb-4" data-translate-key="safety_priority">Your safety and well-being are our top priority.</p>
+                <p class="text-sm opacity-90 mb-4" data-translate-key="safety_priority">Your safety and well-being are
+                    our top priority.</p>
                 <div class="flex justify-between items-center bg-white/30 backdrop-blur-sm rounded-xl p-4 mt-6">
                     <div>
-                        <p class="text-xl font-bold">14 <span class="text-lg font-normal" data-translate-key="days">days</span></p>
+                        <p class="text-xl font-bold">14 <span class="text-lg font-normal"
+                                data-translate-key="days">days</span></p>
                         <p class="text-sm opacity-90" data-translate-key="injury_free">Injury-Free</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-xl font-bold">2 <span class="text-lg font-normal" data-translate-key="incidents">incidents</span></p>
+                        <p class="text-xl font-bold">2 <span class="text-lg font-normal"
+                                data-translate-key="incidents">incidents</span></p>
                         <p class="text-sm opacity-90" data-translate-key="this_month">This month</p>
                     </div>
                 </div>
@@ -656,15 +660,15 @@
         <main class="relative z-20 -mt-12 px-4 pb-20">
 
             <div class="grid grid-cols-2 gap-4 mb-6 animate-slideInUp">
-                <a href="report.html"
-                    class="bg-white/95 backdrop-blur-sm rounded-2xl p-5 text-center shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col items-center group">
+                <div onclick="toggleEmergencyModal()"
+                    class="cursor-pointer bg-white/95 backdrop-blur-sm rounded-2xl p-5 text-center shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col items-center group">
                     <div
-                        class="size-14 rounded-full bg-primary-light/30 text-primary-dark flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                        class="size-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                         <span class="material-symbols-rounded text-3xl">sos</span>
                     </div>
-                    <p class="font-semibold text-neutral-700" data-translate-key="emergency">Emergency</p>
-                    <p class="text-xs text-neutral-500 mt-1" data-translate-key="report_incident">Report an incident</p>
-                </a>
+                    <p class="font-semibold text-neutral-700" data-translate-key="emergency">SOS</p>
+                    <p class="text-xs text-neutral-500 mt-1" data-translate-key="report_incident">Emergency Contacts</p>
+                </div>
                 <a href="attendance.html"
                     class="bg-white/95 backdrop-blur-sm rounded-2xl p-5 text-center shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col items-center group">
                     <div
@@ -676,7 +680,8 @@
                 </a>
             </div>
             <div class="animated-card" id="video-of-the-day-container">
-                <h3 class="text-lg font-bold text-neutral-800 mb-3 px-2" data-translate-key="video_of_day">Video of the Day</h3>
+                <h3 class="text-lg font-bold text-neutral-800 mb-3 px-2" data-translate-key="video_of_day">Video of the
+                    Day</h3>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-card border border-neutral-200/80">
                     <div class="w-full rounded-lg overflow-hidden shadow-md mb-3" style="aspect-ratio: 16 / 9;">
                         <video class="w-full h-full object-cover" src="https://sundown-ivory.vercel.app/video.mp4"
@@ -686,9 +691,11 @@
                         </video>
                     </div>
                     <div>
-                        <p class="font-semibold text-neutral-700" data-translate-key="video_title">Proper Use of Personal
+                        <p class="font-semibold text-neutral-700" data-translate-key="video_title">Proper Use of
+                            Personal
                             Protective Equipment (PPE)</p>
-                        <p class="text-sm text-neutral-500 mt-1" data-translate-key="video_subtitle">A 2-minute refresher on
+                        <p class="text-sm text-neutral-500 mt-1" data-translate-key="video_subtitle">A 2-minute
+                            refresher on
                             correctly wearing and
                             inspecting your gear before every shift.</p>
                     </div>
@@ -1234,7 +1241,8 @@
             <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50">
                 <div class="flex justify-start gap-2.5">
                     <div class="chat-bubble chat-bubble-bot p-3 rounded-xl rounded-tl-none">
-                        <p data-translate-key="chatbot_initial_msg">Hello 👋 I am <b>Suraksha Sathi</b> — your safety guide!
+                        <p data-translate-key="chatbot_initial_msg">Hello 👋 I am <b>Suraksha Sathi</b> — your safety
+                            guide!
                             I can help you with mine safety information and navigating the website.
                             How can I assist you today?</p>
                     </div>
@@ -1243,7 +1251,8 @@
 
             <div class="p-3 border-t border-slate-200 bg-white rounded-b-2xl">
                 <form id="chat-form" class="flex items-center gap-2 mb-2">
-                    <input id="chat-input" type="text" placeholder="Type your question..." data-translate-key="chatbot_placeholder"
+                    <input id="chat-input" type="text" placeholder="Type your question..."
+                        data-translate-key="chatbot_placeholder"
                         class="flex-1 px-4 py-2 bg-slate-100 border border-transparent rounded-full focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
                     <button id="chat-submit-btn" type="submit"
                         class="p-2 w-10 h-10 flex items-center justify-center bg-sky-600 text-white rounded-full hover:bg-sky-700 transition">
@@ -1336,7 +1345,7 @@
                     appendMsg(reply, 'bot');
                 } catch (err) {
                     const currentLang = localStorage.getItem("lang") || "en";
-                    const errorMsg = window.translations && window.translations.chatbot_error ? 
+                    const errorMsg = window.translations && window.translations.chatbot_error ?
                         window.translations.chatbot_error[currentLang] : "Sorry, I am having trouble answering right now.";
                     appendMsg(errorMsg, 'bot');
                     console.error(err);
@@ -1376,9 +1385,9 @@
 
             async function getBotReply(userInput) {
                 const currentLang = localStorage.getItem("lang") || "en";
-                
+
                 let sysPrompt = "";
-                
+
                 if (currentLang === "hi") {
                     sysPrompt = `
                     आप "सुरक्षा सारथी" नामक एक मित्रवत और पेशेवर एआई चैटबॉट हैं।
@@ -1458,7 +1467,7 @@
                         text: reply
                     }]
                 });
-                
+
                 const defaultError = currentLang === "hi" ? "मुझे यह समझ नहीं आया, कृपया दोबारा बताएँ।" : "I didn't understand that, please try again.";
                 return reply || defaultError;
             }
@@ -1467,152 +1476,154 @@
 
     <!-- Language Toggle Script -->
     <script src="language-toggle.js"></script>
-    
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             // --- 1. AUTHENTICATION & INITIALIZATION ---
             const token = localStorage.getItem("token");
-            const user = JSON.parse(localStorage.getItem("user"));
 
-            // If no token or user data, redirect to login page
-            if (!token || !user) {
+            // If no token, redirect to login page
+            if (!token) {
                 window.location.href = "../index.html";
                 return;
             }
 
-            // --- 2. RENDER FUNCTIONS (To create dynamic HTML) ---
+            // --- 2. RENDER FUNCTIONS ---
 
-            /**
-             * Renders the welcome message and profile picture.
-             */
-            const renderWelcomeHeader = (currentUser) => {
+            const renderWelcomeHeader = (userData) => {
                 const userNameSpan = document.getElementById("user-name");
-                const profileImage = document.getElementById("profile-image");
+                const profileImage = document.querySelector(".rounded-full img");
 
-                if (userNameSpan && currentUser.fullName) {
-                    userNameSpan.textContent = currentUser.fullName;
+                if (userNameSpan && userData.fullName) {
+                    userNameSpan.textContent = userData.fullName;
                 }
                 if (profileImage) {
-                    // Uses DiceBear Avatars with the username as a seed for a unique avatar
-                    profileImage.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.fullName || 'default'}`;
+                    profileImage.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.fullName || 'default'}`;
                 }
             };
 
-            /**
-             * Renders the Critical Alerts section.
-             * @param {Array} alerts - An array of notification objects.
-             */
             const appendCriticalAlerts = (alerts) => {
-                // Target the specific list element you added the ID to
                 const container = document.getElementById("alerts-list");
                 if (!container || !alerts || alerts.length === 0) return;
 
-                const alertsHTML = alerts.map(alert => `
-                    <div class="bg-alert-red/5 hover:bg-alert-red/10 rounded-xl p-3 flex items-center gap-4">
-                        <div class="bg-alert-red/10 h-10 w-10 aspect-square rounded-full flex items-center justify-center">
-                            <span class="material-symbols-rounded text-alert-red">crisis_alert</span>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-neutral-800 font-semibold">${alert.message}</p>
-                            <div class="flex items-center gap-2 mt-1 text-xs text-neutral-500">
-                                <span>${new Date(alert.createdAt).toLocaleString()}</span>
-                            </div>
-                        </div>
-                    </div>`).join('');
+                // Clear purely static alerts if you want, or just prepend
+                // container.innerHTML = ''; 
 
-                // Use insertAdjacentHTML to add to the end of the list
+                const alertsHTML = alerts.map(alert => `
+                <div class="bg-alert-red/5 hover:bg-alert-red/10 rounded-xl p-3 flex items-center gap-4 transition-colors animate-slideInUp">
+                    <div class="bg-alert-red/10 h-10 w-10 aspect-square rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-rounded text-alert-red">crisis_alert</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-neutral-800 font-semibold text-sm">${alert.message || alert.description || 'Critical Alert'}</p>
+                        <div class="flex items-center gap-2 mt-1 text-xs text-neutral-500">
+                            <span class="font-bold text-alert-red">High Priority</span>
+                            <span>${new Date(alert.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                    </div>
+                </div>`).join('');
+
                 container.insertAdjacentHTML('afterbegin', alertsHTML);
 
-                // Update the active alerts count badge
-                const badge = document.getElementById("active-alerts-badge");
-                const currentCount = container.children.length; // Get total count of items in the list
-                if (badge) {
-                    const currentLang = localStorage.getItem("language") || "en";
-                    const activeText = window.translations && window.translations.active_alerts ? 
-                        window.translations.active_alerts[currentLang] : "active";
-                    badge.textContent = `${currentCount} ${activeText}`;
-                }
+                // Update the "2 active" badge text if it exists
+                const badge = document.querySelector(".badge.bg-alert-red\\/10");
+                if (badge) badge.textContent = `${alerts.length} active`;
             };
 
-
-            /**
-             * Renders the Recent Activity section.
-             * @param {Array} activities - An array of notification objects.
-             */
             const appendRecentActivity = (activities) => {
-                // Target the container for activity items
                 const container = document.getElementById("recent-activity-container");
                 if (!container || !activities || activities.length === 0) return;
 
-                const activitiesHTML = activities.map(activity => `
-                    <div class="activity-item cursor-pointer group bg-neutral-50 hover:bg-neutral-100 rounded-lg p-3">
-                        <div class="flex items-center gap-3">
-                            <div class="activity-icon bg-blue-500 h-9 w-9 aspect-square rounded-full flex items-center justify-center">
-                                <span class="material-symbols-rounded text-white text-sm">info</span>
-                            </div>
-                            <div class="flex-1">
-                                <p class="activity-title text-neutral-800 text-sm font-medium">${activity.message}</p>
-                                <p class="activity-time text-neutral-500 text-xs">${new Date(activity.createdAt).toLocaleString()}</p>
-                            </div>
-                        </div>
-                    </div>`).join('');
+                const validActivities = activities.filter(a => a.type !== 'alert');
 
-                // Use insertAdjacentHTML to add to the end of the list
-                container.insertAdjacentHTML('afterbegin', activitiesHTML);
+                const activitiesHTML = validActivities.map(activity => `
+                <div class="activity-item cursor-pointer group bg-neutral-50 hover:bg-neutral-100 rounded-lg p-3 transition-all duration-200 border border-transparent hover:border-neutral-200">
+                    <div class="flex items-center gap-3">
+                        <div class="activity-icon bg-primary h-9 w-9 aspect-square rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-rounded text-white text-sm">info</span>
+                        </div>
+                        <div class="flex-1">
+                            <p class="activity-title text-neutral-800 text-sm font-medium">${activity.message || 'New Activity'}</p>
+                            <p class="activity-time text-neutral-500 text-xs">${new Date(activity.createdAt).toLocaleString()}</p>
+                        </div>
+                    </div>
+                </div>`).join('');
+
+                if (validActivities.length > 0) {
+                    container.insertAdjacentHTML('afterbegin', activitiesHTML);
+                }
             };
 
             const renderVideoOfTheDay = (videoData) => {
-                const videoElement = document.querySelector("#video-of-the-day-container video");
-                const titleElement = document.querySelector("#video-of-the-day-container .font-semibold");
-                const descriptionElement = document.querySelector("#video-of-the-day-container .text-sm");
+                const container = document.getElementById("video-of-the-day-container");
+                if (!container || !videoData) return;
 
-                if (!videoElement || !videoData) {
-                    console.warn("Video of the day elements not found or no video data provided.");
-                    return;
-                }
+                const videoElement = container.querySelector("video");
+                const titleElement = container.querySelector(".font-semibold");
+                const descElement = container.querySelector(".text-sm.text-neutral-500");
 
-                // Assuming videoData has properties like: videoUrl, thumbnailUrl, title, description
-                if (videoData.videoUrl) videoElement.src = videoData.videoUrl;
-                if (videoData.thumbnailUrl) videoElement.poster = videoData.thumbnailUrl;
+                if (videoElement && videoData.videoUrl) videoElement.src = videoData.videoUrl;
+                if (videoElement && videoData.thumbnailUrl) videoElement.poster = videoData.thumbnailUrl;
                 if (titleElement && videoData.title) titleElement.textContent = videoData.title;
-                if (descriptionElement && videoData.description) descriptionElement.textContent = videoData.description;
+                if (descElement && videoData.description) descElement.textContent = videoData.description;
             };
 
             // --- 3. API CALLS & PAGE POPULATION ---
 
             const initializeDashboard = async () => {
                 try {
-                    // Fetch current user details for personalization
-                    const currentUser = await authAPI.getCurrentUser();
-                    renderWelcomeHeader(currentUser.data);
+                    // 1. Get Fresh User Data DIRECTLY from API
+                    const currentUserResponse = await authAPI.getCurrentUser();
 
-                    const notificationResponse = await notificationAPI.getForUser(user._id);
+                    // CRITICAL FIX: Extract user data and ID correctly from the response
+                    const userData = currentUserResponse.data;
+                    const userId = userData.id;
 
-                    // The actual array is in the .data property of the response
-                    const notifications = notificationResponse.data;
-
-                    // You can customize this based on your notification data structure
-                    const criticalAlerts = notifications.filter(n => n.type === 'alert').slice(0, 2); // Show max 2 alerts
-                    const recentActivities = notifications.filter(n => n.type !== 'alert').slice(0, 3); // Show max 3 activities
-
-                    if (Array.isArray(notifications)) {
-                        const criticalAlerts = notifications.filter(n => n.type === 'alert');
-                        const recentActivities = notifications.filter(n => n.type !== 'alert');
-
-                        // Call the new functions
-                        appendCriticalAlerts(criticalAlerts);
-                        appendRecentActivity(recentActivities);
+                    // Verify we have an ID before proceeding
+                    if (!userId) {
+                        console.error("Could not find user ID in response:", currentUserResponse);
+                        return;
                     }
 
-                    const videoResponse = await dailyVideoAPI.getForUser(user._id);
-                    if (videoResponse && videoResponse.data) {
-                        renderVideoOfTheDay(videoResponse.data);
+                    renderWelcomeHeader(userData);
+
+                    // 2. Use the FRESH userId for Notifications (This fixes the 'undefined' error)
+                    try {
+                        const notificationResponse = await notificationAPI.getForUser(userId);
+                        if (notificationResponse && notificationResponse.data) {
+                            const criticalAlerts = notificationResponse.data.filter(n => n.type === 'alert');
+                            const recentActivities = notificationResponse.data.filter(n => n.type !== 'alert');
+
+                            appendCriticalAlerts(criticalAlerts);
+                            appendRecentActivity(recentActivities);
+                        }
+                    } catch (notifError) {
+                        console.warn("Failed to load notifications:", notifError);
+                    }
+
+                    // 3. Use the FRESH userId for Reports
+                    try {
+                        // Assuming getById in your API expects a User ID to filter reports
+                        const reportsResponse = await hazardReportAPI.getById(userId);
+                        console.log("User Reports:", reportsResponse);
+                    } catch (reportError) {
+                        console.warn("Failed to load reports (or no specific endpoint for user reports):", reportError);
+                    }
+
+                    // 4. Use the FRESH userId for Daily Video
+                    try {
+                        const videoResponse = await dailyVideoAPI.getForUser(userId);
+                        if (videoResponse && videoResponse.data) {
+                            renderVideoOfTheDay(videoResponse.data);
+                        }
+                    } catch (videoError) {
+                        console.log("No daily video assigned today.");
                     }
 
                 } catch (error) {
                     console.error("Failed to initialize dashboard:", error);
-                    // If token is invalid or expired (401 error), log out the user
                     if (error.message && error.message.includes("401")) {
+                        // Session expired
                         localStorage.removeItem("token");
                         localStorage.removeItem("user");
                         window.location.href = "../index.html";
@@ -1622,7 +1633,6 @@
 
             // --- 4. EVENT LISTENERS ---
 
-            // Logout button functionality
             const logoutButton = document.getElementById("logout-button");
             if (logoutButton) {
                 logoutButton.addEventListener("click", async (e) => {
@@ -1630,9 +1640,8 @@
                     try {
                         await authAPI.logout();
                     } catch (error) {
-                        console.error("Server logout failed, clearing session locally.", error);
+                        console.error("Logout error", error);
                     } finally {
-                        // Always clear local storage and redirect
                         localStorage.removeItem("token");
                         localStorage.removeItem("user");
                         window.location.href = "../index.html";
@@ -1640,9 +1649,68 @@
                 });
             }
 
-            // --- 5. INITIALIZE THE PAGE ---
+            // --- 5. INITIALIZE ---
             initializeDashboard();
         });
+    </script>
+
+    <!-- Emergency Modal -->
+    <div id="emergency-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Background backdrop -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="toggleEmergencyModal()"></div>
+
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <span class="material-symbols-rounded text-red-600">warning</span>
+                            </div>
+                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">Emergency Contacts</h3>
+                                <div class="mt-4 space-y-3">
+                                    <a href="tel:100" class="flex items-center justify-between w-full p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                                        <span class="font-medium text-red-900">Police</span>
+                                        <span class="text-red-700 font-bold">100</span>
+                                    </a>
+                                    <a href="tel:101" class="flex items-center justify-between w-full p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                                        <span class="font-medium text-red-900">Fire</span>
+                                        <span class="text-red-700 font-bold">101</span>
+                                    </a>
+                                    <a href="tel:102" class="flex items-center justify-between w-full p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                                        <span class="font-medium text-red-900">Ambulance</span>
+                                        <span class="text-red-700 font-bold">102</span>
+                                    </a>
+                                    <a href="tel:108" class="flex items-center justify-between w-full p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                                        <span class="font-medium text-red-900">Disaster Management</span>
+                                        <span class="text-red-700 font-bold">108</span>
+                                    </a>
+                                     <a href="tel:1066" class="flex items-center justify-between w-full p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                                        <span class="font-medium text-red-900">Mine Safety</span>
+                                        <span class="text-red-700 font-bold">1066</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto" onclick="toggleEmergencyModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleEmergencyModal() {
+            const modal = document.getElementById('emergency-modal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
     </script>
 
 </body>
