@@ -127,6 +127,75 @@
         id="videoGrid"
         class="grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(600px,1fr))] gap-4 p-4"
       >
+        <!-- CASE STUDY 1 -->
+        <div
+          class="video-card cursor-pointer"
+          data-category="case-studies"
+          onclick="openCaseStudy('case1', this)"
+        >
+          <div class="aspect-video rounded-lg overflow-hidden relative">
+            <img
+              src="https://th-i.thgim.com/public/news/national/other-states/vuf66t/article38358761.ece/alternates/LANDSCAPE_1200/TH---INDIA-COAL"
+              class="w-full h-full object-cover rounded-lg"
+            />
+            <div
+              class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
+              data-translate-key="label_case_study"
+            >
+              CASE STUDY
+            </div>
+          </div>
+          <p class="text-gray-800 font-semibold mt-2">
+            टापिन नॉर्थ खदान हादसा (2018) – दीवार गिरने से मौत
+          </p>
+        </div>
+
+        <!-- CASE STUDY 2 -->
+        <div
+          class="video-card cursor-pointer"
+          data-category="case-studies"
+          onclick="openCaseStudy('case2', this)"
+        >
+          <div class="aspect-video rounded-lg overflow-hidden relative">
+            <img
+              src="https://static.independent.co.uk/2023/02/27/09/10485711.jpg"
+              class="w-full h-full object-cover rounded-lg"
+            />
+            <div
+              class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
+              data-translate-key="label_case_study"
+            >
+              CASE STUDY
+            </div>
+          </div>
+          <p class="text-gray-800 font-semibold mt-2">
+            रामागुंडम खदान हादसा (2020) – ब्लास्टिंग विस्फोट
+          </p>
+        </div>
+
+        <!-- CASE STUDY 3 (Flooding Incident) -->
+        <div
+          class="video-card cursor-pointer"
+          data-category="case-studies"
+          onclick="openCaseStudy('case4', this)"
+        >
+          <div class="aspect-video rounded-lg overflow-hidden relative">
+            <img
+              src="https://i.ytimg.com/vi/YrVsC0AtHCI/hqdefault.jpg"
+              class="w-full h-full object-cover rounded-lg"
+            />
+            <div
+              class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
+              data-translate-key="label_case_study"
+            >
+              CASE STUDY
+            </div>
+          </div>
+          <p class="text-gray-800 font-semibold mt-2">
+            राजमहल खदान हादसा – 2016 (मिट्टी धंसना)
+          </p>
+        </div>
+
         <!-- VIDEO 1 -->
         <div class="video-card" data-category="videos">
           <div class="aspect-video rounded-lg overflow-hidden relative">
@@ -252,75 +321,6 @@
           </p>
           <p class="text-gray-500 text-sm">Video</p>
         </div>
-
-        <!-- CASE STUDY 1 -->
-        <div
-          class="video-card cursor-pointer"
-          data-category="case-studies"
-          onclick="openCaseStudy('case1', this)"
-        >
-          <div class="aspect-video rounded-lg overflow-hidden relative">
-            <img
-              src="https://th-i.thgim.com/public/news/national/other-states/vuf66t/article38358761.ece/alternates/LANDSCAPE_1200/TH---INDIA-COAL"
-              class="w-full h-full object-cover rounded-lg"
-            />
-            <div
-              class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
-              data-translate-key="label_case_study"
-            >
-              CASE STUDY
-            </div>
-          </div>
-          <p class="text-gray-800 font-semibold mt-2">
-            Coal Dust Explosion – Dhanbad, 2021
-          </p>
-        </div>
-
-        <!-- CASE STUDY 2 -->
-        <div
-          class="video-card cursor-pointer"
-          data-category="case-studies"
-          onclick="openCaseStudy('case2', this)"
-        >
-          <div class="aspect-video rounded-lg overflow-hidden relative">
-            <img
-              src="https://static.independent.co.uk/2023/02/27/09/10485711.jpg"
-              class="w-full h-full object-cover rounded-lg"
-            />
-            <div
-              class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
-              data-translate-key="label_case_study"
-            >
-              CASE STUDY
-            </div>
-          </div>
-          <p class="text-gray-800 font-semibold mt-2">
-            Mine Roof Collapse – Chhattisgarh, 2022
-          </p>
-        </div>
-
-        <!-- CASE STUDY 3 (Flooding Incident) -->
-        <div
-          class="video-card cursor-pointer"
-          data-category="case-studies"
-          onclick="openCaseStudy('case4', this)"
-        >
-          <div class="aspect-video rounded-lg overflow-hidden relative">
-            <img
-              src="https://i.ytimg.com/vi/YrVsC0AtHCI/hqdefault.jpg"
-              class="w-full h-full object-cover rounded-lg"
-            />
-            <div
-              class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
-              data-translate-key="label_case_study"
-            >
-              CASE STUDY
-            </div>
-          </div>
-          <p class="text-gray-800 font-semibold mt-2">
-            Flooding Incident – Ratnagiri Quarry, 2023
-          </p>
-        </div>
       </div>
     </div>
 
@@ -370,45 +370,48 @@
       // Case Studies (with DGMS info)
       const caseStudies = {
         case1: {
-          title: "Coal Dust Explosion – Dhanbad, 2021",
+          title: "टापिन नॉर्थ खदान हादसा (2018) – दीवार गिरने से मौत",
+          videoUrl: "../videos/tapin.mp4",
           overview:
-            "A methane and coal dust explosion occurred in a Dhanbad underground coal mine due to poor ventilation and inadequate gas monitoring.",
+            " 21 जुलाई 2018 को टापिन नॉर्थ खदान (CCL) की वर्कशॉप में एक रोड ग्रेडर मशीन (सड़क समतल करने वाली गाड़ी) पार्क की जा रही थी। ड्राइवर का मशीन पर से नियंत्रण खो गया और मशीन जोर से एक 4 मीटर ऊँची दीवार से टकरा गई। दीवार के दूसरी तरफ 11 मजदूर बैठे थे/आराम कर रहे थे। टक्कर से पूरी दीवार उन पर गिर गई। मलबे में दबने से 4 मजदूरों की मौत हो गई और 7 गंभीर रूप से घायल हो गए।",
           rootCause:
-            "Methane accumulation and failure of gas detection systems.",
+            "गलत पार्किंग: भारी मशीनों (HEMM) को खड़ा करने के लिए जगह सुरक्षित नहीं थी और जगह बहुत तंग थी।आराम की जगह नहीं थी: मजदूरों के लिए अलग से सुरक्षित 'रेस्ट शेल्टर' (आराम करने का कमरा) नहीं था, इसलिए वे वर्कशॉप की दीवार के पीछे असुरक्षित जगह पर बैठे थे।कमजोर दीवार: जिस दीवार के सहारे लोग बैठे थे, वह मशीन की टक्कर झेलने के लिए नहीं बनी थी।",
           dgms: "DGMS Circular No. 08 of 2019 – Guidelines on Methane and Coal Dust Explosion Prevention.",
           safety: [
-            "Continuous gas monitoring using DGMS-approved methane detectors.",
-            "Mandatory ventilation checks every 2 hours in gassy seams.",
-            "Training for miners on evacuation and use of self-rescue apparatus.",
-            "Installation of flame-proof electrical equipment in gassy mines.",
+            "सुरक्षित पार्किंग (Regulation 104): सेफ्टी मैनेजमेंट प्लान (SMP) के तहत वर्कशॉप में मशीनों को पार्क करने का एक सुरक्षित तरीका और तय जगह होनी चाहिए।विश्राम गृह (Rules 62 & 63): खदान नियमों के अनुसार, मजदूरों के लिए धूप, बारिश और खतरों से बचने के लिए एक पक्का और सुरक्षित 'रेस्ट शेल्टर' (Rest Shelter) होना अनिवार्य है।",
+            "विश्राम गृह (Rules 62 & 63): खदान नियमों के अनुसार, मजदूरों के लिए धूप, बारिश और खतरों से बचने के लिए एक पक्का और सुरक्षित 'रेस्ट शेल्टर' (Rest Shelter) होना अनिवार्य है।",
+            "मजदूरों को सिखाना चाहिए कि खतरे में कैसे बाहर निकलें और बचाव उपकरण कैसे इस्तेमाल करें।",
+            "सुरक्षित पार्किंग (Regulation 104): सेफ्टी मैनेजमेंट प्लान (SMP) के तहत वर्कशॉप में मशीनों को पार्क करने का एक सुरक्षित तरीका और तय जगह होनी चाहिए।",
           ],
           link: "https://dgms.gov.in/safety-circulars",
         },
+
         case2: {
-          title: "Mine Roof Collapse – Chhattisgarh, 2022",
+          title: "रामागुंडम खदान हादसा (2020) – ब्लास्टिंग विस्फोट",
+          videoUrl: "../videos/ramagundam.mp4",
           overview:
-            "A roof fall occurred during excavation due to weak strata support and ignored cracks in the mine ceiling.",
-          rootCause: "Improper roof bolting and lack of pre-shift inspection.",
-          dgms: "DGMS Circular No. 06 of 2020 – Safety in Underground Roof Control Operations.",
+            "2 जून 2020 को रामागुंडम खदान (OC-I) में 7 कर्मचारियों की टीम बड़े पत्थरों (boulders) को तोड़ने के लिए उनमें बारूद (explosives) भर रही थी। बारूद भरते समय अचानक वहीं धमाका हो गया। इस हादसे में 4 लोगों की मौत हो गई और 3 बुरी तरह घायल हो गए।",
+          rootCause:
+            "गलत तरीका: बड़े पत्थरों में बड़े छेद (large diameter holes) करके बारूद भरना एक बेहद खतरनाक और असुरक्षित तरीका था। ट्रेनिंग की कमी: बारूद संभालने वाले मजदूरों को इस खास काम के लिए जरूरी ट्रेनिंग नहीं दी गई थी। SOP नहीं था: इस खतरनाक काम को सुरक्षित तरीके से कैसे करना है, इसके लिए कोई लिखित नियम (Standard Operating Procedure) नहीं बनाया गया था।",
+          dgms: "खतरे की पहचान (Regulation 104): काम शुरू करने से पहले 'सेफ्टी मैनेजमेंट प्लान' (SMP) बनाना जरूरी है ताकि खतरे को पहचाना जा सके और उसे हटाया जा सके। असुरक्षित काम पर रोक: जान को खतरे में डालने वाले काम, जैसे कि पत्थरों में सीधे बारूद भरना, पूरी तरह से मना होने चाहिए।",
           safety: [
-            "Conduct roof tests before every blasting operation.",
-            "Use resin-grouted bolts as per DGMS specifications.",
-            "Ensure visual and instrumental roof monitoring.",
-            "Maintain record of strata control inspections daily.",
+            "यह हादसा इसलिए हुआ क्योंकि पत्थरों को तोड़ने के लिए गलत तरीका अपनाया गया और मजदूरों को खतरे की जानकारी नहीं थी। अगर सही प्लानिंग (SMP) होती और ट्रेनिंग दी गई होती, तो बारूद भरते समय यह जानलेवा धमाका नहीं होता।",
           ],
           link: "https://dgms.gov.in/safety-circulars",
         },
         case4: {
-          title: "Flooding Incident – Ratnagiri Quarry, 2023",
+          title: "राजमहल खदान हादसा – 2016 (मिट्टी धंसना)",
+          videoUrl: "../videos/rajmahal.mp4",
           overview:
-            "Heavy rainfall caused flooding in an open quarry due to lack of drainage and insufficient weather monitoring systems.",
-          rootCause: "Absence of proper sump channels and flood sensors.",
-          dgms: "DGMS Circular No. 09 of 2020 – Guidelines on Water Ingress and Flood Control in Mines.",
+            "ओवरबर्डन (OB) डंप में भारी भूस्खलन (Landslide) हुआ जिससे 23 लोग और 18 भारी मशीनें दब गईं। यह हादसा खड़ी ढलान और अनियंत्रित ब्लास्टिंग के कारण हुआ।",
+          rootCause:
+            "डंप की ढलान (Slope) नियमों से ज्यादा खड़ी थी, जमीन में दरारें (Cracks) थीं जिन्हें अनदेखा किया गया, और कमजोर चट्टानों पर लगातार ब्लास्टिंग की गई।",
+          dgms: "DGMS सर्कुलर (Slope Stability) – मिट्टी के डंप की ढलान और सुरक्षा के नियम।",
           safety: [
-            "Install flood-level sensors and emergency sirens.",
-            "Construct proper drainage and pumping channels.",
-            "Integrate rainfall and weather alerts with mine dashboards.",
-            "Train workers in flood evacuation drills.",
+            "जमीन या सड़क पर दरार (Crack) दिखते ही तुरंत काम रोक दें और मशीनें हटा लें।",
+            "मिट्टी के डंप की ढलान 37.5 डिग्री से ज्यादा न रखें और सीढ़ीनुमा (Bench) बनाएँ।",
+            "मिट्टी हटाने का काम हमेशा ऊपर से नीचे (Top-down) करें, नीचे से कटाई न करें।",
+            "खतरे का कोई भी निशान दिखने पर मैनेजमेंट को तुरंत खबर करें।",
           ],
           link: "https://dgms.gov.in/safety-circulars",
         },
@@ -417,23 +420,32 @@
       // Open popup
       function openCaseStudy(id, card) {
         const cs = caseStudies[id];
-        const img = card.querySelector("img")?.src || "";
         const inner = `
-    <img src="${img}" alt="${
-          cs.title
-        }" class="rounded-xl w-full h-72 object-cover mb-4">
-    <h2 class="text-2xl font-bold text-gray-800 mb-3">${cs.title}</h2>
-    <p class="text-gray-700 mb-4"><b>Overview:</b> ${cs.overview}</p>
-    <p class="text-gray-700 mb-3"><b>Root Cause:</b> ${cs.rootCause}</p>
-    <p class="text-gray-700 mb-3"><b>DGMS Reference:</b> ${cs.dgms}</p>
-    <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">🛡️ DGMS Safety Measures</h3>
-    <ul class="text-sm text-gray-700 list-disc list-inside space-y-1 mb-3">
-      ${cs.safety.map((m) => `<li>${m}</li>`).join("")}
-    </ul>
-    <a href="${
-      cs.link
-    }" target="_blank" class="text-primary underline text-sm hover:text-blue-700">View DGMS Safety Circulars</a>
-  `;
+        <div class="aspect-video rounded-xl overflow-hidden mb-4 bg-black">
+          <video
+            class="w-full h-full"
+            src="${cs.videoUrl}"
+            controls
+            controlsList="nodownload"
+            preload="metadata"
+            muted
+            onloadedmetadata="this.muted = false"
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-3">${cs.title}</h2>
+        <p class="text-gray-700 mb-4"><b>Overview:</b> ${cs.overview}</p>
+        <p class="text-gray-700 mb-3"><b>Root Cause:</b> ${cs.rootCause}</p>
+        <p class="text-gray-700 mb-3"><b>DGMS Reference:</b> ${cs.dgms}</p>
+        <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">🛡️ DGMS Safety Measures</h3>
+        <ul class="text-sm text-gray-700 list-disc list-inside space-y-1 mb-3">
+          ${cs.safety.map((m) => `<li>${m}</li>`).join("")}
+        </ul>
+        <a href="${
+          cs.link
+        }" target="_blank" class="text-primary underline text-sm hover:text-blue-700">View DGMS Safety Circulars</a>
+      `;
         document.getElementById("popupInner").innerHTML = inner;
         const overlay = document.getElementById("popupOverlay");
         overlay.classList.remove("hidden");
@@ -462,3 +474,20 @@
     </script>
   </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
