@@ -6,7 +6,8 @@ import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import cloudinary from '../utils/cloudinary.js';
 import fs from 'fs/promises';
-import { moderateCloudinaryContent, shouldAutoReject, getModerationSummary } from '../middlewares/contentModeration.middleware.js';
+import { moderateCloudinaryContent } from '../middlewares/contentModeration.middleware.js';
+import { shouldAutoReject, getModerationSummary } from '../utils/contentModeration.js';
 
 // Worker uploads video (pending approval)
 const uploadWorkerVideo = asyncHandler(async (req, res) => {
