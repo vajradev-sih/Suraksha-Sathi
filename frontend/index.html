@@ -254,13 +254,13 @@
 
         <!-- Offline Warning Banner -->
         <div id="loginOfflineWarning" class="hidden w-full max-w-md mx-auto mb-4 px-4">
-          <div class="bg-orange-500 text-white rounded-lg p-3 flex items-center gap-3 shadow-lg">
+          <div class="bg-blue-500 text-white rounded-lg p-3 flex items-center gap-3 shadow-lg">
             <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <div class="flex-1">
-              <p class="font-semibold text-sm">You're Offline</p>
-              <p class="text-xs opacity-90">Login requires internet connection</p>
+              <p class="font-semibold text-sm">Offline Mode</p>
+              <p class="text-xs opacity-90">Using cached credentials to login</p>
             </div>
           </div>
         </div>
@@ -401,10 +401,15 @@
     
     function updateLoginOfflineStatus() {
       const isOffline = !navigator.onLine;
+      const hasOfflineAuth = localStorage.getItem('offlineAuth');
+      
       if (loginOfflineWarning) {
         if (isOffline) {
           loginOfflineWarning.classList.remove('hidden');
-          if (submitBtn) submitBtn.disabled = true;
+          // Don't disable login if we have cached credentials
+          if (submitBtn && !hasOfflineAuth) {
+            submitBtn.disabled = true;
+          }
         } else {
           loginOfflineWarning.classList.add('hidden');
           if (submitBtn) submitBtn.disabled = false;
@@ -526,7 +531,12 @@
           localStorage.setItem("token", response.data.accessToken);
           localStorage.setItem("user", JSON.stringify(response.data.user));
 
-          showToast('Login successful! Redirecting...', 'success');
+          // Show appropriate message for online vs offline login
+          const isOffline = response.offline || !navigator.onLine;
+          const loginMessage = isOffline 
+            ? 'Logged in offline mode! Redirecting...' 
+            : 'Login successful! Redirecting...';
+          showToast(loginMessage, 'success');
 
           // --- ROLE BASED REDIRECT LOGIC ---
           const roleName = response.data.user.role_name;

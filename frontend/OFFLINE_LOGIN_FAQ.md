@@ -1,13 +1,22 @@
 # Offline Login - Important Information
 
-## Why Login Requires Internet Connection
+## ✨ NEW: Offline Login Now Supported!
 
-**Authentication (Login/Signup) MUST happen online** because:
+**Great news!** You can now login even without internet connection using cached credentials from your previous successful login.
 
-1. **Security**: Your password needs to be verified against the secure server database
-2. **Token Generation**: The server generates a unique access token for your session
-3. **User Data**: Your profile, role, and permissions are retrieved from the server
-4. **Real-time Validation**: Ensures your credentials are current and account is active
+## How Offline Login Works
+
+### First Login (Requires Internet)
+1. **Connect to Internet**: Your first login requires internet connection
+2. **Login Normally**: Enter your email and password
+3. **Credentials Automatically Cached**: Your login info is securely stored locally (password is hashed, never stored in plain text)
+4. **You're Ready**: You can now login offline anytime with the same credentials
+
+### Subsequent Logins (Works Offline!)
+1. **No Internet? No Problem**: Open the app even when offline
+2. **See Offline Mode Banner**: Blue banner shows "Using cached credentials to login"
+3. **Login with Same Credentials**: Use the SAME email and password you used online
+4. **Instant Access**: Login works immediately using local verification
 
 ## What You Can Do Offline
 

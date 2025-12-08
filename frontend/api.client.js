@@ -99,8 +99,13 @@ const apiRequest = async (endpoint, options = {}) => {
     return await queueOfflineRequest(endpoint, config);
   }
   
-  // If offline and endpoint requires server (auth), throw error immediately
-  if (!isOnline && shouldNotQueue) {
+  // Handle offline login specially - try local authentication
+  if (!isOnline && endpoint.includes('/api/v1/user/login')) {
+    return await handleOfflineLogin(config.body);
+  }
+  
+  // If offline and other critical endpoints, throw error
+  if (!isOnline && shouldNotQueue && !endpoint.includes('/api/v1/user/login')) {
     throw new Error('This action requires internet connection. Please check your network and try again.');
   }
 
@@ -273,6 +278,115 @@ async function clearOfflineQueue() {
   }
 }
 
+// --- Offline Authentication ---
+
+// Store user credentials hash for offline login
+function storeOfflineCredentials(email, passwordHash, userData, token) {
+  try {
+    const offlineAuth = {
+      email: email.toLowerCase(),
+      passwordHash: passwordHash,
+      userData: userData,
+      token: token,
+      lastSync: Date.now()
+    };
+    localStorage.setItem('offlineAuth', JSON.stringify(offlineAuth));
+    console.log('[Offline Auth] Credentials cached for offline login');
+  } catch (e) {
+    console.error('[Offline Auth] Failed to cache credentials:', e);
+  }
+}
+
+// Simple hash function for password verification (client-side only)
+async function simpleHash(text) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Handle offline login using cached credentials
+async function handleOfflineLogin(bodyString) {
+  console.log('[Offline Auth] Attempting offline login...');
+  
+  try {
+    const loginData = typeof bodyString === 'string' ? JSON.parse(bodyString) : bodyString;
+    const { email, password } = loginData;
+    
+    if (!email || !password) {
+      throw new Error('Email and password are required');
+    }
+    
+    // Get cached credentials
+    const offlineAuthStr = localStorage.getItem('offlineAuth');
+    if (!offlineAuthStr) {
+      throw new Error('No offline login data available. Please connect to internet and login first.');
+    }
+    
+    const offlineAuth = JSON.parse(offlineAuthStr);
+    
+    // Verify email matches
+    if (email.toLowerCase() !== offlineAuth.email) {
+      throw new Error('Invalid credentials');
+    }
+    
+    // Hash the provided password and compare
+    const providedHash = await simpleHash(password);
+    if (providedHash !== offlineAuth.passwordHash) {
+      throw new Error('Invalid credentials');
+    }
+    
+    // Credentials match! Return cached user data
+    console.log('[Offline Auth] Offline login successful');
+    
+    return {
+      success: true,
+      data: {
+        accessToken: offlineAuth.token,
+        user: offlineAuth.userData
+      },
+      message: 'Logged in offline mode',
+      offline: true
+    };
+    
+  } catch (error) {
+    console.error('[Offline Auth] Offline login failed:', error);
+    throw error;
+  }
+}
+
+// Enhanced login wrapper to cache credentials on successful online login
+async function loginWithCaching(loginData) {
+  if (isOnline) {
+    // Online login - use server
+    try {
+      const response = await apiRequest("/api/v1/user/login", {
+        method: "POST",
+        body: JSON.stringify(loginData),
+      });
+      
+      // Cache credentials for offline use
+      if (response.success && response.data.accessToken) {
+        const passwordHash = await simpleHash(loginData.password);
+        storeOfflineCredentials(
+          loginData.email,
+          passwordHash,
+          response.data.user,
+          response.data.accessToken
+        );
+      }
+      
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  } else {
+    // Offline login - use cached credentials
+    return await handleOfflineLogin(loginData);
+  }
+}
+
 
 // --- API Client Objects ---
 
@@ -285,15 +399,14 @@ const authAPI = {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  login: (data) =>
-    apiRequest("/api/v1/user/login", {
+  login: (data) => loginWithCaching(data),  // Use enhanced login with offline support
+  logout: () => {
+    // Clear offline auth data on logout
+    localStorage.removeItem('offlineAuth');
+    return apiRequest("/api/v1/user/logout", {
       method: "POST",
-      body: JSON.stringify(data),
-    }),
-  logout: () =>
-    apiRequest("/api/v1/user/logout", {
-      method: "POST",
-    }),
+    });
+  },
   getCurrentUser: () =>
     apiRequest("/api/v1/user/current-user", {
       // Assumed path from controller logic

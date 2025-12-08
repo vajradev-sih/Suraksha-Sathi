@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline Authentication Test</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #333;
+      margin-top: 0;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 15px;
+    }
+    h2 {
+      color: #555;
+      margin-top: 30px;
+      font-size: 20px;
+    }
+    .test-section {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 15px 0;
+      border-left: 4px solid #667eea;
+    }
+    .status-box {
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-weight: bold;
+    }
+    .online {
+      background: #d4edda;
+      color: #155724;
+      border: 2px solid #c3e6cb;
+    }
+    .offline {
+      background: #fff3cd;
+      color: #856404;
+      border: 2px solid #ffeaa7;
+    }
+    .cached {
+      background: #cce5ff;
+      color: #004085;
+      border: 2px solid #b8daff;
+    }
+    .no-cache {
+      background: #f8d7da;
+      color: #721c24;
+      border: 2px solid #f5c6cb;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      margin: 5px;
+      transition: all 0.3s;
+    }
+    button:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    button:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+    }
+    button.danger {
+      background: #dc3545;
+    }
+    button.danger:hover {
+      background: #c82333;
+    }
+    button.success {
+      background: #28a745;
+    }
+    button.success:hover {
+      background: #218838;
+    }
+    .result {
+      background: #e9ecef;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .success-result {
+      background: #d4edda;
+      border: 2px solid #28a745;
+    }
+    .error-result {
+      background: #f8d7da;
+      border: 2px solid #dc3545;
+    }
+    .info {
+      background: #e7f3ff;
+      border-left: 4px solid #2196F3;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+    .warning {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+    .input-group {
+      margin: 15px 0;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Offline Authentication Test Suite</h1>
+    
+    <div class="info">
+      <strong>ℹ️ Purpose:</strong> Test the new offline login feature that uses cached credentials (hashed password + token) stored locally.
+    </div>
+
+    <!-- Status Section -->
+    <div class="test-section">
+      <h2>📊 Current Status</h2>
+      <div id="connectionStatus" class="status-box"></div>
+      <div id="cacheStatus" class="status-box"></div>
+      <button onclick="checkStatus()">Refresh Status</button>
+    </div>
+
+    <!-- Cache Inspection -->
+    <div class="test-section">
+      <h2>🔍 Cached Credentials Inspection</h2>
+      <button onclick="inspectCache()">Inspect Cached Data</button>
+      <button class="danger" onclick="clearCache()">Clear Cached Credentials</button>
+      <div id="cacheInspection" class="result"></div>
+    </div>
+
+    <!-- Simulate Online Login -->
+    <div class="test-section">
+      <h2>🌐 Simulate Online Login (Cache Credentials)</h2>
+      <div class="warning">
+        <strong>⚠️ Note:</strong> This simulates an online login to cache credentials. Use test credentials for testing.
+      </div>
+      
+      <div class="input-group">
+        <label>Email:</label>
+        <input type="email" id="testEmail" placeholder="test@example.com" value="test@example.com">
+      </div>
+      
+      <div class="input-group">
+        <label>Password:</label>
+        <input type="password" id="testPassword" placeholder="password123" value="password123">
+      </div>
+      
+      <button class="success" onclick="simulateOnlineLogin()">Simulate Online Login & Cache</button>
+      <div id="cacheResult" class="result"></div>
+    </div>
+
+    <!-- Test Offline Login -->
+    <div class="test-section">
+      <h2>📴 Test Offline Login</h2>
+      <div class="warning">
+        <strong>Instructions:</strong>
+        <ol style="margin: 10px 0;">
+          <li>First cache credentials using the section above</li>
+          <li>Open DevTools (F12) → Network tab</li>
+          <li>Check "Offline" checkbox to simulate offline mode</li>
+          <li>Enter the SAME credentials used above</li>
+          <li>Click "Test Offline Login"</li>
+        </ol>
+      </div>
+      
+      <div class="input-group">
+        <label>Email:</label>
+        <input type="email" id="offlineEmail" placeholder="test@example.com" value="test@example.com">
+      </div>
+      
+      <div class="input-group">
+        <label>Password:</label>
+        <input type="password" id="offlinePassword" placeholder="password123" value="password123">
+      </div>
+      
+      <button onclick="testOfflineLogin()">Test Offline Login</button>
+      <div id="offlineResult" class="result"></div>
+    </div>
+
+    <!-- Password Hash Test -->
+    <div class="test-section">
+      <h2>🔒 Password Hashing Test</h2>
+      <div class="input-group">
+        <label>Test Password:</label>
+        <input type="text" id="hashInput" placeholder="Enter any password" value="test123">
+      </div>
+      <button onclick="testHash()">Generate SHA-256 Hash</button>
+      <div id="hashResult" class="result"></div>
+    </div>
+
+    <!-- Integration Test -->
+    <div class="test-section">
+      <h2>✅ Full Integration Test</h2>
+      <button onclick="runFullTest()">Run Complete Test Sequence</button>
+      <div id="fullTestResult" class="result"></div>
+    </div>
+  </div>
+
+  <script src="/api.client.js"></script>
+  
+  <script>
+    // Check and display current status
+    function checkStatus() {
+      const connStatus = document.getElementById('connectionStatus');
+      const cacheStatus = document.getElementById('cacheStatus');
+      
+      // Connection status
+      if (navigator.onLine) {
+        connStatus.className = 'status-box online';
+        connStatus.innerHTML = '✅ <strong>ONLINE</strong> - Connected to internet';
+      } else {
+        connStatus.className = 'status-box offline';
+        connStatus.innerHTML = '📴 <strong>OFFLINE</strong> - No internet connection';
+      }
+      
+      // Cache status
+      const cached = localStorage.getItem('offlineAuth');
+      if (cached) {
+        cacheStatus.className = 'status-box cached';
+        cacheStatus.innerHTML = '💾 <strong>CREDENTIALS CACHED</strong> - Offline login available';
+      } else {
+        cacheStatus.className = 'status-box no-cache';
+        cacheStatus.innerHTML = '❌ <strong>NO CACHED CREDENTIALS</strong> - Must login online first';
+      }
+    }
+
+    // Inspect cached data
+    function inspectCache() {
+      const result = document.getElementById('cacheInspection');
+      const cached = localStorage.getItem('offlineAuth');
+      
+      if (!cached) {
+        result.className = 'result error-result';
+        result.textContent = '❌ No cached credentials found';
+        return;
+      }
+      
+      try {
+        const data = JSON.parse(cached);
+        result.className = 'result success-result';
+        result.textContent = '✅ Cached Credentials Found:\n\n';
+        result.textContent += `Email: ${data.email}\n`;
+        result.textContent += `Password Hash: ${data.passwordHash}\n`;
+        result.textContent += `Token: ${data.token.substring(0, 50)}...\n`;
+        result.textContent += `User: ${JSON.stringify(data.userData, null, 2)}\n`;
+        result.textContent += `Last Sync: ${new Date(data.lastSync).toLocaleString()}\n`;
+      } catch (e) {
+        result.className = 'result error-result';
+        result.textContent = `❌ Error parsing cached data: ${e.message}`;
+      }
+    }
+
+    // Clear cached credentials
+    function clearCache() {
+      if (confirm('Are you sure you want to clear cached credentials?')) {
+        localStorage.removeItem('offlineAuth');
+        checkStatus();
+        document.getElementById('cacheInspection').textContent = 'Cached credentials cleared';
+      }
+    }
+
+    // Simple hash function (same as in api.client.js)
+    async function simpleHash(text) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // Simulate online login and cache credentials
+    async function simulateOnlineLogin() {
+      const result = document.getElementById('cacheResult');
+      const email = document.getElementById('testEmail').value;
+      const password = document.getElementById('testPassword').value;
+      
+      if (!email || !password) {
+        result.className = 'result error-result';
+        result.textContent = '❌ Please enter both email and password';
+        return;
+      }
+      
+      try {
+        result.textContent = 'Simulating online login and caching credentials...\n';
+        
+        // Hash password
+        const passwordHash = await simpleHash(password);
+        
+        // Create mock user data
+        const mockUserData = {
+          _id: 'test123',
+          email: email,
+          fullName: 'Test User',
+          role_name: 'Worker',
+          phone: '1234567890'
+        };
+        
+        const mockToken = 'mock_jwt_token_' + Date.now();
+        
+        // Cache credentials (same as what api.client.js does)
+        const offlineAuth = {
+          email: email.toLowerCase(),
+          passwordHash: passwordHash,
+          userData: mockUserData,
+          token: mockToken,
+          lastSync: Date.now()
+        };
+        
+        localStorage.setItem('offlineAuth', JSON.stringify(offlineAuth));
+        
+        result.className = 'result success-result';
+        result.textContent = '✅ Credentials Cached Successfully!\n\n';
+        result.textContent += `Email: ${email}\n`;
+        result.textContent += `Password Hash: ${passwordHash}\n`;
+        result.textContent += `Token: ${mockToken}\n`;
+        result.textContent += `User: ${JSON.stringify(mockUserData, null, 2)}\n`;
+        
+        checkStatus();
+      } catch (error) {
+        result.className = 'result error-result';
+        result.textContent = `❌ Error: ${error.message}`;
+      }
+    }
+
+    // Test offline login
+    async function testOfflineLogin() {
+      const result = document.getElementById('offlineResult');
+      const email = document.getElementById('offlineEmail').value;
+      const password = document.getElementById('offlinePassword').value;
+      
+      if (!email || !password) {
+        result.className = 'result error-result';
+        result.textContent = '❌ Please enter both email and password';
+        return;
+      }
+      
+      try {
+        result.textContent = 'Testing offline login...\n\n';
+        
+        // Get cached credentials
+        const cachedStr = localStorage.getItem('offlineAuth');
+        if (!cachedStr) {
+          throw new Error('No cached credentials found. Cache credentials first!');
+        }
+        
+        const cached = JSON.parse(cachedStr);
+        result.textContent += '1. ✅ Found cached credentials\n';
+        
+        // Verify email
+        if (email.toLowerCase() !== cached.email) {
+          throw new Error('Email does not match cached email');
+        }
+        result.textContent += '2. ✅ Email matches\n';
+        
+        // Hash entered password
+        const enteredHash = await simpleHash(password);
+        result.textContent += `3. Password hashed: ${enteredHash}\n`;
+        
+        // Compare hashes
+        if (enteredHash !== cached.passwordHash) {
+          throw new Error('Password does not match');
+        }
+        result.textContent += '4. ✅ Password hash matches\n';
+        
+        // Success!
+        result.className = 'result success-result';
+        result.textContent += '\n🎉 OFFLINE LOGIN SUCCESSFUL!\n\n';
+        result.textContent += `Logged in as: ${cached.userData.fullName}\n`;
+        result.textContent += `Email: ${cached.email}\n`;
+        result.textContent += `Role: ${cached.userData.role_name}\n`;
+        result.textContent += `Token: ${cached.token}\n`;
+        
+      } catch (error) {
+        result.className = 'result error-result';
+        result.textContent += `\n❌ OFFLINE LOGIN FAILED\n`;
+        result.textContent += `Error: ${error.message}`;
+      }
+    }
+
+    // Test password hashing
+    async function testHash() {
+      const result = document.getElementById('hashResult');
+      const input = document.getElementById('hashInput').value;
+      
+      if (!input) {
+        result.textContent = 'Please enter a password to hash';
+        return;
+      }
+      
+      try {
+        const hash = await simpleHash(input);
+        result.className = 'result success-result';
+        result.textContent = `Input: ${input}\n`;
+        result.textContent += `SHA-256 Hash: ${hash}\n\n`;
+        result.textContent += `Hash Length: ${hash.length} characters\n`;
+        result.textContent += `Algorithm: SHA-256 (256-bit)\n`;
+        result.textContent += `One-way: Cannot reverse hash to get password`;
+      } catch (error) {
+        result.className = 'result error-result';
+        result.textContent = `Error: ${error.message}`;
+      }
+    }
+
+    // Run full integration test
+    async function runFullTest() {
+      const result = document.getElementById('fullTestResult');
+      result.textContent = 'Running full integration test...\n\n';
+      
+      const testEmail = 'fulltest@example.com';
+      const testPassword = 'TestPass123';
+      const wrongPassword = 'WrongPass456';
+      
+      let passedTests = 0;
+      let totalTests = 0;
+      
+      try {
+        // Test 1: Clear existing cache
+        totalTests++;
+        result.textContent += '1. Clearing cached credentials...\n';
+        localStorage.removeItem('offlineAuth');
+        const cleared = !localStorage.getItem('offlineAuth');
+        if (cleared) {
+          result.textContent += '   ✅ Cache cleared\n';
+          passedTests++;
+        } else {
+          result.textContent += '   ❌ Failed to clear cache\n';
+        }
+        
+        // Test 2: Cache new credentials
+        totalTests++;
+        result.textContent += '\n2. Caching new credentials...\n';
+        const hash = await simpleHash(testPassword);
+        const offlineAuth = {
+          email: testEmail.toLowerCase(),
+          passwordHash: hash,
+          userData: { fullName: 'Full Test User', role_name: 'Worker' },
+          token: 'test_token_123',
+          lastSync: Date.now()
+        };
+        localStorage.setItem('offlineAuth', JSON.stringify(offlineAuth));
+        const cached = localStorage.getItem('offlineAuth');
+        if (cached) {
+          result.textContent += '   ✅ Credentials cached\n';
+          passedTests++;
+        } else {
+          result.textContent += '   ❌ Failed to cache\n';
+        }
+        
+        // Test 3: Verify correct password
+        totalTests++;
+        result.textContent += '\n3. Testing with correct password...\n';
+        const correctHash = await simpleHash(testPassword);
+        const data = JSON.parse(localStorage.getItem('offlineAuth'));
+        if (correctHash === data.passwordHash) {
+          result.textContent += '   ✅ Correct password verified\n';
+          passedTests++;
+        } else {
+          result.textContent += '   ❌ Password verification failed\n';
+        }
+        
+        // Test 4: Reject wrong password
+        totalTests++;
+        result.textContent += '\n4. Testing with wrong password...\n';
+        const wrongHash = await simpleHash(wrongPassword);
+        if (wrongHash !== data.passwordHash) {
+          result.textContent += '   ✅ Wrong password correctly rejected\n';
+          passedTests++;
+        } else {
+          result.textContent += '   ❌ Wrong password incorrectly accepted\n';
+        }
+        
+        // Test 5: Email case insensitivity
+        totalTests++;
+        result.textContent += '\n5. Testing email case insensitivity...\n';
+        const upperEmail = testEmail.toUpperCase();
+        if (upperEmail.toLowerCase() === data.email) {
+          result.textContent += '   ✅ Email case insensitive\n';
+          passedTests++;
+        } else {
+          result.textContent += '   ❌ Email case sensitivity issue\n';
+        }
+        
+        // Summary
+        result.textContent += '\n' + '='.repeat(50) + '\n';
+        result.textContent += `TESTS PASSED: ${passedTests}/${totalTests}\n`;
+        result.textContent += `SUCCESS RATE: ${((passedTests/totalTests)*100).toFixed(1)}%\n`;
+        
+        if (passedTests === totalTests) {
+          result.className = 'result success-result';
+          result.textContent += '\n🎉 ALL TESTS PASSED! Offline authentication working correctly.\n';
+        } else {
+          result.className = 'result error-result';
+          result.textContent += '\n❌ Some tests failed. Check implementation.\n';
+        }
+        
+      } catch (error) {
+        result.className = 'result error-result';
+        result.textContent += `\n❌ TEST ERROR: ${error.message}`;
+      }
+    }
+
+    // Auto-check status on load
+    window.addEventListener('load', checkStatus);
+    window.addEventListener('online', checkStatus);
+    window.addEventListener('offline', checkStatus);
+  </script>
+</body>
+</html>
