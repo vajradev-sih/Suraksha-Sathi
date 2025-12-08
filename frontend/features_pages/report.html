@@ -850,7 +850,13 @@
         });
         
         // Back button
-        backBtn.addEventListener("click", () => { history.back(); });
+        backBtn.addEventListener("click", () => {
+          if (window.history.length > 1) {
+            window.history.back();
+          } else {
+            window.location.href = 'updated-home-page.html';
+          }
+        });
         
         // Severity selection
         document.querySelectorAll(".severity-btn").forEach(btn => {
