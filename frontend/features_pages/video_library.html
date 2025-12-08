@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Safety Resources (DGMS Enhanced)</title>
+    <title>Safety Resources</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
@@ -71,7 +71,6 @@
             Safety Resources
           </h1>
         </div>
-        <div class="flex w-12 items-center justify-end"></div>
       </header>
 
       <!-- Search -->
@@ -91,6 +90,7 @@
             onkeyup="filterCards()"
             placeholder="Search for resources..."
             class="flex-1 h-full px-4 bg-transparent border-none focus:ring-0 text-white placeholder:text-neutral-400"
+            data-translate-key="search_placeholder"
           />
         </label>
       </div>
@@ -101,18 +101,21 @@
           <button
             class="tab active text-primary border-b-2 border-primary pb-3 pt-4 font-bold text-sm"
             data-category="all"
+            data-translate-key="tab_all"
           >
             All
           </button>
           <button
             class="tab text-gray-500 border-b-2 border-transparent pb-3 pt-4 font-bold text-sm"
             data-category="videos"
+            data-translate-key="tab_videos"
           >
             Videos
           </button>
           <button
             class="tab text-gray-500 border-b-2 border-transparent pb-3 pt-4 font-bold text-sm"
             data-category="case-studies"
+            data-translate-key="tab_case_studies"
           >
             Case Studies
           </button>
@@ -140,12 +143,15 @@
             >
             <div
               class="absolute top-2 left-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded"
+              data-translate-key="label_new"
             >
               NEW
             </div>
           </div>
           <p class="text-gray-800 font-medium mt-2">Safe Blasting Procedures</p>
-          <p class="text-gray-500 text-sm">Video</p>
+          <p class="text-gray-500 text-sm" data-translate-key="label_video">
+            Video
+          </p>
         </div>
 
         <!-- VIDEO 2 -->
@@ -164,85 +170,69 @@
             >
           </div>
           <p class="text-gray-800 font-medium mt-2">Fall Protection Measures</p>
-          <p class="text-gray-500 text-sm">Video</p>
+          <p class="text-gray-500 text-sm" data-translate-key="label_video">
+            Video
+          </p>
         </div>
 
         <!-- VIDEO 3 (Placeholder) -->
         <div class="video-card" data-category="videos">
-          <div class="aspect-video rounded-lg overflow-hidden relative">
+          <div
+            class="aspect-video rounded-lg overflow-hidden relative bg-gray-200 flex items-center justify-center"
+          >
+            <!-- Replace link below -->
             <iframe
               class="w-full h-full rounded-lg"
-              src="https://www.youtube.com/embed/osNwXd37Vz4"
-              title="Powered Haulage Safety in Mining"
+              src="https://youtu.be/osNwXd37Vz4?si=3IP5zaTde8OOz34u"
+              title="Your Video Title Here"
               frameborder="0"
               allowfullscreen
             ></iframe>
-            <span
-              class="absolute top-2 right-2 material-symbols-outlined text-white"
-              >bookmark_border</span
-            >
-            <div
-              class="absolute top-2 left-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded"
-            >
-              NEW
-            </div>
           </div>
-          <p class="text-gray-800 font-medium mt-2">
-            Powered Haulage Safety in Mining
+          <p class="text-gray-800 font-medium mt-2">Your Video Title Here</p>
+          <p class="text-gray-500 text-sm" data-translate-key="label_video">
+            Video
           </p>
-          <p class="text-gray-500 text-sm">Video</p>
         </div>
 
         <!-- VIDEO 4 (Placeholder) -->
         <div class="video-card" data-category="videos">
-          <div class="aspect-video rounded-lg overflow-hidden relative">
+          <div
+            class="aspect-video rounded-lg overflow-hidden relative bg-gray-200 flex items-center justify-center"
+          >
+            <!-- Replace link below -->
             <iframe
               class="w-full h-full rounded-lg"
-              src="https://www.youtube.com/embed/BZwWK-COPew"
-              title="3D Animation Video of Accident at Lakhanpur Opencast Project"
+              src="https://youtu.be/BZwWK-COPew?si=E7ZccrHM4UwnPVHX"
+              title="Your Video Title Here"
               frameborder="0"
               allowfullscreen
             ></iframe>
-            <span
-              class="absolute top-2 right-2 material-symbols-outlined text-white"
-              >bookmark_border</span
-            >
-            <div
-              class="absolute top-2 left-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded"
-            >
-              NEW
-            </div>
           </div>
-          <p class="text-gray-800 font-medium mt-2">
-            3D Animation Video of Accident at Lakhanpur Opencast Project
+          <p class="text-gray-800 font-medium mt-2">Your Video Title Here</p>
+          <p class="text-gray-500 text-sm" data-translate-key="label_video">
+            Video
           </p>
-          <p class="text-gray-500 text-sm">Video</p>
         </div>
 
         <!-- VIDEO 5 (Placeholder) -->
         <div class="video-card" data-category="videos">
-          <div class="aspect-video rounded-lg overflow-hidden relative">
+          <div
+            class="aspect-video rounded-lg overflow-hidden relative bg-gray-200 flex items-center justify-center"
+          >
+            <!-- Replace link below -->
             <iframe
               class="w-full h-full rounded-lg"
-              src="https://www.youtube.com/embed/4BxgTj0O0Mc"
-              title="Blasting Safety Training Video"
+              src="https://youtu.be/4BxgTj0O0Mc?si=ave19ioFEVAqhfmL"
+              title="Your Video Title Here"
               frameborder="0"
               allowfullscreen
             ></iframe>
-            <span
-              class="absolute top-2 right-2 material-symbols-outlined text-white"
-              >bookmark_border</span
-            >
-            <div
-              class="absolute top-2 left-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded"
-            >
-              NEW
-            </div>
           </div>
-          <p class="text-gray-800 font-medium mt-2">
-            Blasting Safety Training Video
+          <p class="text-gray-800 font-medium mt-2">Your Video Title Here</p>
+          <p class="text-gray-500 text-sm" data-translate-key="label_video">
+            Video
           </p>
-          <p class="text-gray-500 text-sm">Video</p>
         </div>
 
         <!-- CASE STUDY 1 -->
@@ -258,6 +248,7 @@
             />
             <div
               class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
+              data-translate-key="label_case_study"
             >
               CASE STUDY
             </div>
@@ -280,6 +271,7 @@
             />
             <div
               class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
+              data-translate-key="label_case_study"
             >
               CASE STUDY
             </div>
@@ -302,6 +294,7 @@
             />
             <div
               class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
+              data-translate-key="label_case_study"
             >
               CASE STUDY
             </div>
@@ -334,6 +327,7 @@
       </div>
     </div>
 
+    <script src="language-toggle.js"></script>
     <script>
       // Tabs
       const tabs = document.querySelectorAll(".tab");
@@ -359,46 +353,102 @@
       // Case Studies (with DGMS info)
       const caseStudies = {
         case1: {
-          title: "Coal Dust Explosion – Dhanbad, 2021",
-          overview:
-            "A methane and coal dust explosion occurred in a Dhanbad underground coal mine due to poor ventilation and inadequate gas monitoring.",
-          rootCause:
-            "Methane accumulation and failure of gas detection systems.",
-          dgms: "DGMS Circular No. 08 of 2019 – Guidelines on Methane and Coal Dust Explosion Prevention.",
-          safety: [
-            "Continuous gas monitoring using DGMS-approved methane detectors.",
-            "Mandatory ventilation checks every 2 hours in gassy seams.",
-            "Training for miners on evacuation and use of self-rescue apparatus.",
-            "Installation of flame-proof electrical equipment in gassy mines.",
-          ],
+          title: {
+            en: "Coal Dust Explosion – Dhanbad, 2021",
+            hi: "कोयला धूल विस्फोट – धनबाद, 2021",
+          },
+          overview: {
+            en: "A methane and coal dust explosion occurred in a Dhanbad underground coal mine due to poor ventilation and inadequate gas monitoring.",
+            hi: "खराब वेंटिलेशन और अपर्याप्त गैस निगरानी के कारण धनबाद की भूमिगत कोयला खदान में मीथेन और कोयला धूल विस्फोट हुआ।",
+          },
+          rootCause: {
+            en: "Methane accumulation and failure of gas detection systems.",
+            hi: "मीथेन का जमाव और गैस पहचान प्रणालियों की विफलता।",
+          },
+          dgms: {
+            en: "DGMS Circular No. 08 of 2019 – Guidelines on Methane and Coal Dust Explosion Prevention.",
+            hi: "DGMS परिपत्र संख्या 08, 2019 – मीथेन और कोयला धूल विस्फोट रोकथाम पर दिशानिर्देश।",
+          },
+          safety: {
+            en: [
+              "Continuous gas monitoring using DGMS-approved methane detectors.",
+              "Mandatory ventilation checks every 2 hours in gassy seams.",
+              "Training for miners on evacuation and use of self-rescue apparatus.",
+              "Installation of flame-proof electrical equipment in gassy mines.",
+            ],
+            hi: [
+              "DGMS-अनुमोदित मीथेन डिटेक्टरों का उपयोग करके निरंतर गैस निगरानी।",
+              "गैसी सीम में हर 2 घंटे में अनिवार्य वेंटिलेशन जांच।",
+              "खनिकों के लिए निकासी और स्व-बचाव उपकरण के उपयोग पर प्रशिक्षण।",
+              "गैसी खदानों में फ्लेम-प्रूफ विद्युत उपकरणों की स्थापना।",
+            ],
+          },
           link: "https://dgms.gov.in/safety-circulars",
         },
         case2: {
-          title: "Mine Roof Collapse – Chhattisgarh, 2022",
-          overview:
-            "A roof fall occurred during excavation due to weak strata support and ignored cracks in the mine ceiling.",
-          rootCause: "Improper roof bolting and lack of pre-shift inspection.",
-          dgms: "DGMS Circular No. 06 of 2020 – Safety in Underground Roof Control Operations.",
-          safety: [
-            "Conduct roof tests before every blasting operation.",
-            "Use resin-grouted bolts as per DGMS specifications.",
-            "Ensure visual and instrumental roof monitoring.",
-            "Maintain record of strata control inspections daily.",
-          ],
+          title: {
+            en: "Mine Roof Collapse – Chhattisgarh, 2022",
+            hi: "खदान की छत गिरना – छत्तीसगढ़, 2022",
+          },
+          overview: {
+            en: "A roof fall occurred during excavation due to weak strata support and ignored cracks in the mine ceiling.",
+            hi: "कमजोर स्ट्रेटा समर्थन और खदान की छत में दरारों की अनदेखी के कारण खुदाई के दौरान छत गिर गई।",
+          },
+          rootCause: {
+            en: "Improper roof bolting and lack of pre-shift inspection.",
+            hi: "अनुचित छत बोल्टिंग और प्री-शिफ्ट निरीक्षण की कमी।",
+          },
+          dgms: {
+            en: "DGMS Circular No. 06 of 2020 – Safety in Underground Roof Control Operations.",
+            hi: "DGMS परिपत्र संख्या 06, 2020 – भूमिगत छत नियंत्रण कार्यों में सुरक्षा।",
+          },
+          safety: {
+            en: [
+              "Conduct roof tests before every blasting operation.",
+              "Use resin-grouted bolts as per DGMS specifications.",
+              "Ensure visual and instrumental roof monitoring.",
+              "Maintain record of strata control inspections daily.",
+            ],
+            hi: [
+              "हर ब्लास्टिंग ऑपरेशन से पहले छत परीक्षण करें।",
+              "DGMS विनिर्देशों के अनुसार राल-ग्राउटेड बोल्ट का उपयोग करें।",
+              "दृश्य और वाद्य छत निगरानी सुनिश्चित करें।",
+              "प्रतिदिन स्ट्रेटा नियंत्रण निरीक्षण का रिकॉर्ड बनाए रखें।",
+            ],
+          },
           link: "https://dgms.gov.in/safety-circulars",
         },
         case4: {
-          title: "Flooding Incident – Ratnagiri Quarry, 2023",
-          overview:
-            "Heavy rainfall caused flooding in an open quarry due to lack of drainage and insufficient weather monitoring systems.",
-          rootCause: "Absence of proper sump channels and flood sensors.",
-          dgms: "DGMS Circular No. 09 of 2020 – Guidelines on Water Ingress and Flood Control in Mines.",
-          safety: [
-            "Install flood-level sensors and emergency sirens.",
-            "Construct proper drainage and pumping channels.",
-            "Integrate rainfall and weather alerts with mine dashboards.",
-            "Train workers in flood evacuation drills.",
-          ],
+          title: {
+            en: "Flooding Incident – Ratnagiri Quarry, 2023",
+            hi: "बाढ़ की घटना – रत्नागिरी खदान, 2023",
+          },
+          overview: {
+            en: "Heavy rainfall caused flooding in an open quarry due to lack of drainage and insufficient weather monitoring systems.",
+            hi: "जल निकासी की कमी और अपर्याप्त मौसम निगरानी प्रणालियों के कारण भारी वर्षा से खुली खदान में बाढ़ आ गई।",
+          },
+          rootCause: {
+            en: "Absence of proper sump channels and flood sensors.",
+            hi: "उचित संप चैनलों और बाढ़ सेंसर की अनुपस्थिति।",
+          },
+          dgms: {
+            en: "DGMS Circular No. 09 of 2020 – Guidelines on Water Ingress and Flood Control in Mines.",
+            hi: "DGMS परिपत्र संख्या 09, 2020 – खदानों में जल प्रवेश और बाढ़ नियंत्रण पर दिशानिर्देश।",
+          },
+          safety: {
+            en: [
+              "Install flood-level sensors and emergency sirens.",
+              "Construct proper drainage and pumping channels.",
+              "Integrate rainfall and weather alerts with mine dashboards.",
+              "Train workers in flood evacuation drills.",
+            ],
+            hi: [
+              "बाढ़-स्तर सेंसर और आपातकालीन सायरन स्थापित करें।",
+              "उचित जल निकासी और पंपिंग चैनल का निर्माण करें।",
+              "खदान डैशबोर्ड के साथ वर्षा और मौसम अलर्ट को एकीकृत करें।",
+              "बाढ़ निकासी अभ्यास में श्रमिकों को प्रशिक्षित करें।",
+            ],
+          },
           link: "https://dgms.gov.in/safety-circulars",
         },
       };
@@ -407,21 +457,61 @@
       function openCaseStudy(id, card) {
         const cs = caseStudies[id];
         const img = card.querySelector("img")?.src || "";
+
+        // Get current language
+        const currentLang = localStorage.getItem("lang") || "en";
+
+        // Get translations for labels
+        const labels = {
+          overview:
+            window.translations && window.translations.popup_overview
+              ? window.translations.popup_overview[currentLang]
+              : "Overview:",
+          rootCause:
+            window.translations && window.translations.popup_root_cause
+              ? window.translations.popup_root_cause[currentLang]
+              : "Root Cause:",
+          dgmsRef:
+            window.translations && window.translations.popup_dgms_ref
+              ? window.translations.popup_dgms_ref[currentLang]
+              : "DGMS Reference:",
+          safetyMeasures:
+            window.translations && window.translations.popup_safety_measures
+              ? window.translations.popup_safety_measures[currentLang]
+              : "DGMS Safety Measures",
+          viewCirculars:
+            window.translations && window.translations.popup_view_circulars
+              ? window.translations.popup_view_circulars[currentLang]
+              : "View DGMS Safety Circulars",
+        };
+
         const inner = `
     <img src="${img}" alt="${
-          cs.title
+          cs.title[currentLang]
         }" class="rounded-xl w-full h-72 object-cover mb-4">
-    <h2 class="text-2xl font-bold text-gray-800 mb-3">${cs.title}</h2>
-    <p class="text-gray-700 mb-4"><b>Overview:</b> ${cs.overview}</p>
-    <p class="text-gray-700 mb-3"><b>Root Cause:</b> ${cs.rootCause}</p>
-    <p class="text-gray-700 mb-3"><b>DGMS Reference:</b> ${cs.dgms}</p>
-    <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">🛡️ DGMS Safety Measures</h3>
+    <h2 class="text-2xl font-bold text-gray-800 mb-3">${
+      cs.title[currentLang]
+    }</h2>
+    <p class="text-gray-700 mb-4"><b>${labels.overview}</b> ${
+          cs.overview[currentLang]
+        }</p>
+    <p class="text-gray-700 mb-3"><b>${labels.rootCause}</b> ${
+          cs.rootCause[currentLang]
+        }</p>
+    <p class="text-gray-700 mb-3"><b>${labels.dgmsRef}</b> ${
+          cs.dgms[currentLang]
+        }</p>
+    <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">🛡️ ${
+      labels.safetyMeasures
+    }</h3>
     <ul class="text-sm text-gray-700 list-disc list-inside space-y-1 mb-3">
-      ${cs.safety.map((m) => `<li>${m}</li>`).join("")}
+      ${cs.safety[currentLang].map((m) => `<li>${m}</li>`).join("")}
     </ul>
     <a href="${
       cs.link
-    }" target="_blank" class="text-primary underline text-sm hover:text-blue-700">View DGMS Safety Circulars</a>
+    }" target="_blank" class="text-primary underline text-sm hover:text-blue-700">${
+          labels.viewCirculars
+        }</a>
   `;
         document.getElementById("popupInner").innerHTML = inner;
         const overlay = document.getElementById("popupOverlay");

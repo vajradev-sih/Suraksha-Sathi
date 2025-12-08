@@ -490,6 +490,10 @@
             Object.values(dynamicBehaviors).forEach(init => init());
         });
     </script>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0284c7">
 </head>
 
 <body class="bg-gradient-to-br from-neutral-50 to-neutral-100 font-sans text-neutral-800 min-h-screen pb-20">
@@ -517,7 +521,7 @@
                             <span class="material-symbols-rounded">settings</span>
                             <span data-translate-key="settings">Settings</span>
                         </a>
-                        <a href="attendece.html"
+                        <a href="attendance.html"
                             class="flex items-center space-x-3 text-white/90 hover:bg-white/15 hover:text-white p-2 rounded-md transition-colors duration-150 relative">
                             <span class="material-symbols-rounded">history</span>
                             <span data-translate-key="attendance">Attendance</span>
@@ -537,7 +541,7 @@
                                 <span data-translate-key="language">Language</span>
                             </a>
 
-                            <div id="langToggleWrapper" class="relative w-12 h-6">
+                            <div id="langToggleWrapper" class="relative w-12 h-6 cursor-pointer">
                                 <input type="checkbox" id="langToggle" class="sr-only" />
                                 <div
                                     class="block bg-white/20 w-full h-full rounded-full cursor-pointer transition-colors duration-300">
@@ -632,20 +636,22 @@
                 <div class="flex items-center gap-3 mb-4">
                     <span class="material-symbols-rounded text-3xl">location_on</span>
                     <div>
-                        <p class="text-lg font-medium">Delhi, India</p>
-                        <p class="text-xs opacity-70">District: Delhi | State: Delhi</p>
+                        <p class="text-lg font-medium" data-translate-key="location">Delhi, India</p>
+                        <p class="text-xs opacity-70"><span data-translate-key="district">District</span>: Delhi | <span data-translate-key="state">State</span>: Delhi</p>
                     </div>
                 </div>
-                <h2 class="text-3xl font-bold mb-2" id="welcome-message">Welcome, John Doe!</h2>
-                <p class="text-sm opacity-90 mb-4">Your safety and well-being are our top priority.</p>
+                <h2 class="text-3xl font-bold mb-2" id="welcome-message">
+                    <span data-translate-key="welcome_word">Welcome</span>, <span id="user-name">John Doe</span>!
+                </h2>
+                <p class="text-sm opacity-90 mb-4" data-translate-key="safety_priority">Your safety and well-being are our top priority.</p>
                 <div class="flex justify-between items-center bg-white/30 backdrop-blur-sm rounded-xl p-4 mt-6">
                     <div>
-                        <p class="text-xl font-bold">14 <span class="text-lg font-normal">days</span></p>
-                        <p class="text-sm opacity-90">Injury-Free</p>
+                        <p class="text-xl font-bold">14 <span class="text-lg font-normal" data-translate-key="days">days</span></p>
+                        <p class="text-sm opacity-90" data-translate-key="injury_free">Injury-Free</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-xl font-bold">2 <span class="text-lg font-normal">incidents</span></p>
-                        <p class="text-sm opacity-90">This month</p>
+                        <p class="text-xl font-bold">2 <span class="text-lg font-normal" data-translate-key="incidents">incidents</span></p>
+                        <p class="text-sm opacity-90" data-translate-key="this_month">This month</p>
                     </div>
                 </div>
             </div>
@@ -655,26 +661,41 @@
 
             <div class="grid grid-cols-2 gap-4 mb-6 animate-slideInUp">
                 <a href="report.html"
-                    class="bg-white/95 backdrop-blur-sm rounded-2xl p-5 text-center shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col items-center group">
-                    <div
-                        class="size-14 rounded-full bg-primary-light/30 text-primary-dark flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                        <span class="material-symbols-rounded text-3xl">sos</span>
-                    </div>
-                    <p class="font-semibold text-neutral-700">Emergency</p>
-                    <p class="text-xs text-neutral-500 mt-1">Report an incident</p>
-                </a>
+    class="block w-full max-w-xs bg-white/95 backdrop-blur-sm rounded-2xl p-5 shadow-card
+           hover:shadow-card-hover transition-all duration-300
+           flex flex-col items-center text-center group cursor-pointer
+           active:scale-95 sm:max-w-sm md:max-w-md">
+
+    <div
+        class="size-14 sm:size-16 md:size-20 rounded-full bg-primary-light/30 text-primary-dark
+               flex items-center justify-center mb-3
+               group-hover:scale-110 transition-transform duration-300">
+        <span class="material-symbols-rounded text-3xl sm:text-4xl md:text-5xl">sos</span>
+    </div>
+
+    <p class="font-semibold text-neutral-700 text-sm sm:text-base md:text-lg"
+       data-translate-key="emergency">
+        Emergency
+    </p>
+
+    <p class="text-xs sm:text-sm text-neutral-500 mt-1"
+       data-translate-key="report_incident">
+        Report an incident
+    </p>
+</a>
+
                 <a href="attendance.html"
                     class="bg-white/95 backdrop-blur-sm rounded-2xl p-5 text-center shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col items-center group">
                     <div
                         class="size-14 rounded-full bg-secondary/30 text-secondary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                         <span class="material-symbols-rounded text-3xl">person_check</span>
                     </div>
-                    <p class="font-semibold text-neutral-700">Attendance</p>
-                    <p class="text-xs text-neutral-500 mt-1">Mark your presence</p>
+                    <p class="font-semibold text-neutral-700" data-translate-key="attendance_card">Attendance</p>
+                    <p class="text-xs text-neutral-500 mt-1" data-translate-key="mark_presence">Mark your presence</p>
                 </a>
             </div>
             <div class="animated-card" id="video-of-the-day-container">
-                <h3 class="text-lg font-bold text-neutral-800 mb-3 px-2">Video of the Day</h3>
+                <h3 class="text-lg font-bold text-neutral-800 mb-3 px-2" data-translate-key="video_of_day">Video of the Day</h3>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-card border border-neutral-200/80">
                     <div class="w-full rounded-lg overflow-hidden shadow-md mb-3" style="aspect-ratio: 16 / 9;">
                         <video class="w-full h-full object-cover" src="https://sundown-ivory.vercel.app/video.mp4"
@@ -684,9 +705,9 @@
                         </video>
                     </div>
                     <div>
-                        <p class="font-semibold text-neutral-700">Proper Use of Personal
+                        <p class="font-semibold text-neutral-700" data-translate-key="video_title">Proper Use of Personal
                             Protective Equipment (PPE)</p>
-                        <p class="text-sm text-neutral-500 mt-1">A 2-minute refresher on
+                        <p class="text-sm text-neutral-500 mt-1" data-translate-key="video_subtitle">A 2-minute refresher on
                             correctly wearing and
                             inspecting your gear before every shift.</p>
                     </div>
@@ -1222,7 +1243,7 @@
                 class="flex items-center justify-between p-4 bg-gradient-to-br from-sky-600 to-sky-700 text-white rounded-t-2xl shadow-md">
                 <div class="flex items-center gap-3">
                     <span class="material-symbols-rounded text-3xl text-sky-200">smart_toy</span>
-                    <h3 class="font-bold text-lg">सुरक्षा सारथी</h3>
+                    <h3 class="font-bold text-lg" data-translate-key="chatbot_title">Suraksha Sathi</h3>
                 </div>
                 <button id="close-chat-btn" class="p-1 rounded-full hover:bg-white/20">
                     <span class="material-symbols-rounded">close</span>
@@ -1232,18 +1253,16 @@
             <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50">
                 <div class="flex justify-start gap-2.5">
                     <div class="chat-bubble chat-bubble-bot p-3 rounded-xl rounded-tl-none">
-                        <p>नमस्ते 👋 मैं <b>सुरक्षा सारथी</b> हूँ — आपका सुरक्षा मार्गदर्शक!
-                            मैं खदान सुरक्षा से जुड़ी जानकारी देने और वेबसाइट पर सही जगह तक
-                            पहुँचाने में आपकी मदद कर
-                            सकता हूँ।
-                            बताइए, आज मैं आपकी क्या सहायता कर सकता हूँ?</p>
+                        <p data-translate-key="chatbot_initial_msg">Hello 👋 I am <b>Suraksha Sathi</b> — your safety guide!
+                            I can help you with mine safety information and navigating the website.
+                            How can I assist you today?</p>
                     </div>
                 </div>
             </div>
 
             <div class="p-3 border-t border-slate-200 bg-white rounded-b-2xl">
                 <form id="chat-form" class="flex items-center gap-2 mb-2">
-                    <input id="chat-input" type="text" placeholder="अपना सवाल लिखें..."
+                    <input id="chat-input" type="text" placeholder="Type your question..." data-translate-key="chatbot_placeholder"
                         class="flex-1 px-4 py-2 bg-slate-100 border border-transparent rounded-full focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
                     <button id="chat-submit-btn" type="submit"
                         class="p-2 w-10 h-10 flex items-center justify-center bg-sky-600 text-white rounded-full hover:bg-sky-700 transition">
@@ -1254,16 +1273,16 @@
                 <div class="grid grid-cols-2 gap-2">
                     <button
                         class="quick-btn bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-full py-2 text-sm font-medium"
-                        data-message="घटना रिपोर्ट करो">⚠️ रिपोर्ट करो</button>
+                        data-translate-key="quick_btn_report">⚠️ Report Incident</button>
                     <button
                         class="quick-btn bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-full py-2 text-sm font-medium"
-                        data-message="चेकलिस्ट खोलो">📋 चेकलिस्ट</button>
+                        data-translate-key="quick_btn_checklist">📋 Checklist</button>
                     <button
                         class="quick-btn bg-green-100 hover:bg-green-200 text-green-700 rounded-full py-2 text-sm font-medium"
-                        data-message="सुरक्षा मानचित्र दिखाओ">🗺️ मानचित्र</button>
+                        data-translate-key="quick_btn_map">🗺️ Safety Map</button>
                     <button
                         class="quick-btn bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-full py-2 text-sm font-medium"
-                        data-message="वीडियो लाइब्रेरी दिखाओ">🎥 वीडियो</button>
+                        data-translate-key="quick_btn_video">🎥 Video Library</button>
                 </div>
             </div>
         </div>
@@ -1297,7 +1316,8 @@
             closeBtn.addEventListener('click', toggleChat);
             chatForm.addEventListener('submit', sendMessage);
             quickBtns.forEach(btn => btn.addEventListener('click', () => {
-                chatInput.value = btn.dataset.message;
+                // Use the text content of the button which is already translated
+                chatInput.value = btn.innerText.replace(/^[^\w\s\u0900-\u097F]+/, '').trim(); // Remove emoji prefix if needed
                 chatForm.requestSubmit();
             }));
 
@@ -1334,7 +1354,10 @@
                     const reply = await getBotReply(text);
                     appendMsg(reply, 'bot');
                 } catch (err) {
-                    appendMsg("क्षमा करें, अभी उत्तर देने में समस्या हो रही है।", 'bot');
+                    const currentLang = localStorage.getItem("lang") || "en";
+                    const errorMsg = window.translations && window.translations.chatbot_error ? 
+                        window.translations.chatbot_error[currentLang] : "Sorry, I am having trouble answering right now.";
+                    appendMsg(errorMsg, 'bot');
                     console.error(err);
                 } finally {
                     removeThinking();
@@ -1371,8 +1394,12 @@
             }
 
             async function getBotReply(userInput) {
-                // NOTE: The prompt has been slightly adjusted to use the latest model reference.
-                const sysPrompt = `
+                const currentLang = localStorage.getItem("lang") || "en";
+                
+                let sysPrompt = "";
+                
+                if (currentLang === "hi") {
+                    sysPrompt = `
                     आप "सुरक्षा सारथी" नामक एक मित्रवत और पेशेवर एआई चैटबॉट हैं।
                     आपका काम उपयोगकर्ताओं को खदान सुरक्षा से जुड़ी जानकारी देने और वेबसाइट पर सही पेज तक पहुँचाने में मदद करना है।
                     उपलब्ध पेज:
@@ -1393,6 +1420,29 @@
                     उदाहरण: "<a href='report.html' class='font-bold underline text-sky-700'>रिपोर्ट पेज</a>"।
                     3. उत्तर संक्षिप्त, सहायक और विनम्र रखें।
                     4. यदि प्रश्न अस्पष्ट हो, तो पूछें: "क्या आप इसे थोड़ा स्पष्ट कर सकते हैं?"`;
+                } else {
+                    sysPrompt = `
+                    You are "Suraksha Sathi", a friendly and professional AI chatbot.
+                    Your job is to help users with mine safety information and navigate the website.
+                    Available pages:
+                    - "Home": updated-home-page.html
+                    - "Report": report.html
+                    - "Checklist": checklist.html
+                    - "Safety Map": map.html
+                    - "Leaderboard": leaderboard.html
+                    - "Video Library": video_library.html
+                    - "Shorts": shorts.html
+                    - "Profile": profile_setting.html
+                    - "Admin Home": admin-home.html
+                    - "Login": login.html
+
+                    Rules:
+                    1. Always answer in English.
+                    2. If the user wants to go to a page, provide an HTML link.
+                    Example: "<a href='report.html' class='font-bold underline text-sky-700'>Report Page</a>".
+                    3. Keep answers concise, helpful, and polite.
+                    4. If the question is unclear, ask: "Could you please clarify that?"`;
+                }
 
                 chatHistory.push({
                     role: "user",
@@ -1427,283 +1477,16 @@
                         text: reply
                     }]
                 });
-                return reply || "मुझे यह समझ नहीं आया, कृपया दोबारा बताएँ।";
+                
+                const defaultError = currentLang === "hi" ? "मुझे यह समझ नहीं आया, कृपया दोबारा बताएँ।" : "I didn't understand that, please try again.";
+                return reply || defaultError;
             }
         });
     </script>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const langToggle = document.getElementById("langToggle");
-            const knob = document.getElementById("langKnob");
-            const langText = document.getElementById("langText");
-
-            const translations = {
-                suraksha: {
-                    en: "Safety",
-                    hi: "सुरक्षा"
-                },
-                sathi: {
-                    en: "Saarthi",
-                    hi: "सारथी"
-                },
-                // Menu
-                settings: {
-                    en: "Settings",
-                    hi: "सेटिंग्स"
-                },
-                video_library_menu: {
-                    en: "Video Library",
-                    hi: "वीडियो लाइब्रेरी"
-                },
-                help_support: {
-                    en: "Help & Support",
-                    hi: "सहायता और समर्थन"
-                },
-                language: {
-                    en: "Language",
-                    hi: "भाषा"
-                },
-                sign_out: {
-                    en: "Sign Out",
-                    hi: "साइन आउट"
-                },
-
-                // Header
-                welcome_greeting: {
-                    en: "Welcome back, John!",
-                    hi: "वापसी पर स्वागत है, जॉन!"
-                },
-                date_string: {
-                    en: "Monday, 28 October 2024",
-                    hi: "सोमवार, 28 अक्टूबर 2024"
-                },
-                all_clear: {
-                    en: "All clear",
-                    hi: "सब साफ़ है"
-                },
-
-                // Video section
-                video_of_day: {
-                    en: "Video of the Day",
-                    hi: "दिन का वीडियो"
-                },
-                video_description: {
-                    en: "Safety Protocol: Emergency Evacuation",
-                    hi: "सुरक्षा प्रोटोकॉल: आपातकालीन निकासी"
-                },
-
-                // Main button
-                complete_checklist: {
-                    en: "Complete Your Checklist Today",
-                    hi: "आज ही अपनी चेकलिस्ट पूरी करें"
-                },
-
-                // Alerts section
-                critical_alerts: {
-                    en: "Critical Alerts",
-                    hi: "महत्वपूर्ण अलर्ट"
-                },
-                active_alerts: {
-                    en: "2 active",
-                    hi: "2 सक्रिय"
-                },
-                alert_gas_leak: {
-                    en: "Gas Leak Detected in Sector 3",
-                    hi: "सेक्टर 3 में गैस रिसाव का पता चला"
-                },
-                high_priority: {
-                    en: "High priority",
-                    hi: "उच्च प्राथमिकता"
-                },
-                five_min_ago: {
-                    en: "5 min ago",
-                    hi: "5 मिनट पहले"
-                },
-                alert_rockfall: {
-                    en: "Minor Rockfall near Tunnel",
-                    hi: "सुरंग के पास मामूली चट्टान गिरी"
-                },
-                medium_priority: {
-                    en: "Medium priority",
-                    hi: "मध्यम प्राथमिकता"
-                },
-                thirty_min_ago: {
-                    en: "30 min ago",
-                    hi: "30 मिनट पहले"
-                },
-                view_all_incidents: {
-                    en: "View All Incidents",
-                    hi: "सभी घटनाएं देखें"
-                },
-
-                // Map section
-                safety_map: {
-                    en: "Safety Map",
-                    hi: "सुरक्षा मानचित्र"
-                },
-                map_alerts: {
-                    en: "Alerts",
-                    hi: "अलर्ट"
-                },
-                map_personnel: {
-                    en: "Personnel",
-                    hi: "कर्मी"
-                },
-
-                // Recent Activity
-                recent_activity: {
-                    en: "Recent Activity",
-                    hi: "हाल की गतिविधि"
-                },
-                activity_gas_leak_title: {
-                    en: "Gas leak detected in Sector 3",
-                    hi: "सेक्टर 3 में गैस रिसाव का पता चला"
-                },
-                activity_gas_leak_time: {
-                    en: "5 minutes ago",
-                    hi: "5 मिनट पहले"
-                },
-                activity_gas_leak_details: {
-                    en: "Gas concentration reached 200ppm. Evacuated 5 personnel and notified control room. Investigation ongoing.",
-                    hi: "गैस की सांद्रता 200ppm तक पहुंच गई। 5 कर्मियों को निकाला गया और नियंत्रण कक्ष को सूचित किया गया। जांच जारी है।"
-                },
-                acknowledge_button: {
-                    en: "Acknowledge",
-                    hi: "स्वीकार करें"
-                },
-                view_button: {
-                    en: "View",
-                    hi: "देखें"
-                },
-                activity_inspection_title: {
-                    en: "Pre-shift inspection completed",
-                    hi: "प्री-शिफ्ट निरीक्षण पूरा हुआ"
-                },
-                activity_inspection_time: {
-                    en: "15 minutes ago",
-                    hi: "15 मिनट पहले"
-                },
-                activity_inspection_details: {
-                    en: "All checks passed. Minor issues logged for maintenance team.",
-                    hi: "सभी जांच पास हो गईं। रखरखाव टीम के लिए मामूली मुद्दों को लॉग किया गया।"
-                },
-                activity_rockfall_title: {
-                    en: "Minor rockfall reported near Tunnel A",
-                    hi: "टनल ए के पास मामूली चट्टान गिरने की सूचना है"
-                },
-                activity_rockfall_time: {
-                    en: "30 minutes ago",
-                    hi: "30 मिनट पहले"
-                },
-                activity_rockfall_details: {
-                    en: "Small debris observed, area cordoned off for inspection. No injuries.",
-                    hi: "छोटा मलबा देखा गया, निरीक्षण के लिए क्षेत्र को बंद कर दिया गया। कोई चोट नहीं।"
-                },
-
-                // Progress Section
-                your_progress: {
-                    en: "Your Progress",
-                    hi: "आपकी प्रगति"
-                },
-                safety_training: {
-                    en: "Safety Training",
-                    hi: "सुरक्षा प्रशिक्षण"
-                },
-                knowledge_base: {
-                    en: "Knowledge Base",
-                    hi: "ज्ञानकोष"
-                },
-
-                // Badges Section
-                your_badges: {
-                    en: "Your Badges",
-                    hi: "आपके बैज"
-                },
-                badge_safety_master: {
-                    en: "Safety Master",
-                    hi: "सुरक्षा मास्टर"
-                },
-                badge_first_responder: {
-                    en: "First Responder",
-                    hi: "प्राथमिक प्रतिक्रियाकर्ता"
-                },
-                badge_quiz_whiz: {
-                    en: "Quiz Whiz",
-                    hi: "क्विज़ विशेषज्ञ"
-                },
-                badge_video_learner: {
-                    en: "Video Learner",
-                    hi: "वीडियो लर्नर"
-                },
-                badge_alert_hero: {
-                    en: "Alert Hero",
-                    hi: "अलर्ट हीरो"
-                },
-
-                // Bottom Nav
-                nav_home: {
-                    en: "Home",
-                    hi: "होम"
-                },
-                nav_library: {
-                    en: "Library",
-                    hi: "लाइब्रेरी"
-                },
-                nav_checklists: {
-                    en: "Checklists",
-                    hi: "चेकलिस्ट"
-                },
-                nav_videos: {
-                    en: "Videos",
-                    hi: "वीडियो"
-                }
-            };
-
-            // Load saved language (default English)
-            let currentLang = localStorage.getItem("lang") || "en";
-
-            // Apply initial state
-            applyLanguage(currentLang);
-
-            // Handle toggle click
-            document.getElementById("langToggleWrapper").addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-
-                // Flip language
-                currentLang = currentLang === "en" ? "hi" : "en";
-                localStorage.setItem("lang", currentLang);
-                applyLanguage(currentLang);
-            });
-
-            function applyLanguage(lang) {
-                // Update toggle switch UI
-                if (lang === "hi") {
-                    knob.style.transform = "translateX(24px)";
-                    langText.textContent = "HI";
-                    document.documentElement.lang = 'hi';
-                } else {
-                    knob.style.transform = "translateX(0)";
-                    langText.textContent = "EN";
-                    document.documentElement.lang = 'en';
-                }
-
-                // Update all elements with data-translate-key attribute
-                document.querySelectorAll("[data-translate-key]").forEach(element => {
-                    const key = element.getAttribute("data-translate-key");
-                    if (translations[key] && translations[key][lang]) {
-                        element.textContent = translations[key][lang];
-                    }
-                });
-
-                // Special case for buttons that appear multiple times
-                document.querySelectorAll('.ack-btn').forEach(btn => btn.textContent = translations['acknowledge_button'][lang]);
-                document.querySelectorAll('.view-btn').forEach(btn => btn.textContent = translations['view_button'][lang]);
-            }
-        });
-    </script>
+    <!-- Language Toggle Script -->
+    <script src="language-toggle.js"></script>
+    
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             // --- 1. AUTHENTICATION & INITIALIZATION ---
@@ -1722,11 +1505,11 @@
              * Renders the welcome message and profile picture.
              */
             const renderWelcomeHeader = (currentUser) => {
-                const welcomeMessage = document.getElementById("welcome-message");
+                const userNameSpan = document.getElementById("user-name");
                 const profileImage = document.getElementById("profile-image");
 
-                if (welcomeMessage && currentUser.fullName) {
-                    welcomeMessage.textContent = `Welcome, ${currentUser.fullName}!`;
+                if (userNameSpan && currentUser.fullName) {
+                    userNameSpan.textContent = currentUser.fullName;
                 }
                 if (profileImage) {
                     // Uses DiceBear Avatars with the username as a seed for a unique avatar
@@ -1763,7 +1546,11 @@
                 const badge = document.getElementById("active-alerts-badge");
                 const currentCount = container.children.length; // Get total count of items in the list
                 if (badge) {
-                    badge.textContent = `${currentCount} active`;
+                    const currentLang = localStorage.getItem("lang") || "en";
+                    const activeText = window.translations && window.translations.active_alerts ? 
+                        window.translations.active_alerts[currentLang] : "active";
+                    // Use innerHTML to separate the number from the translatable text
+                    badge.innerHTML = `${currentCount} <span data-translate-key="active_alerts">${activeText}</span>`;
                 }
             };
 
@@ -1876,6 +1663,22 @@
             // --- 5. INITIALIZE THE PAGE ---
             initializeDashboard();
         });
+    </script>
+
+    <!-- Offline DB and Service Worker -->
+    <script src="../offline-db.js"></script>
+    <script src="../offline-ui.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('../sw.js')
+                .then(reg => console.log('[SW] Registered:', reg.scope))
+                .catch(err => console.error('[SW] Registration failed:', err));
+        }
+        
+        // Initialize offline DB
+        if (typeof offlineDB !== 'undefined') {
+            offlineDB.init().then(() => console.log('[OfflineDB] Ready'));
+        }
     </script>
 
 </body>

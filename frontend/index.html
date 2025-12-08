@@ -224,6 +224,13 @@
       opacity: 1;
     }
   </style>
+  
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Suraksha Sathi">
 </head>
 
 <body class="bg-background-light dark:bg-background-dark font-display">
@@ -635,6 +642,40 @@
       }
     }
     window.addEventListener("load", loaderAnimation);
+  </script>
+
+  <!-- Offline DB and Service Worker Registration -->
+  <script src="./offline-db.js"></script>
+  <script src="./offline-ui.js"></script>
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('./sw.js');
+          console.log('[SW] Service Worker registered:', registration.scope);
+          
+          // Initialize offline database
+          if (typeof offlineDB !== 'undefined') {
+            await offlineDB.init();
+            console.log('[OfflineDB] Database initialized');
+          }
+          
+          // Check for updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[SW] New version available! Refresh to update.');
+                // You could show a notification to the user here
+              }
+            });
+          });
+        } catch (error) {
+          console.error('[SW] Service Worker registration failed:', error);
+        }
+      });
+    }
   </script>
 
 </body>
