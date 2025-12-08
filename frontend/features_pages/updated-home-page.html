@@ -657,14 +657,29 @@
 
             <div class="grid grid-cols-2 gap-4 mb-6 animate-slideInUp">
                 <a href="report.html"
-                    class="bg-white/95 backdrop-blur-sm rounded-2xl p-5 text-center shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col items-center group">
-                    <div
-                        class="size-14 rounded-full bg-primary-light/30 text-primary-dark flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                        <span class="material-symbols-rounded text-3xl">sos</span>
-                    </div>
-                    <p class="font-semibold text-neutral-700" data-translate-key="emergency">Emergency</p>
-                    <p class="text-xs text-neutral-500 mt-1" data-translate-key="report_incident">Report an incident</p>
-                </a>
+    class="block w-full max-w-xs bg-white/95 backdrop-blur-sm rounded-2xl p-5 shadow-card
+           hover:shadow-card-hover transition-all duration-300
+           flex flex-col items-center text-center group cursor-pointer
+           active:scale-95 sm:max-w-sm md:max-w-md">
+
+    <div
+        class="size-14 sm:size-16 md:size-20 rounded-full bg-primary-light/30 text-primary-dark
+               flex items-center justify-center mb-3
+               group-hover:scale-110 transition-transform duration-300">
+        <span class="material-symbols-rounded text-3xl sm:text-4xl md:text-5xl">sos</span>
+    </div>
+
+    <p class="font-semibold text-neutral-700 text-sm sm:text-base md:text-lg"
+       data-translate-key="emergency">
+        Emergency
+    </p>
+
+    <p class="text-xs sm:text-sm text-neutral-500 mt-1"
+       data-translate-key="report_incident">
+        Report an incident
+    </p>
+</a>
+
                 <a href="attendance.html"
                     class="bg-white/95 backdrop-blur-sm rounded-2xl p-5 text-center shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col items-center group">
                     <div
