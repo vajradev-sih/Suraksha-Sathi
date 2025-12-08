@@ -374,24 +374,24 @@ const taskAPI = {
     }),
 };
 
-// 4. User Task Assignment API
+// 4. User Task Assignment API (CORRECTED PATH)
 const userTaskAssignmentAPI = {
   assign: (data) =>
-    apiRequest("/api/v1/user-tasks", {
+    apiRequest("/api/v1/assignments", { // Changed from /user-tasks to /assignments
       method: "POST",
       body: JSON.stringify(data),
     }),
   getForUser: (userId) =>
-    apiRequest(`/api/v1/user-tasks/${userId}`, {
+    apiRequest(`/api/v1/assignments/${userId}`, { // Changed from /user-tasks to /assignments
       method: "GET",
     }),
   update: (id, data) =>
-    apiRequest(`/api/v1/user-tasks/${id}`, {
+    apiRequest(`/api/v1/assignments/${id}`, { // Changed from /user-tasks to /assignments
       method: "PUT",
       body: JSON.stringify(data),
     }),
   delete: (id) =>
-    apiRequest(`/api/v1/user-tasks/${id}`, {
+    apiRequest(`/api/v1/assignments/${id}`, { // Changed from /user-tasks to /assignments
       method: "DELETE",
     }),
 };
