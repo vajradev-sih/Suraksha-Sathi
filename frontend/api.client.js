@@ -281,29 +281,33 @@ async function clearOfflineQueue() {
 // --- Offline Authentication ---
 
 // Store user credentials hash for offline login
-function storeOfflineCredentials(email, passwordHash, userData, token) {
-  try {
-    const offlineAuth = {
-      email: email.toLowerCase(),
-      passwordHash: passwordHash,
-      userData: userData,
-      token: token,
-      lastSync: Date.now()
-    };
-    localStorage.setItem('offlineAuth', JSON.stringify(offlineAuth));
-    console.log('[Offline Auth] Credentials cached for offline login');
-  } catch (e) {
-    console.error('[Offline Auth] Failed to cache credentials:', e);
-  }
+async function storeOfflineCredentials(email, password, userData, token) {
+    try {
+        const passwordHash = await simpleHash(password);
+        const offlineAuth = {
+            email: email.toLowerCase(),
+            passwordHash: passwordHash,
+            userData: userData,
+            token: token,
+            lastSync: Date.now()
+        };
+        localStorage.setItem('offlineAuth', JSON.stringify(offlineAuth));
+        // Also save standard user data for easy access
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', token);
+        console.log('[Offline Auth] Credentials securely cached.');
+    } catch (e) {
+        console.error('[Offline Auth] Failed to cache credentials:', e);
+    }
 }
 
 // Simple hash function for password verification (client-side only)
 async function simpleHash(text) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(text);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // Handle offline login using cached credentials
@@ -393,46 +397,106 @@ async function loginWithCaching(loginData) {
 // 1. User Authentication and Self-Management API
 // Based on user.controller.js logic (register, login, etc.)
 const authAPI = {
-  // Auth endpoints are often simpler paths like /register, /login
-  register: (data) =>
-    apiRequest("/api/v1/user/register", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-  login: (data) => loginWithCaching(data),  // Use enhanced login with offline support
-  logout: () => {
-    // Clear offline auth data on logout
-    localStorage.removeItem('offlineAuth');
-    return apiRequest("/api/v1/user/logout", {
-      method: "POST",
-    });
-  },
-  getCurrentUser: () =>
-    apiRequest("/api/v1/user/current-user", {
-      // Assumed path from controller logic
-      method: "GET",
-    }),
-  updateAccount: (data) =>
-    apiRequest("/api/v1/user/update-account", {
-      // Assumed path
-      method: "PATCH",
-      body: JSON.stringify(data),
-    }),
-  changePassword: (data) =>
-    apiRequest("/api/v1/user/change-password", {
-      // Assumed path
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-  // Placeholder methods for completeness based on controller logic
-  getWatchHistory: (userId) =>
-    apiRequest(`/api/v1/user/watch-history/${userId}`, {
-      method: "GET",
-    }),
-  getPublicUserInfo: (userId) =>
-    apiRequest(`/api/v1/user/public/${userId}`, {
-      method: "GET",
-    }),
+    login: async (credentials) => {
+        const { email, password } = credentials;
+
+        // SCENARIO A: ONLINE
+        if (navigator.onLine) {
+            try {
+                // 1. Call Real API
+                const response = await apiRequest("/api/v1/user/login", {
+                    method: "POST",
+                    body: JSON.stringify(credentials),
+                });
+
+                // 2. If successful, cache the credentials for future offline use
+                if (response.success && response.data) {
+                    storeOfflineCredentials(
+                        email, 
+                        password, 
+                        response.data.user, 
+                        response.data.accessToken
+                    );
+                }
+                return response;
+            } catch (error) {
+                throw error;
+            }
+        } 
+        
+        // SCENARIO B: OFFLINE
+        else {
+            console.log("[Auth] System is Offline. Attempting local verification...");
+            
+            // 1. Check if we have cached data
+            const cachedData = localStorage.getItem('offlineAuth');
+            if (!cachedData) {
+                throw new Error("No offline login data available. Please connect to internet and login at least once.");
+            }
+
+            const offlineAuth = JSON.parse(cachedData);
+
+            // 2. Verify Email
+            if (email.toLowerCase() !== offlineAuth.email) {
+                throw new Error("Invalid credentials (Offline Mode)");
+            }
+
+            // 3. Verify Password Hash
+            const inputHash = await simpleHash(password);
+            if (inputHash !== offlineAuth.passwordHash) {
+                throw new Error("Invalid credentials (Offline Mode)");
+            }
+
+            // 4. Return Mock Success Response
+            return {
+                success: true,
+                message: "Logged in via Offline Mode",
+                data: {
+                    user: offlineAuth.userData,
+                    accessToken: offlineAuth.token
+                },
+                offline: true // Flag to let UI know we are offline
+            };
+        }
+    },
+    
+    register: (data) => apiRequest("/api/v1/user/register", { method: "POST", body: JSON.stringify(data) }),
+    
+    logout: () => {
+        // Clear sensitive offline data on logout
+        localStorage.removeItem('offlineAuth');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return apiRequest("/api/v1/user/logout", { method: "POST" });
+    },
+    
+    // UPDATED: Get Current User (Network First, Cache Fallback)
+    getCurrentUser: async () => {
+        if (navigator.onLine) {
+            try {
+                const res = await apiRequest("/api/v1/user/current-user", { method: "GET" });
+                // Update local storage with fresh data
+                localStorage.setItem('user', JSON.stringify(res.data));
+                return res;
+            } catch (e) {
+                console.warn("Online fetch failed, falling back to local data");
+            }
+        }
+        
+        // Fallback to localStorage if offline or API failed
+        const localUser = localStorage.getItem('user');
+        if (localUser) {
+            return { 
+                success: true, 
+                data: JSON.parse(localUser), 
+                offline: true 
+            };
+        }
+        throw new Error("No user data found");
+    },
+
+    updateAccount: (data) => apiRequest("/api/v1/user/update-account", { method: "PATCH", body: JSON.stringify(data) }),
+    changePassword: (data) => apiRequest("/api/v1/user/change-password", { method: "POST", body: JSON.stringify(data) }),
 };
 
 // 2. User Management API (Admin/Manager CRUD)
