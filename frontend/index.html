@@ -383,6 +383,8 @@
 
   <script src="api.client.js"></script>
 
+  <script src="api.client.js"></script>
+
   <script>
     // Mark page as loaded after animations complete
     const hasVisited = sessionStorage.getItem('hasVisited');
@@ -390,52 +392,76 @@
       document.body.classList.add('loaded');
     } else {
       sessionStorage.setItem('hasVisited', 'true');
-      // Add loaded class after animations complete
       setTimeout(() => {
         document.body.classList.add('loaded');
       }, 1200);
     }
 
-    // Offline warning for login page
+    // --- OFFLINE STATUS LOGIC (FIXED) ---
     const loginOfflineWarning = document.getElementById('loginOfflineWarning');
     const submitBtn = document.getElementById('submitBtn');
-
+    
     function updateLoginOfflineStatus() {
       const isOffline = !navigator.onLine;
-      const hasOfflineAuth = localStorage.getItem('offlineAuth');
-
+      // Check if we have credentials cached
+      const hasOfflineAuth = !!localStorage.getItem('offlineAuth'); 
+      
       if (loginOfflineWarning) {
         if (isOffline) {
+          // SHOW BANNER
           loginOfflineWarning.classList.remove('hidden');
-          // Don't disable login if we have cached credentials
-          if (submitBtn && !hasOfflineAuth) {
-            submitBtn.disabled = true;
+          
+          // UPDATE BANNER TEXT
+          const bannerTitle = loginOfflineWarning.querySelector('p.font-semibold');
+          const bannerText = loginOfflineWarning.querySelector('p.text-xs');
+          
+          if (hasOfflineAuth) {
+             // CASE 1: Offline but Ready (Cache Exists)
+             if(bannerTitle) bannerTitle.textContent = "Offline Mode";
+             if(bannerText) bannerText.textContent = "Using cached credentials to login";
+             if(submitBtn) submitBtn.disabled = false; // ENABLE BUTTON
+          } else {
+             // CASE 2: Offline and Not Ready (No Cache)
+             if(bannerTitle) bannerTitle.textContent = "Connection Required";
+             if(bannerText) bannerText.textContent = "You must login online once first";
+             if(submitBtn) submitBtn.disabled = true; // DISABLE BUTTON
           }
+          
         } else {
+          // ONLINE MODE
           loginOfflineWarning.classList.add('hidden');
-          if (submitBtn) submitBtn.disabled = false;
+          if (submitBtn) submitBtn.disabled = false; // Always enable when online
         }
       }
     }
-
+    
     // Check initial status
     updateLoginOfflineStatus();
-
+    
     // Listen for online/offline events
     window.addEventListener('online', updateLoginOfflineStatus);
     window.addEventListener('offline', updateLoginOfflineStatus);
 
     // Toast notification function
     function showToast(message, type = 'info') {
+      // Remove existing toasts first to prevent stacking
+      const existingToast = document.querySelector('.toast');
+      if (existingToast) existingToast.remove();
+
       const toast = document.createElement('div');
       toast.className = `toast ${type}`;
       toast.textContent = message;
       document.body.appendChild(toast);
 
+      // Trigger animation
+      requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+      });
+
       setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-20px)';
-        toast.style.transition = 'all 0.3s ease-out';
+        toast.style.transform = 'translateX(-50%) translateY(-20px)';
         setTimeout(() => toast.remove(), 300);
       }, 3000);
     }
@@ -459,18 +485,15 @@
       confirmPasswordField.classList.add('hidden');
       loginExtras.classList.remove('hidden');
       submitBtnText.textContent = 'Login';
+      
+      // Re-run status check (in case we switched modes)
+      updateLoginOfflineStatus();
 
-      // Clear signup-only fields
-      document.getElementById('auth-fullname').value = '';
-      document.getElementById('auth-username').value = '';
-      document.getElementById('auth-phone').value = '';
-      document.getElementById('auth-confirm-password').value = '';
-
-      // Remove required from signup fields
-      document.getElementById('auth-fullname').removeAttribute('required');
-      document.getElementById('auth-username').removeAttribute('required');
-      document.getElementById('auth-phone').removeAttribute('required');
-      document.getElementById('auth-confirm-password').removeAttribute('required');
+      // Clear signup fields
+      ['auth-fullname', 'auth-username', 'auth-phone', 'auth-confirm-password'].forEach(id => {
+         const el = document.getElementById(id);
+         if(el) { el.value = ''; el.removeAttribute('required'); }
+      });
     });
 
     signupTab.addEventListener('click', () => {
@@ -481,12 +504,14 @@
       confirmPasswordField.classList.remove('hidden');
       loginExtras.classList.add('hidden');
       submitBtnText.textContent = 'Create Account';
+      
+      // Always enable button for signup (requires internet, but handled by form submit)
+      if(submitBtn) submitBtn.disabled = !navigator.onLine;
 
-      // Add required to signup fields
-      document.getElementById('auth-fullname').setAttribute('required', 'required');
-      document.getElementById('auth-username').setAttribute('required', 'required');
-      document.getElementById('auth-phone').setAttribute('required', 'required');
-      document.getElementById('auth-confirm-password').setAttribute('required', 'required');
+      // Add required
+      ['auth-fullname', 'auth-username', 'auth-phone', 'auth-confirm-password'].forEach(id => {
+         document.getElementById(id)?.setAttribute('required', 'required');
+      });
     });
 
     // Password visibility toggle
@@ -511,8 +536,6 @@
     authForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const submitBtn = document.getElementById('submitBtn');
-      const submitBtnText = document.getElementById('submitBtnText');
       const submitBtnLoader = document.getElementById('submitBtnLoader');
 
       // Disable button and show loader
@@ -526,49 +549,41 @@
       try {
         if (isLoginMode) {
           // --- LOGIN LOGIC ---
-          // This calls our updated authAPI.login which handles online/offline internally
           const response = await authAPI.login({ email, password });
-          console.log("Login response:", response);
-
-          // Store token/user (redundant if storeOfflineCredentials worked, but good for safety)
+          
           localStorage.setItem("token", response.data.accessToken);
           localStorage.setItem("user", JSON.stringify(response.data.user));
 
-          // Custom Message for Offline vs Online Mode
           if (response.offline) {
-            showToast('Offline Mode: Logging in with saved credentials...', 'info');
+            showToast('Offline Mode: Logging in...', 'info');
           } else {
-            showToast('Login successful! Redirecting...', 'success');
+            showToast('Login successful!', 'success');
           }
 
-          // Redirect logic based on user role
           setTimeout(() => {
             const roleName = response.data.user.role_name;
-            let redirectUrl = "/features_pages/updated-home-page.html"; // Default (Worker)
+            let redirectUrl = "/features_pages/updated-home-page.html"; 
 
             if (roleName === 'Admin') {
               redirectUrl = "/admin/admin-home.html";
-            } else if (roleName === 'Worker') {
-              redirectUrl = "/features_pages/updated-home-page.html";
             }
-
+            
             window.location.href = redirectUrl;
-          }, 1500);
+          }, 1000);
 
         } else {
           // --- SIGNUP LOGIC ---
+          if(!navigator.onLine) {
+             throw new Error("Registration requires internet connection.");
+          }
+
           const fullName = document.getElementById('auth-fullname').value;
           const username = document.getElementById('auth-username').value;
           const phone = document.getElementById('auth-phone').value;
           const confirmPassword = document.getElementById('auth-confirm-password').value;
 
           if (password !== confirmPassword) {
-            showToast('Passwords do not match!', 'error');
-            // Reset button state immediately for retry
-            submitBtn.disabled = false;
-            submitBtnText.classList.remove('hidden');
-            submitBtnLoader.classList.add('hidden');
-            return;
+            throw new Error('Passwords do not match!');
           }
 
           const data = {
@@ -580,12 +595,9 @@
             password: password
           };
 
-          const response = await authAPI.register(data);
-          console.log("Registration successful:", response);
+          await authAPI.register(data);
+          showToast('Account created! Please log in.', 'success');
 
-          showToast('Account created successfully! Please log in.', 'success');
-
-          // Switch to login mode and clear form
           setTimeout(() => {
             loginTab.click();
             authForm.reset();
@@ -594,19 +606,17 @@
 
       } catch (error) {
         console.error("Auth error:", error);
-        showToast(error.message || `${isLoginMode ? 'Login' : 'Registration'} failed. Please try again.`, 'error');
-      } finally {
-        // Always re-enable button (unless redirecting after successful login)
-        // If successful login, the page will redirect, so button state doesn't matter much.
-        // But if error, we need to re-enable.
-        if (!isLoginMode || (isLoginMode && document.querySelector('.toast.error'))) {
-          submitBtn.disabled = false;
-          submitBtnText.classList.remove('hidden');
-          submitBtnLoader.classList.add('hidden');
-        }
+        showToast(error.message || 'Authentication failed', 'error');
+        
+        // Re-enable button on error
+        submitBtn.disabled = false;
+        submitBtnText.classList.remove('hidden');
+        submitBtnLoader.classList.add('hidden');
+        
+        // Re-run status check to ensure button state is correct
+        updateLoginOfflineStatus();
       }
     });
-
   </script>
 
   <!-- =======================
