@@ -714,20 +714,41 @@
                     Day</h3>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-card border border-neutral-200/80">
                     <div class="w-full rounded-lg overflow-hidden shadow-md mb-3" style="aspect-ratio: 16 / 9;">
-                        <video class="w-full h-full object-cover" src="https://sundown-ivory.vercel.app/video.mp4"
+                        <video class="w-full h-full object-cover" src="../videos/mine 12th safety conference.mp4"
                             poster="https://images.unsplash.com/photo-1571272314295-32d7a285dd17?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3"
                             controls muted preload="metadata" autoplay loop>
                             Your browser does not support the video tag.
                         </video>
                     </div>
                     <div>
-                        <p class="font-semibold text-neutral-700" data-translate-key="video_title">Proper Use of
-                            Personal
-                            Protective Equipment (PPE)</p>
-                        <p class="text-sm text-neutral-500 mt-1" data-translate-key="video_subtitle">A 2-minute
-                            refresher on
-                            correctly wearing and
-                            inspecting your gear before every shift.</p>
+                        <p class="font-semibold text-neutral-700" data-translate-key="video_title">12th National Mine Safety Conference</p>
+                        <p class="text-sm text-neutral-500 mt-1" data-translate-key="video_subtitle">Key highlights and safety recommendations from the conference.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Safety Fact Section -->
+            <div class="animated-card mt-4" id="daily-safety-fact-container">
+                <div class="bg-gradient-to-br from-orange-50 to-yellow-50 border-l-4 border-orange-500 rounded-2xl p-5 shadow-card">
+                    <div class="flex items-start gap-3">
+                        <div class="flex-shrink-0 bg-orange-500 text-white p-2 rounded-lg">
+                            <span class="material-symbols-rounded text-2xl">lightbulb</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-orange-800 mb-2 flex items-center gap-2">
+                                <span>Today's Safety Fact</span>
+                                <span class="text-sm font-normal bg-orange-200 text-orange-800 px-2 py-1 rounded-full" id="safety-fact-number"></span>
+                            </h3>
+                            <div class="text-neutral-700 leading-relaxed" id="daily-safety-fact-content">
+                                <!-- Fact will be loaded here by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-orange-200 flex items-center justify-between text-xs text-neutral-600">
+                        <span class="flex items-center gap-1">
+                            <span class="material-symbols-rounded text-sm">info</span>
+                            <span>Based on 12th National Mine Safety Conference recommendations</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -1755,6 +1776,193 @@
                     }
                 });
             }
+
+            // --- DAILY SAFETY FACTS ---
+            const safetyFacts = [
+                {
+                    number: 1,
+                    title: "Dust Limit",
+                    content: "Respirable dust levels in mines should be less than 1.0 mg/cubic meter. Ensure protection of your lungs.",
+                    category: "Health & Dust Control"
+                },
+                {
+                    number: 2,
+                    title: "Stone Quarry Check",
+                    content: "If you work in a stone quarry, get your medical examination done annually to prevent diseases like silicosis.",
+                    category: "Health & Dust Control"
+                },
+                {
+                    number: 3,
+                    title: "X-Ray Examination",
+                    content: "Chest X-ray for high-risk workers is mandatory at least once every 2 years.",
+                    category: "Health & Dust Control"
+                },
+                {
+                    number: 4,
+                    title: "Wet Drilling",
+                    content: "Always use water (wet drilling) or dust extractor while drilling to prevent dust from spreading.",
+                    category: "Health & Dust Control"
+                },
+                {
+                    number: 5,
+                    title: "Worker Rights",
+                    content: "Contract workers' details should be recorded in 'Form A' (Employee Register) and they should receive statutory benefits equal to permanent employees.",
+                    category: "Health & Dust Control"
+                },
+                {
+                    number: 6,
+                    title: "GPS Navigation",
+                    content: "Use of GPS-GSM based navigation system is being made mandatory to prevent collision of heavy vehicles (HEMM) in large mines.",
+                    category: "Machine & Transport Safety"
+                },
+                {
+                    number: 7,
+                    title: "Fatigue Prevention",
+                    content: "Continuous vehicle operation for more than 8 hours is prohibited. 30 minutes rest is mandatory after every 4 hours of operation.",
+                    category: "Machine & Transport Safety"
+                },
+                {
+                    number: 8,
+                    title: "Biometric Attendance",
+                    content: "Use of biometric attendance system is necessary to monitor drivers' working hours.",
+                    category: "Machine & Transport Safety"
+                },
+                {
+                    number: 9,
+                    title: "Warning Device",
+                    content: "All dumpers and dozers must have a 'Proximity Warning Device' that alerts drivers about nearby people or vehicles.",
+                    category: "Machine & Transport Safety"
+                },
+                {
+                    number: 10,
+                    title: "Shift Inspection",
+                    content: "Inspect your machine within 15 minutes of shift start and record the report on digital kiosk/tool.",
+                    category: "Machine & Transport Safety"
+                },
+                {
+                    number: 11,
+                    title: "Valid ID (MRN)",
+                    content: "Do not operate any machine in the mine without a valid 'Machinery Reference Number' (MRN) and fitness certificate.",
+                    category: "Machine & Transport Safety"
+                },
+                {
+                    number: 12,
+                    title: "Man-Riding",
+                    content: "If the path in underground mine is long or difficult, management must arrange transportation (man-riding) for workers.",
+                    category: "Underground Safety"
+                },
+                {
+                    number: 13,
+                    title: "Roof Inspection",
+                    content: "Use newly developed portable equipment to detect hidden cracks (slips) in the roof of coal mines.",
+                    category: "Underground Safety"
+                },
+                {
+                    number: 14,
+                    title: "Communication System",
+                    content: "There should be proper communication and tracking system underground so trapped miners can be located in emergencies.",
+                    category: "Underground Safety"
+                },
+                {
+                    number: 15,
+                    title: "Winding Machine",
+                    content: "Detailed safety inspection of winding machines (lift systems) older than 20 years is mandatory.",
+                    category: "Underground Safety"
+                },
+                {
+                    number: 16,
+                    title: "TARP",
+                    content: "Understand your mine's 'TARP' (Triggered Action Response Plan). Move to safe location immediately when danger (like gas or roof fall) increases.",
+                    category: "Emergency Rules"
+                },
+                {
+                    number: 17,
+                    title: "Near-Miss Reporting",
+                    content: "If an accident is narrowly avoided (near-miss), report it. This helps prevent major accidents in the future.",
+                    category: "Emergency Rules"
+                },
+                {
+                    number: 18,
+                    title: "Root Cause",
+                    content: "Analyzing the 'Root Cause' of accidents is necessary to prevent recurrence, not just treating symptoms.",
+                    category: "Emergency Rules"
+                },
+                {
+                    number: 19,
+                    title: "Mobile Phone Rule",
+                    content: "Taking mobile phones in the active zone of the mine is strictly prohibited, unless permitted by the manager.",
+                    category: "Emergency Rules"
+                },
+                {
+                    number: 20,
+                    title: "Safety Hierarchy",
+                    content: "Follow the 'Hierarchy of Controls' to deal with hazards; first try to completely eliminate the hazard.",
+                    category: "Emergency Rules"
+                },
+                {
+                    number: 21,
+                    title: "Smart Token",
+                    content: "Keep a 'Smart Digital Token' containing details of your training and medical records for immediate identification.",
+                    category: "Digital & General Tips"
+                },
+                {
+                    number: 22,
+                    title: "Aadhaar Link",
+                    content: "Your medical and training records should be digitally linked to your Aadhaar number.",
+                    category: "Digital & General Tips"
+                },
+                {
+                    number: 23,
+                    title: "Digital Maps",
+                    content: "Statutory mine plans (maps) should now be in digital format so they cannot be tampered with.",
+                    category: "Digital & General Tips"
+                },
+                {
+                    number: 24,
+                    title: "Vehicle Density",
+                    content: "Follow the SOP created to reduce vehicle congestion in opencast mines.",
+                    category: "Digital & General Tips"
+                },
+                {
+                    number: 25,
+                    title: "Skill Assessment",
+                    content: "No person will be employed without passing skill assessment by management.",
+                    category: "Digital & General Tips"
+                }
+            ];
+
+            // Function to display random daily safety fact
+            const displayDailySafetyFact = () => {
+                const factContentElement = document.getElementById('daily-safety-fact-content');
+                const factNumberElement = document.getElementById('safety-fact-number');
+                
+                if (!factContentElement || !factNumberElement) return;
+
+                // Get random fact
+                const randomIndex = Math.floor(Math.random() * safetyFacts.length);
+                const fact = safetyFacts[randomIndex];
+
+                // Display fact
+                factNumberElement.textContent = `#${fact.number}`;
+                factContentElement.innerHTML = `
+                    <div class="mb-2">
+                        <span class="font-semibold text-orange-800">${fact.title}:</span>
+                    </div>
+                    <p class="text-sm leading-relaxed">${fact.content}</p>
+                    <div class="mt-2 inline-block px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full">
+                        ${fact.category}
+                    </div>
+                `;
+
+                // Add fade-in animation
+                const container = document.getElementById('daily-safety-fact-container');
+                if (container) {
+                    container.style.animation = 'fadeIn 0.5s ease-in';
+                }
+            };
+
+            // Display fact on page load
+            displayDailySafetyFact();
 
             // --- 5. INITIALIZE ---
             initializeDashboard();
