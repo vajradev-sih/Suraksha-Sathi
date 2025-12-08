@@ -22,7 +22,7 @@ const workerVideoSchema = new Schema({
   },
   approval_status: { 
     type: String, 
-    enum: ['pending', 'approved', 'rejected'], 
+    enum: ['pending', 'approved', 'rejected', 'auto_rejected'], 
     default: 'pending' 
   },
   approved_by: { 
@@ -34,6 +34,24 @@ const workerVideoSchema = new Schema({
   },
   rejection_reason: { 
     type: String 
+  },
+  moderation_status: {
+    type: String,
+    enum: ['passed', 'flagged', 'auto_rejected'],
+    default: 'passed'
+  },
+  moderation_score: {
+    type: Number,
+    min: 0,
+    max: 1,
+    default: 1
+  },
+  moderation_flags: [{
+    type: String
+  }],
+  requires_manual_review: {
+    type: Boolean,
+    default: false
   },
   category: {
     type: String,

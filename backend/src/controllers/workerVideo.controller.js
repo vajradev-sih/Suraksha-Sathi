@@ -6,6 +6,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import cloudinary from '../utils/cloudinary.js';
 import fs from 'fs/promises';
+import { moderateCloudinaryContent, shouldAutoReject, getModerationSummary } from '../middlewares/contentModeration.middleware.js';
 
 // Worker uploads video (pending approval)
 const uploadWorkerVideo = asyncHandler(async (req, res) => {
@@ -20,16 +21,47 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
   }
 
   try {
-    // Upload video to Cloudinary
+    // Upload video to Cloudinary with moderation enabled
     const result = await cloudinary.uploader.upload(req.file.path, { 
       folder: 'worker_videos',
-      resource_type: 'video'
+      resource_type: 'video',
+      moderation: 'aws_rek:explicit_nudity:suggestive:violence:visually_disturbing' // Enable AI moderation
     });
 
     // Delete local file after upload
     await fs.unlink(req.file.path);
 
-    // Create video record with pending status
+    // Perform comprehensive content moderation
+    const moderationResult = await moderateCloudinaryContent(result, title, description);
+
+    // Check if content should be auto-rejected
+    if (shouldAutoReject(moderationResult)) {
+      // Create record as auto-rejected for audit trail
+      const rejectedVideo = await WorkerVideo.create({
+        uploaded_by: req.user._id,
+        title,
+        description,
+        video_url: result.secure_url,
+        thumbnail_url: result.thumbnail_url || result.secure_url.replace(/\.[^.]+$/, '.jpg'),
+        category: category || 'other',
+        duration: duration || result.duration,
+        approval_status: 'auto_rejected',
+        moderation_status: 'auto_rejected',
+        moderation_score: moderationResult.confidence || 0,
+        moderation_flags: moderationResult.reasons,
+        rejection_reason: getModerationSummary(moderationResult)
+      });
+
+      // Optionally delete from Cloudinary to save storage
+      // await cloudinary.uploader.destroy(result.public_id, { resource_type: 'video' });
+
+      throw new ApiError(
+        400,
+        `Upload rejected by automated moderation: ${getModerationSummary(moderationResult)}. Please ensure your content follows community guidelines.`
+      );
+    }
+
+    // Create video record with pending status and moderation info
     const video = await WorkerVideo.create({
       uploaded_by: req.user._id,
       title,
@@ -38,19 +70,31 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
       thumbnail_url: result.thumbnail_url || result.secure_url.replace(/\.[^.]+$/, '.jpg'),
       category: category || 'other',
       duration: duration || result.duration,
-      approval_status: 'pending'
+      approval_status: 'pending',
+      moderation_status: moderationResult.requiresReview ? 'flagged' : 'passed',
+      moderation_score: moderationResult.confidence || 1,
+      moderation_flags: moderationResult.reasons,
+      requires_manual_review: moderationResult.requiresReview || false
     });
 
     const populatedVideo = await WorkerVideo.findById(video._id)
       .populate('uploaded_by', 'fullName email role_name');
 
+    const message = moderationResult.requiresReview
+      ? 'Video uploaded successfully. Flagged for additional review before admin approval.'
+      : 'Video uploaded successfully and pending approval';
+
     res.status(201).json(
-      new ApiResponse(201, populatedVideo, 'Video uploaded successfully and pending approval')
+      new ApiResponse(201, populatedVideo, message)
     );
   } catch (err) {
     // Clean up file on error
     if (req.file) {
       await fs.unlink(req.file.path).catch(() => {});
+    }
+    
+    if (err instanceof ApiError) {
+      throw err;
     }
     throw new ApiError(500, `Upload failed: ${err.message}`);
   }
@@ -296,6 +340,81 @@ const deleteWorkerVideo = asyncHandler(async (req, res) => {
   );
 });
 
+// Get auto-rejected videos (admin only - for audit)
+const getAutoRejectedVideos = asyncHandler(async (req, res) => {
+  const { limit = 50, page = 1 } = req.query;
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+
+  const videos = await WorkerVideo.find({ 
+    approval_status: 'auto_rejected',
+    moderation_status: 'auto_rejected'
+  })
+    .populate('uploaded_by', 'fullName email role_name')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(parseInt(limit));
+
+  const total = await WorkerVideo.countDocuments({ 
+    approval_status: 'auto_rejected',
+    moderation_status: 'auto_rejected'
+  });
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      videos,
+      total,
+      page: parseInt(page),
+      total_pages: Math.ceil(total / parseInt(limit))
+    }, 'Auto-rejected videos fetched successfully')
+  );
+});
+
+// Get flagged videos requiring manual review (admin only)
+const getFlaggedVideos = asyncHandler(async (req, res) => {
+  const videos = await WorkerVideo.find({ 
+    requires_manual_review: true,
+    approval_status: 'pending'
+  })
+    .populate('uploaded_by', 'fullName email role_name')
+    .sort({ createdAt: -1 });
+
+  res.status(200).json(
+    new ApiResponse(200, videos, 'Flagged videos requiring review fetched successfully')
+  );
+});
+
+// Get moderation statistics (admin only)
+const getModerationStats = asyncHandler(async (req, res) => {
+  const stats = await WorkerVideo.aggregate([
+    {
+      $group: {
+        _id: '$moderation_status',
+        count: { $sum: 1 },
+        avg_score: { $avg: '$moderation_score' }
+      }
+    }
+  ]);
+
+  const approvalStats = await WorkerVideo.aggregate([
+    {
+      $group: {
+        _id: '$approval_status',
+        count: { $sum: 1 }
+      }
+    }
+  ]);
+
+  const flaggedCount = await WorkerVideo.countDocuments({ requires_manual_review: true });
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      moderation_stats: stats,
+      approval_stats: approvalStats,
+      flagged_for_review: flaggedCount
+    }, 'Moderation statistics fetched successfully')
+  );
+});
+
 export {
   uploadWorkerVideo,
   approveVideo,
@@ -306,5 +425,8 @@ export {
   getWorkerVideoById,
   getMyVideos,
   updateWorkerVideo,
-  deleteWorkerVideo
+  deleteWorkerVideo,
+  getAutoRejectedVideos,
+  getFlaggedVideos,
+  getModerationStats
 };

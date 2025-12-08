@@ -41,6 +41,9 @@ import attendanceRouter from './routes/attendance.routes.js';
 import payrollRouter from './routes/payroll.routes.js';
 import pushSubscriptionRouter from './routes/pushSubscription.routes.js';
 import workerVideoRouter from './routes/workerVideo.routes.js';
+import likeRouter from './routes/like.routes.js';
+import followRouter from './routes/follow.routes.js';
+import recommendationRouter from './routes/recommendation.routes.js';
 
 
 
@@ -69,6 +72,9 @@ app.use('/api/v1/attendance', attendanceRouter);
 app.use('/api/v1/payroll', payrollRouter);
 app.use('/api/v1/push', pushSubscriptionRouter);
 app.use('/api/v1/worker-videos', workerVideoRouter);
+app.use('/api/v1/likes', likeRouter);
+app.use('/api/v1/follows', followRouter);
+app.use('/api/v1/recommendations', recommendationRouter);
 
 
 
