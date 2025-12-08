@@ -1,4 +1,6 @@
 import { WorkerVideo } from '../models/workerVideo.model.js';
+import { Like } from '../models/like.model.js';
+import { Follow } from '../models/follow.model.js';
 import { asyncHandler } from '../utils/AsyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
@@ -165,8 +167,22 @@ const getApprovedVideos = asyncHandler(async (req, res) => {
     .populate('approved_by', 'fullName email role_name')
     .sort({ createdAt: -1 });
 
+  // Add social context (like status and uploader follow status)
+  const videosWithSocialContext = await Promise.all(
+    videos.map(async (video) => {
+      const isLiked = await video.isLikedBy(req.user._id);
+      const isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
+      
+      return {
+        ...video.toObject(),
+        is_liked: isLiked,
+        is_following_uploader: isFollowingUploader
+      };
+    })
+  );
+
   res.status(200).json(
-    new ApiResponse(200, videos, 'Approved videos fetched successfully')
+    new ApiResponse(200, videosWithSocialContext, 'Approved videos fetched successfully')
   );
 });
 
@@ -186,8 +202,18 @@ const getWorkerVideoById = asyncHandler(async (req, res) => {
   video.views += 1;
   await video.save();
 
+  // Add social context
+  const isLiked = await video.isLikedBy(req.user._id);
+  const isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
+
+  const videoWithSocialContext = {
+    ...video.toObject(),
+    is_liked: isLiked,
+    is_following_uploader: isFollowingUploader
+  };
+
   res.status(200).json(
-    new ApiResponse(200, video, 'Video fetched successfully')
+    new ApiResponse(200, videoWithSocialContext, 'Video fetched successfully')
   );
 });
 
@@ -197,8 +223,19 @@ const getMyVideos = asyncHandler(async (req, res) => {
     .populate('approved_by', 'fullName email role_name')
     .sort({ createdAt: -1 });
 
+  // Add like status for each video
+  const videosWithLikeStatus = await Promise.all(
+    videos.map(async (video) => {
+      const isLiked = await video.isLikedBy(req.user._id);
+      return {
+        ...video.toObject(),
+        is_liked: isLiked
+      };
+    })
+  );
+
   res.status(200).json(
-    new ApiResponse(200, videos, 'Your videos fetched successfully')
+    new ApiResponse(200, videosWithLikeStatus, 'Your videos fetched successfully')
   );
 });
 

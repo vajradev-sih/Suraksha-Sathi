@@ -130,4 +130,26 @@ userSchema.methods.generateRefreshToken = async function () {
     );
 };
 
+// Helper method to check if this user follows another user
+userSchema.methods.isFollowing = async function(userId) {
+    const Follow = mongoose.model('Follow');
+    const follow = await Follow.findOne({ 
+        follower_id: this._id, 
+        following_id: userId 
+    });
+    return !!follow;
+};
+
+// Helper method to get follower count
+userSchema.methods.getFollowerCount = async function() {
+    const Follow = mongoose.model('Follow');
+    return await Follow.countDocuments({ following_id: this._id });
+};
+
+// Helper method to get following count
+userSchema.methods.getFollowingCount = async function() {
+    const Follow = mongoose.model('Follow');
+    return await Follow.countDocuments({ follower_id: this._id });
+};
+
 export const User = mongoose.model('User', userSchema);
