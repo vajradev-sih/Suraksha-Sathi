@@ -490,6 +490,10 @@
             Object.values(dynamicBehaviors).forEach(init => init());
         });
     </script>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0284c7">
 </head>
 
 <body class="bg-gradient-to-br from-neutral-50 to-neutral-100 font-sans text-neutral-800 min-h-screen pb-20">
@@ -1659,6 +1663,22 @@
             // --- 5. INITIALIZE THE PAGE ---
             initializeDashboard();
         });
+    </script>
+
+    <!-- Offline DB and Service Worker -->
+    <script src="../offline-db.js"></script>
+    <script src="../offline-ui.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('../sw.js')
+                .then(reg => console.log('[SW] Registered:', reg.scope))
+                .catch(err => console.error('[SW] Registration failed:', err));
+        }
+        
+        // Initialize offline DB
+        if (typeof offlineDB !== 'undefined') {
+            offlineDB.init().then(() => console.log('[OfflineDB] Ready'));
+        }
     </script>
 
 </body>

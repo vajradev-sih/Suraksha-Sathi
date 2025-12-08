@@ -1,6 +1,37 @@
 // API Configuration
 const API_BASE_URL = "https://mining-project.onrender.com"; // Change to your actual API base URL
 
+// --- Offline Support ---
+let isOnline = navigator.onLine;
+let offlineQueue = [];
+let syncInProgress = false;
+
+// Monitor online/offline status
+window.addEventListener('online', handleOnline);
+window.addEventListener('offline', handleOffline);
+
+function handleOnline() {
+  isOnline = true;
+  console.log('[Offline] Back online, syncing queued requests...');
+  document.dispatchEvent(new CustomEvent('connection-status-changed', { detail: { online: true } }));
+  syncOfflineQueue();
+}
+
+function handleOffline() {
+  isOnline = false;
+  console.log('[Offline] Network connection lost');
+  document.dispatchEvent(new CustomEvent('connection-status-changed', { detail: { online: false } }));
+}
+
+// Service Worker message handler
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SYNC_OFFLINE_QUEUE') {
+      syncOfflineQueue();
+    }
+  });
+}
+
 // --- Utility Functions ---
 
 // Helper function with retry logic
@@ -49,6 +80,12 @@ const apiRequest = async (endpoint, options = {}) => {
     delete config.headers;
   }
 
+  // Check if offline and handle accordingly
+  if (!isOnline && options.method !== 'GET') {
+    console.log('[Offline] Queueing request:', endpoint);
+    return await queueOfflineRequest(endpoint, config);
+  }
+
   try {
     const response = await fetchWithRetry(`${API_BASE_URL}${endpoint}`, config);
     const text = await response.text();
@@ -66,12 +103,158 @@ const apiRequest = async (endpoint, options = {}) => {
       throw new Error(data.message || `HTTP error! status: ${response.status}`);
     }
 
+    // Cache successful GET responses
+    if (options.method === 'GET' && typeof offlineDB !== 'undefined') {
+      try {
+        await offlineDB.cacheResponse(endpoint, data, 3600000); // 1 hour TTL
+      } catch (e) {
+        console.warn('[Cache] Failed to cache response:', e);
+      }
+    }
+
     return data;
   } catch (error) {
     console.error("API request failed:", error);
+    
+    // If offline or network error, try to get cached data for GET requests
+    if (options.method === 'GET' && typeof offlineDB !== 'undefined') {
+      try {
+        const cached = await offlineDB.getCachedResponse(endpoint);
+        if (cached) {
+          console.log('[Offline] Using cached response for:', endpoint);
+          return { ...cached, _fromCache: true };
+        }
+      } catch (e) {
+        console.warn('[Cache] Failed to get cached response:', e);
+      }
+    }
+    
     throw error;
   }
 };
+
+// Queue offline requests for later sync
+async function queueOfflineRequest(endpoint, config) {
+  const requestData = {
+    endpoint,
+    method: config.method || 'POST',
+    body: config.body,
+    headers: config.headers,
+    timestamp: Date.now()
+  };
+
+  // Store in memory queue
+  offlineQueue.push(requestData);
+  
+  // Also store in IndexedDB for persistence
+  if (typeof offlineDB !== 'undefined') {
+    try {
+      await offlineDB.queueRequest(
+        endpoint,
+        config.method || 'POST',
+        config.body,
+        config.headers
+      );
+    } catch (e) {
+      console.error('[Offline] Failed to queue in IndexedDB:', e);
+    }
+  }
+
+  // Dispatch event for UI updates
+  document.dispatchEvent(new CustomEvent('request-queued', { 
+    detail: { endpoint, method: config.method } 
+  }));
+
+  return {
+    success: true,
+    message: 'Request queued for sync when online',
+    offline: true,
+    queued: true
+  };
+}
+
+// Sync offline queue when back online
+async function syncOfflineQueue() {
+  if (syncInProgress || !isOnline) return;
+  
+  syncInProgress = true;
+  console.log('[Offline] Starting sync...');
+  
+  // Load queued requests from IndexedDB
+  if (typeof offlineDB !== 'undefined') {
+    try {
+      const dbQueue = await offlineDB.getQueuedRequests();
+      offlineQueue = [...offlineQueue, ...dbQueue];
+    } catch (e) {
+      console.error('[Offline] Failed to load queue from IndexedDB:', e);
+    }
+  }
+
+  const queue = [...offlineQueue];
+  offlineQueue = [];
+  
+  let successCount = 0;
+  let failCount = 0;
+
+  for (const request of queue) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${request.endpoint}`, {
+        method: request.method,
+        headers: request.headers,
+        body: request.body
+      });
+
+      if (response.ok) {
+        successCount++;
+        
+        // Remove from IndexedDB
+        if (typeof offlineDB !== 'undefined' && request.id) {
+          await offlineDB.delete('offlineQueue', request.id);
+        }
+        
+        console.log('[Offline] Synced:', request.endpoint);
+      } else {
+        failCount++;
+        offlineQueue.push(request); // Re-queue failed request
+      }
+    } catch (error) {
+      console.error('[Offline] Sync failed for:', request.endpoint, error);
+      failCount++;
+      offlineQueue.push(request); // Re-queue on error
+    }
+  }
+
+  syncInProgress = false;
+  
+  // Dispatch sync complete event
+  document.dispatchEvent(new CustomEvent('sync-completed', {
+    detail: { successCount, failCount, remaining: offlineQueue.length }
+  }));
+  
+  console.log(`[Offline] Sync complete: ${successCount} succeeded, ${failCount} failed, ${offlineQueue.length} remaining`);
+}
+
+// Get offline queue status
+function getOfflineQueueStatus() {
+  return {
+    isOnline,
+    queueLength: offlineQueue.length,
+    syncInProgress
+  };
+}
+
+// Clear offline queue
+async function clearOfflineQueue() {
+  offlineQueue = [];
+  if (typeof offlineDB !== 'undefined') {
+    try {
+      await offlineDB.clear('offlineQueue');
+    } catch (e) {
+      console.error('[Offline] Failed to clear queue:', e);
+    }
+  }
+}
+
 
 // --- API Client Objects ---
 
@@ -665,4 +848,11 @@ window.safetyPromptAPI = safetyPromptAPI;
 window.safetyVideoAPI = safetyVideoAPI;
 window.severityTagAPI = severityTagAPI;
 
-console.log("API client loaded with all project modules.");
+// Export offline utilities
+window.getOfflineQueueStatus = getOfflineQueueStatus;
+window.syncOfflineQueue = syncOfflineQueue;
+window.clearOfflineQueue = clearOfflineQueue;
+window.isAppOnline = () => isOnline;
+
+console.log("API client loaded with all project modules and offline support.");
+
