@@ -127,6 +127,75 @@
         id="videoGrid"
         class="grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(600px,1fr))] gap-4 p-4"
       >
+        <!-- CASE STUDY 1 -->
+        <div
+          class="video-card cursor-pointer"
+          data-category="case-studies"
+          onclick="openCaseStudy('case1', this)"
+        >
+          <div class="aspect-video rounded-lg overflow-hidden relative">
+            <img
+              src="https://th-i.thgim.com/public/news/national/other-states/vuf66t/article38358761.ece/alternates/LANDSCAPE_1200/TH---INDIA-COAL"
+              class="w-full h-full object-cover rounded-lg"
+            />
+            <div
+              class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
+              data-translate-key="label_case_study"
+            >
+              CASE STUDY
+            </div>
+          </div>
+          <p class="text-gray-800 font-semibold mt-2">
+            टापिन नॉर्थ खदान हादसा (2018) – दीवार गिरने से मौत
+          </p>
+        </div>
+
+        <!-- CASE STUDY 2 -->
+        <div
+          class="video-card cursor-pointer"
+          data-category="case-studies"
+          onclick="openCaseStudy('case2', this)"
+        >
+          <div class="aspect-video rounded-lg overflow-hidden relative">
+            <img
+              src="https://static.independent.co.uk/2023/02/27/09/10485711.jpg"
+              class="w-full h-full object-cover rounded-lg"
+            />
+            <div
+              class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
+              data-translate-key="label_case_study"
+            >
+              CASE STUDY
+            </div>
+          </div>
+          <p class="text-gray-800 font-semibold mt-2">
+            रामागुंडम खदान हादसा (2020) – ब्लास्टिंग विस्फोट
+          </p>
+        </div>
+
+        <!-- CASE STUDY 3 (Flooding Incident) -->
+        <div
+          class="video-card cursor-pointer"
+          data-category="case-studies"
+          onclick="openCaseStudy('case4', this)"
+        >
+          <div class="aspect-video rounded-lg overflow-hidden relative">
+            <img
+              src="https://i.ytimg.com/vi/YrVsC0AtHCI/hqdefault.jpg"
+              class="w-full h-full object-cover rounded-lg"
+            />
+            <div
+              class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
+              data-translate-key="label_case_study"
+            >
+              CASE STUDY
+            </div>
+          </div>
+          <p class="text-gray-800 font-semibold mt-2">
+            राजमहल खदान हादसा – 2016 (मिट्टी धंसना)
+          </p>
+        </div>
+
         <!-- VIDEO 1 -->
         <div class="video-card" data-category="videos">
           <div class="aspect-video rounded-lg overflow-hidden relative">
@@ -251,75 +320,6 @@
             3D Animation Video of Accident at Lakhanpur Opencast Project
           </p>
           <p class="text-gray-500 text-sm">Video</p>
-        </div>
-
-        <!-- CASE STUDY 1 -->
-        <div
-          class="video-card cursor-pointer"
-          data-category="case-studies"
-          onclick="openCaseStudy('case1', this)"
-        >
-          <div class="aspect-video rounded-lg overflow-hidden relative">
-            <img
-              src="https://th-i.thgim.com/public/news/national/other-states/vuf66t/article38358761.ece/alternates/LANDSCAPE_1200/TH---INDIA-COAL"
-              class="w-full h-full object-cover rounded-lg"
-            />
-            <div
-              class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
-              data-translate-key="label_case_study"
-            >
-              CASE STUDY
-            </div>
-          </div>
-          <p class="text-gray-800 font-semibold mt-2">
-            टापिन नॉर्थ खदान हादसा (2018) – दीवार गिरने से मौत
-          </p>
-        </div>
-
-        <!-- CASE STUDY 2 -->
-        <div
-          class="video-card cursor-pointer"
-          data-category="case-studies"
-          onclick="openCaseStudy('case2', this)"
-        >
-          <div class="aspect-video rounded-lg overflow-hidden relative">
-            <img
-              src="https://static.independent.co.uk/2023/02/27/09/10485711.jpg"
-              class="w-full h-full object-cover rounded-lg"
-            />
-            <div
-              class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
-              data-translate-key="label_case_study"
-            >
-              CASE STUDY
-            </div>
-          </div>
-          <p class="text-gray-800 font-semibold mt-2">
-            रामागुंडम खदान हादसा (2020) – ब्लास्टिंग विस्फोट
-          </p>
-        </div>
-
-        <!-- CASE STUDY 3 (Flooding Incident) -->
-        <div
-          class="video-card cursor-pointer"
-          data-category="case-studies"
-          onclick="openCaseStudy('case4', this)"
-        >
-          <div class="aspect-video rounded-lg overflow-hidden relative">
-            <img
-              src="https://i.ytimg.com/vi/YrVsC0AtHCI/hqdefault.jpg"
-              class="w-full h-full object-cover rounded-lg"
-            />
-            <div
-              class="absolute top-2 left-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"
-              data-translate-key="label_case_study"
-            >
-              CASE STUDY
-            </div>
-          </div>
-          <p class="text-gray-800 font-semibold mt-2">
-            राजमहल खदान हादसा – 2016 (मिट्टी धंसना)
-          </p>
         </div>
       </div>
     </div>
