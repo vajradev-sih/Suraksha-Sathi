@@ -226,6 +226,7 @@
         }
 
         /* Styles from chatbot.html */
+        /* CHATBOT STYLES COMMENTED OUT
         :root {
             --primary-blue: #0284c7;
             --primary-orange: #f97316;
@@ -293,6 +294,7 @@
                 box-shadow: 0 0 20px 4px rgba(2, 132, 199, 0.8);
             }
         }
+        */
     </style>
 
     <style>
@@ -681,6 +683,32 @@
                     <p class="text-xs text-neutral-500 mt-1" data-translate-key="mark_presence">Mark your presence</p>
                 </a>
             </div>
+
+            <div class="mt-6 mb-8 px-4 animate-slideInUp delay-100">
+                <div class="relative w-full h-16 bg-neutral-900 rounded-full shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] overflow-hidden border border-alert-red/30 touch-none"
+                    id="slide-container" style="touch-action: none; -webkit-user-select: none; user-select: none;">
+
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+                        <span
+                            class="text-alert-red font-bold tracking-widest text-sm sm:text-base animate-pulse opacity-80">
+                            SLIDE FOR SOS
+                        </span>
+                        <span class="material-symbols-rounded text-alert-red ml-2 text-sm">chevron_right</span>
+                        <span class="material-symbols-rounded text-alert-red text-sm">chevron_right</span>
+                    </div>
+
+                    <div id="slide-track"
+                        class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-red-900 to-alert-red w-0 z-0 opacity-50 transition-none">
+                    </div>
+
+                    <div id="slide-thumb"
+                        class="absolute left-1 top-1 bottom-1 w-14 h-14 bg-gradient-to-br from-alert-red to-red-700 rounded-full shadow-[0_0_15px_rgba(239,68,68,0.5)] z-20 cursor-grab flex items-center justify-center transform transition-transform will-change-transform"
+                        style="touch-action: none; -webkit-user-select: none; user-select: none;">
+                        <span class="material-symbols-rounded text-white text-3xl pointer-events-none">sos</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="animated-card" id="video-of-the-day-container">
                 <h3 class="text-lg font-bold text-neutral-800 mb-3 px-2" data-translate-key="video_of_day">Video of the
                     Day</h3>
@@ -1224,6 +1252,78 @@
         });
     </script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slideContainer = document.getElementById('slide-container');
+            const thumb = document.getElementById('slide-thumb');
+            const track = document.getElementById('slide-track');
+
+            let isDragging = false;
+            let startX = 0;
+            let currentX = 0;
+            let containerWidth = 0;
+            let maxDrag = 0;
+
+            const getX = (e) => (e.targetTouches && e.targetTouches.length > 0) ? e.targetTouches[0].clientX : e.clientX;
+
+            const startDrag = (e) => {
+                if (e.cancelable) e.preventDefault();
+                isDragging = true;
+                startX = getX(e);
+                containerWidth = slideContainer.offsetWidth;
+                maxDrag = containerWidth - 60; // thumb width + margin
+                thumb.style.transition = "none";
+                track.style.transition = "none";
+            };
+
+            const onDrag = (e) => {
+                if (!isDragging) return;
+                if (e.cancelable) e.preventDefault();
+
+                const currentPosition = getX(e);
+                const walk = currentPosition - startX;
+                currentX = Math.max(0, Math.min(walk, maxDrag));
+
+                thumb.style.transform = `translateX(${currentX}px)`;
+                track.style.width = `${currentX + 30}px`;
+            };
+
+            const endDrag = () => {
+                if (!isDragging) return;
+                isDragging = false;
+
+                // Threshold: 90%
+                if (currentX > maxDrag * 0.9) {
+                    // Snap to end
+                    thumb.style.transform = `translateX(${maxDrag}px)`;
+                    track.style.width = `100%`;
+
+                    // Vibrate for feedback
+                    if (navigator.vibrate) navigator.vibrate(50);
+
+                    // --- REDIRECT TO EMERGENCY PAGE ---
+                    setTimeout(() => {
+                        window.location.href = 'emergency.html';
+                    }, 100);
+                } else {
+                    // Reset
+                    thumb.style.transition = "transform 0.3s ease";
+                    track.style.transition = "width 0.3s ease";
+                    thumb.style.transform = `translateX(0px)`;
+                    track.style.width = `0px`;
+                }
+            };
+
+            // Events
+            thumb.addEventListener('mousedown', startDrag);
+            thumb.addEventListener('touchstart', startDrag, { passive: false });
+            window.addEventListener('mousemove', onDrag);
+            window.addEventListener('touchmove', onDrag, { passive: false });
+            window.addEventListener('mouseup', endDrag);
+            window.addEventListener('touchend', endDrag);
+        });
+    </script>
+    <!-- CHATBOT CONTAINER COMMENTED OUT
     <div id="chatbot-container" class="fixed bottom-20 left-4 z-50">
 
         <div id="chat-window"
@@ -1285,8 +1385,10 @@
             <span id="open-chat-icon" class="material-symbols-rounded text-3xl">support_agent</span>
         </button>
     </div>
+    -->
 
     <script src="../api.client.js"></script>
+    <!-- CHATBOT JAVASCRIPT COMMENTED OUT
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const openBtn = document.getElementById('open-chat-btn');
@@ -1475,6 +1577,7 @@
             }
         });
     </script>
+    -->
 
     <!-- Language Toggle Script -->
     <script src="language-toggle.js"></script>

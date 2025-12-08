@@ -29,12 +29,23 @@
         .badge {
             @apply inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full;
         }
+
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
     </style>
 </head>
 
 <body class="bg-neutral-100 font-sans text-neutral-800 min-h-screen">
+    <div id="customAlert"
+        class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] hidden items-center p-4 text-sm text-white rounded-xl bg-success-green shadow-lg transition-all duration-300 transform -translate-y-full opacity-0"
+        role="alert">
+        <span class="material-symbols-rounded mr-2">check_circle</span>
+        <span class="font-medium" id="alertMessage">Success!</span>
+    </div>
+
     <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden pb-20">
-        <!-- Header -->
         <div
             class="sticky top-0 z-30 flex items-center bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] px-4 py-3 justify-between shadow-lg">
             <a href="admin-home.html" class="text-white"><span
@@ -44,7 +55,6 @@
         </div>
 
         <main class="flex-1 p-4">
-            <!-- Filters and Search -->
             <div class="mb-4 space-y-3">
                 <div class="relative">
                     <span
@@ -70,13 +80,11 @@
                 </div>
             </div>
 
-            <!-- Hazard List -->
             <div id="hazard-list-full" class="space-y-3">
-                <!-- Hazard items will be injected here -->
+                <div class="text-center py-10 text-gray-500">Loading hazards...</div>
             </div>
         </main>
 
-        <!-- Bottom Navigation -->
         <nav
             class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] border-t border-white/10 shadow-lg z-20">
             <div class="flex justify-around">
@@ -103,69 +111,62 @@
             </div>
         </nav>
     </div>
-    <script src="../api.client.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const hazardData = [
-                { id: 'HAZ001', title: 'Exposed Wiring', location: 'Sector 4', reportedBy: 'Rohan Sharma', timeAgo: '15m ago', severity: 'High', icon: 'electric_bolt', status: 'New' },
-                { id: 'HAZ002', title: 'Ventilation Fault', location: 'Main Tunnel', reportedBy: 'Priya Patel', timeAgo: '2h ago', severity: 'Medium', icon: 'gpp_maybe', status: 'New' },
-                { id: 'HAZ003', title: 'Minor Gas Leak', location: 'Sector 2', reportedBy: 'Suresh Singh', timeAgo: '4h ago', severity: 'High', icon: 'gas_meter', status: 'In Progress' },
-                { id: 'HAZ004', title: 'Unstable Scaffolding', location: 'Level 3', reportedBy: 'Anjali Gupta', timeAgo: '1d ago', severity: 'Medium', icon: 'construction', status: 'Resolved' },
-                { id: 'HAZ005', title: 'Water Accumulation', location: 'Sector 4 Exit', reportedBy: 'Vikram Kumar', timeAgo: '2d ago', severity: 'Low', icon: 'water_drop', status: 'Resolved' },
-            ];
 
-            const hazardListContainer = document.getElementById('hazard-list-full');
-            const searchInput = document.getElementById('search-hazards');
-            const severityFilter = document.getElementById('filter-severity');
-            const statusFilter = document.getElementById('filter-status');
+    <div id="assignModal" class="fixed inset-0 z-50 items-center justify-center hidden">
+        <div class="modal-backdrop fixed inset-0" onclick="closeAssignModal()"></div>
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-11/12 max-w-lg mx-auto z-10 relative">
+            <div class="flex justify-between items-center border-b border-neutral-200 pb-3 mb-4">
+                <h3 class="text-xl font-bold text-neutral-800" id="modalTitle">Assign Hazard</h3>
+                <button onclick="closeAssignModal()" class="text-neutral-400 hover:text-neutral-600">
+                    <span class="material-symbols-rounded text-2xl">close</span>
+                </button>
+            </div>
 
-            function renderHazards() {
-                const searchTerm = searchInput.value.toLowerCase();
-                const selectedSeverity = severityFilter.value;
-                const selectedStatus = statusFilter.value;
+            <form id="assignForm" class="space-y-4">
+                <input type="hidden" id="assignReportId">
+                <input type="hidden" id="existingAssignmentId">
 
-                hazardListContainer.innerHTML = '';
-
-                const filteredHazards = hazardData.filter(h => {
-                    return (h.title.toLowerCase().includes(searchTerm) || h.location.toLowerCase().includes(searchTerm)) &&
-                        (selectedSeverity === 'all' || h.severity === selectedSeverity) &&
-                        (selectedStatus === 'all' || h.status === selectedStatus);
-                });
-
-                if (filteredHazards.length === 0) {
-                    hazardListContainer.innerHTML = `<p class="text-center text-neutral-500 py-10">No hazards match your criteria.</p>`;
-                    return;
-                }
-
-                filteredHazards.forEach(report => {
-                    const severityClasses = { High: 'bg-alert-red/10 text-alert-red', Medium: 'bg-warning-yellow/20 text-yellow-600', Low: 'bg-info-blue/10 text-info-blue' };
-                    const statusClasses = { New: 'bg-blue-100 text-blue-700', 'In Progress': 'bg-orange-100 text-orange-700', Resolved: 'bg-green-100 text-green-700' };
-
-                    const item = document.createElement('div');
-                    item.className = 'bg-white p-4 rounded-2xl shadow-card flex items-start gap-4';
-                    item.innerHTML = `
-                    <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center ${severityClasses[report.severity]} rounded-xl"><span class="material-symbols-rounded">${report.icon}</span></div>
-                    <div class="flex-1">
-                        <p class="font-bold text-neutral-800">${report.title}</p>
-                        <p class="text-sm text-neutral-500">${report.location}</p>
-                        <div class="mt-2 flex items-center gap-2 flex-wrap">
-                             <span class="badge ${severityClasses[report.severity]}">${report.severity}</span>
-                             <span class="badge ${statusClasses[report.status]}">${report.status}</span>
-                        </div>
+                <div class="bg-neutral-50 p-3 rounded-lg border border-neutral-100">
+                    <label class="block text-xs font-medium text-neutral-500 mb-1">Hazard Report</label>
+                    <p id="assignHazardTitle" class="font-semibold text-neutral-800 text-sm line-clamp-2"></p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span id="assignHazardSeverity" class="badge"></span>
+                        <span id="assignHazardStatus" class="badge bg-white border border-neutral-200"></span>
                     </div>
-                    <div class="text-right text-xs text-neutral-400">${report.timeAgo}</div>
-                `;
-                    hazardListContainer.appendChild(item);
-                });
-            }
+                </div>
 
-            searchInput.addEventListener('input', renderHazards);
-            severityFilter.addEventListener('change', renderHazards);
-            statusFilter.addEventListener('change', renderHazards);
+                <div>
+                    <label for="assignWorker" class="block text-sm font-medium text-neutral-600 mb-2">Assign To
+                        Worker</label>
+                    <select id="assignWorker" required
+                        class="w-full bg-white border border-neutral-300 rounded-xl py-3 px-4 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                        <option value="">Loading workers...</option>
+                    </select>
+                </div>
 
-            renderHazards();
-        });
-    </script>
+                <div>
+                    <label for="assignDueDate" class="block text-sm font-medium text-neutral-600 mb-2">Due Date</label>
+                    <input type="date" id="assignDueDate" required
+                        class="w-full bg-white border border-neutral-300 rounded-xl py-3 px-4 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                </div>
+
+                <div id="assignmentInfo"
+                    class="hidden text-xs text-orange-600 bg-orange-50 p-2 rounded-lg flex items-center gap-2">
+                    <span class="material-symbols-rounded text-sm">info</span>
+                    This hazard is already assigned. Updating will change the assignee.
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="closeAssignModal()"
+                        class="flex-1 bg-neutral-200 hover:bg-neutral-300 text-neutral-800 font-bold py-3 px-4 rounded-xl transition">Cancel</button>
+                    <button type="submit" id="submitAssignBtn"
+                        class="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg">Assign</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../api.client.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem("token");
@@ -174,13 +175,44 @@
                 return;
             }
 
-            let allHazards = []; // This will store the master list of hazards
+            // State
+            let allHazards = [];
+            let allUsers = [];
 
+            // Elements
             const hazardListContainer = document.getElementById('hazard-list-full');
             const searchInput = document.getElementById('search-hazards');
             const severityFilter = document.getElementById('filter-severity');
             const statusFilter = document.getElementById('filter-status');
 
+            const assignModal = document.getElementById('assignModal');
+            const assignForm = document.getElementById('assignForm');
+            const workerSelect = document.getElementById('assignWorker');
+            const customAlert = document.getElementById('customAlert');
+
+            // --- UI Functions ---
+            window.closeAssignModal = () => {
+                assignModal.classList.add('hidden');
+                assignModal.classList.remove('flex');
+                assignForm.reset();
+                document.getElementById('existingAssignmentId').value = '';
+                document.getElementById('assignmentInfo').classList.add('hidden');
+            };
+
+            const showAlert = (message, type = 'success') => {
+                const alertEl = document.getElementById('customAlert');
+                document.getElementById('alertMessage').textContent = message;
+
+                alertEl.className = `fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex items-center p-4 text-sm text-white rounded-xl shadow-lg transition-all duration-300 transform translate-y-0 opacity-100 ${type === 'error' ? 'bg-alert-red' : 'bg-success-green'}`;
+                alertEl.classList.remove('hidden');
+
+                setTimeout(() => {
+                    alertEl.classList.add('-translate-y-full', 'opacity-0');
+                    setTimeout(() => alertEl.classList.add('hidden'), 300);
+                }, 3000);
+            };
+
+            // --- Render Logic ---
             const renderHazards = () => {
                 const searchTerm = searchInput.value.toLowerCase();
                 const selectedSeverity = severityFilter.value;
@@ -189,12 +221,8 @@
                 hazardListContainer.innerHTML = '';
 
                 const filteredHazards = allHazards.filter(h => {
-                    // 1. FIX: Safely access properties with fallbacks to empty strings
                     const description = h.description ? h.description : "";
                     const location = h.location ? h.location : "";
-
-                    // 2. FIX: Handle severity object from populated API response
-                    // The API returns 'severity_id' object with a 'level' property
                     const severityLevel = h.severity_id?.level || h.severity || "Low";
 
                     const searchMatch = description.toLowerCase().includes(searchTerm) || location.toLowerCase().includes(searchTerm);
@@ -205,7 +233,10 @@
                 });
 
                 if (filteredHazards.length === 0) {
-                    hazardListContainer.innerHTML = `<p class="text-center text-neutral-500 py-10">No hazards match your criteria.</p>`;
+                    hazardListContainer.innerHTML = `<div class="flex flex-col items-center justify-center py-10 text-neutral-500">
+                        <span class="material-symbols-rounded text-4xl mb-2">search_off</span>
+                        <p>No hazards match your criteria.</p>
+                    </div>`;
                     return;
                 }
 
@@ -213,50 +244,176 @@
                     const severityClasses = { High: 'bg-alert-red/10 text-alert-red', Medium: 'bg-warning-yellow/20 text-yellow-600', Low: 'bg-info-blue/10 text-info-blue' };
                     const statusClasses = { New: 'bg-blue-100 text-blue-700', 'In Progress': 'bg-orange-100 text-orange-700', Resolved: 'bg-green-100 text-green-700' };
 
-                    // Resolve severity for display (handling both API object and potential flat string)
                     const severityVal = report.severity_id?.level || report.severity || "Low";
+                    const dateStr = new Date(report.createdAt).toLocaleDateString();
 
                     const item = document.createElement('div');
-                    item.className = 'bg-white p-4 rounded-2xl shadow-card flex items-start gap-4 cursor-pointer hover:shadow-lg transition-shadow';
-
-                    // Format Date
-                    const dateStr = new Date(report.createdAt).toLocaleDateString();
+                    item.className = 'bg-white p-4 rounded-2xl shadow-card flex items-start gap-4 cursor-pointer hover:shadow-lg transition-all border border-transparent hover:border-primary/20 active:scale-[0.99]';
+                    item.onclick = () => openAssignModal(report._id); // Click to open modal
 
                     item.innerHTML = `
                     <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center ${severityClasses[severityVal] || severityClasses.Low} rounded-xl">
                         <span class="material-symbols-rounded">warning</span>
                     </div>
-                    <div class="flex-1">
-                        <p class="font-bold text-neutral-800">${report.description || "No description provided"}</p>
-                        <p class="text-sm text-neutral-500">${report.location || "Unknown Location"}</p>
-                        <div class="mt-2 flex items-center gap-2 flex-wrap">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-bold text-neutral-800 truncate">${report.description || "No description provided"}</p>
+                        <p class="text-sm text-neutral-500 mb-2">${report.location || "Unknown Location"}</p>
+                        <div class="flex items-center gap-2 flex-wrap">
                             <span class="badge ${severityClasses[severityVal] || severityClasses.Low}">${severityVal}</span>
                             <span class="badge ${statusClasses[report.status] || ''}">${report.status}</span>
                         </div>
                     </div>
-                    <div class="text-right text-xs text-neutral-400">${dateStr}</div>
+                    <div class="flex flex-col items-end gap-2">
+                        <span class="text-xs text-neutral-400">${dateStr}</span>
+                        <button class="bg-neutral-100 hover:bg-neutral-200 text-neutral-600 p-2 rounded-full transition">
+                            <span class="material-symbols-rounded text-xl">assignment_add</span>
+                        </button>
+                    </div>
                 `;
                     hazardListContainer.appendChild(item);
                 });
-            }
+            };
+
+            // --- Assignments Logic ---
+            window.openAssignModal = async (reportId) => {
+                const report = allHazards.find(h => h._id === reportId);
+                if (!report) return;
+
+                // 1. Populate Modal UI
+                document.getElementById('assignReportId').value = reportId;
+                document.getElementById('assignHazardTitle').textContent = report.description || "Hazard Report";
+
+                const severityVal = report.severity_id?.level || report.severity || "Low";
+                const sevBadge = document.getElementById('assignHazardSeverity');
+                sevBadge.textContent = severityVal;
+                // quick styling
+                sevBadge.className = `badge ${severityVal === 'High' ? 'bg-red-100 text-red-800' : severityVal === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}`;
+
+                document.getElementById('assignHazardStatus').textContent = report.status;
+
+                // 2. Check existing assignment
+                const btn = document.getElementById('submitAssignBtn');
+                btn.textContent = "Loading...";
+                btn.disabled = true;
+
+                try {
+                    const res = await hazardAssignmentAPI.getByReport(reportId);
+                    const assignments = res.data;
+
+                    if (assignments && assignments.length > 0) {
+                        // Edit Mode
+                        const current = assignments[0]; // Assuming one active assignment
+                        document.getElementById('modalTitle').textContent = "Update Assignment";
+                        document.getElementById('existingAssignmentId').value = current._id;
+                        document.getElementById('assignmentInfo').classList.remove('hidden');
+
+                        // Pre-fill
+                        workerSelect.value = current.assigned_to_id?._id || current.assigned_to_id;
+                        if (current.due_date) {
+                            document.getElementById('assignDueDate').value = new Date(current.due_date).toISOString().split('T')[0];
+                        }
+                        btn.textContent = "Update Assignment";
+                    } else {
+                        // Create Mode
+                        document.getElementById('modalTitle').textContent = "Assign Hazard";
+                        document.getElementById('existingAssignmentId').value = "";
+                        document.getElementById('assignmentInfo').classList.add('hidden');
+                        workerSelect.value = "";
+                        document.getElementById('assignDueDate').value = "";
+                        btn.textContent = "Assign";
+                    }
+                } catch (e) {
+                    console.error("Check assignment failed", e);
+                    // Assume create mode if check fails (or handle error)
+                    btn.textContent = "Assign";
+                } finally {
+                    btn.disabled = false;
+                    assignModal.classList.remove('hidden');
+                    assignModal.classList.add('flex');
+                }
+            };
+
+            assignForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('submitAssignBtn');
+                const originalText = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = "Processing...";
+
+                const reportId = document.getElementById('assignReportId').value;
+                const assignmentId = document.getElementById('existingAssignmentId').value;
+                const workerId = workerSelect.value;
+                const dueDate = document.getElementById('assignDueDate').value;
+
+                const payload = {
+                    report_id: reportId,
+                    assigned_to_id: workerId,
+                    assigned_at: new Date().toISOString(),
+                    due_date: new Date(dueDate).toISOString(),
+                    status: 'assigned'
+                };
+
+                try {
+                    if (assignmentId) {
+                        // Update
+                        await hazardAssignmentAPI.update(assignmentId, payload);
+                        showAlert("Assignment updated successfully!");
+                    } else {
+                        // Create
+                        await hazardAssignmentAPI.create(payload);
+                        // Also update hazard status to 'In Progress' if currently 'New'
+                        const report = allHazards.find(h => h._id === reportId);
+                        if (report && report.status === 'New') {
+                            await hazardReportAPI.update(reportId, { status: 'In Progress' });
+                        }
+                        showAlert("Hazard assigned successfully!");
+                    }
+                    closeAssignModal();
+                    initializePage(); // Refresh list to reflect status changes
+                } catch (error) {
+                    console.error(error);
+                    showAlert(error.message || "Operation failed", "error");
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            });
+
+            // --- Data Fetching ---
+            const loadUsers = async () => {
+                try {
+                    const response = await userManagementAPI.getAll(1, 100);
+                    allUsers = response.data.users || response.data || [];
+
+                    workerSelect.innerHTML = '<option value="">Select Worker</option>';
+                    allUsers.forEach(u => {
+                        const opt = document.createElement('option');
+                        opt.value = u._id;
+                        opt.textContent = `${u.fullName || u.userName} (${u.role_name || 'Worker'})`;
+                        workerSelect.appendChild(opt);
+                    });
+                } catch (error) {
+                    console.error("Failed to load users", error);
+                }
+            };
 
             const initializePage = async () => {
                 try {
                     const response = await hazardReportAPI.getAll();
                     allHazards = response.data || [];
-                    renderHazards(); // Initial render
+                    renderHazards();
                 } catch (error) {
                     console.error("Failed to fetch hazards:", error);
                     hazardListContainer.innerHTML = `<p class="text-center text-red-500 py-10">Failed to load hazard reports.</p>`;
                 }
             };
 
-            // Add event listeners to trigger re-rendering on filter changes
+            // Init
             searchInput.addEventListener('input', renderHazards);
             severityFilter.addEventListener('change', renderHazards);
             statusFilter.addEventListener('change', renderHazards);
 
-            // Initial data fetch and render
+            loadUsers();
             initializePage();
         });
     </script>
