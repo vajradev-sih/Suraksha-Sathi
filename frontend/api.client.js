@@ -280,10 +280,19 @@ async function clearOfflineQueue() {
 
 // --- Offline Authentication ---
 
-// Store user credentials hash for offline login
+/**
+ * Store user credentials for offline login
+ * @param {string} email - User's email address
+ * @param {string} password - User's plain text password (will be hashed)
+ * @param {object} userData - User profile object
+ * @param {string} token - JWT access token
+ */
 async function storeOfflineCredentials(email, password, userData, token) {
     try {
+        // Hash the password using SHA-256
         const passwordHash = await simpleHash(password);
+        
+        // Create offline auth cache object
         const offlineAuth = {
             email: email.toLowerCase(),
             passwordHash: passwordHash,
@@ -291,17 +300,23 @@ async function storeOfflineCredentials(email, password, userData, token) {
             token: token,
             lastSync: Date.now()
         };
+        
+        // Store in localStorage
         localStorage.setItem('offlineAuth', JSON.stringify(offlineAuth));
-        // Also save standard user data for easy access
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('token', token);
-        console.log('[Offline Auth] Credentials securely cached.');
+        
+        console.log('[Offline Auth] Credentials securely cached for offline use.');
     } catch (e) {
         console.error('[Offline Auth] Failed to cache credentials:', e);
     }
 }
 
-// Simple hash function for password verification (client-side only)
+/**
+ * Generate SHA-256 hash of text using Web Crypto API
+ * @param {string} text - Plain text to hash
+ * @returns {Promise<string>} Hex string representation of the hash
+ */
 async function simpleHash(text) {
     const encoder = new TextEncoder();
     const data = encoder.encode(text);
@@ -309,88 +324,6 @@ async function simpleHash(text) {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
-
-// Handle offline login using cached credentials
-async function handleOfflineLogin(bodyString) {
-  console.log('[Offline Auth] Attempting offline login...');
-  
-  try {
-    const loginData = typeof bodyString === 'string' ? JSON.parse(bodyString) : bodyString;
-    const { email, password } = loginData;
-    
-    if (!email || !password) {
-      throw new Error('Email and password are required');
-    }
-    
-    // Get cached credentials
-    const offlineAuthStr = localStorage.getItem('offlineAuth');
-    if (!offlineAuthStr) {
-      throw new Error('No offline login data available. Please connect to internet and login first.');
-    }
-    
-    const offlineAuth = JSON.parse(offlineAuthStr);
-    
-    // Verify email matches
-    if (email.toLowerCase() !== offlineAuth.email) {
-      throw new Error('Invalid credentials');
-    }
-    
-    // Hash the provided password and compare
-    const providedHash = await simpleHash(password);
-    if (providedHash !== offlineAuth.passwordHash) {
-      throw new Error('Invalid credentials');
-    }
-    
-    // Credentials match! Return cached user data
-    console.log('[Offline Auth] Offline login successful');
-    
-    return {
-      success: true,
-      data: {
-        accessToken: offlineAuth.token,
-        user: offlineAuth.userData
-      },
-      message: 'Logged in offline mode',
-      offline: true
-    };
-    
-  } catch (error) {
-    console.error('[Offline Auth] Offline login failed:', error);
-    throw error;
-  }
-}
-
-// Enhanced login wrapper to cache credentials on successful online login
-async function loginWithCaching(loginData) {
-  if (isOnline) {
-    // Online login - use server
-    try {
-      const response = await apiRequest("/api/v1/user/login", {
-        method: "POST",
-        body: JSON.stringify(loginData),
-      });
-      
-      // Cache credentials for offline use
-      if (response.success && response.data.accessToken) {
-        const passwordHash = await simpleHash(loginData.password);
-        storeOfflineCredentials(
-          loginData.email,
-          passwordHash,
-          response.data.user,
-          response.data.accessToken
-        );
-      }
-      
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  } else {
-    // Offline login - use cached credentials
-    return await handleOfflineLogin(loginData);
-  }
-}
-
 
 // --- API Client Objects ---
 
