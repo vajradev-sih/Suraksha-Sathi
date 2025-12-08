@@ -1,12 +1,13 @@
 import { moderateContent, shouldAutoReject, getModerationSummary } from '../utils/contentModeration.js';
 import { ApiError } from '../utils/ApiError.js';
+import { asyncHandler } from '../utils/AsyncHandler.js';
 import fs from 'fs/promises';
 
 /**
  * Middleware to moderate uploaded content before processing
  * This should be used after file upload but before saving to database
  */
-export const moderateUploadedContent = async (req, res, next) => {
+export const moderateUploadedContent = asyncHandler(async (req, res, next) => {
   try {
     // Only moderate if there's a file and video upload context
     if (!req.file || !req.body.title) {
@@ -44,19 +45,7 @@ export const moderateUploadedContent = async (req, res, next) => {
     req.moderationResult = preliminaryModeration;
     
     next();
-  } catch (error) {
-    // Clean up file on error
-    if (req.file && req.file.path) {
-      await fs.unlink(req.file.path).catch(() => {});
-    }
-    
-    if (error instanceof ApiError) {
-      next(error);
-    } else {
-      next(new ApiError(500, `Content moderation failed: ${error.message}`));
-    }
-  }
-};
+});
 
 /**
  * Middleware to moderate after Cloudinary upload
