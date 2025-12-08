@@ -80,10 +80,28 @@ const apiRequest = async (endpoint, options = {}) => {
     delete config.headers;
   }
 
+  // Define endpoints that should NOT be queued when offline (require immediate server response)
+  const noQueueEndpoints = [
+    '/api/v1/user/login',
+    '/api/v1/user/register',
+    '/api/v1/user/logout',
+    '/api/v1/user/refresh-token',
+    '/api/v1/user/current-user',
+    '/api/v1/push/public-key'
+  ];
+
+  const shouldNotQueue = noQueueEndpoints.some(path => endpoint.includes(path));
+
   // Check if offline and handle accordingly
-  if (!isOnline && options.method !== 'GET') {
+  // Don't queue authentication/critical endpoints - they need immediate server response
+  if (!isOnline && options.method !== 'GET' && !shouldNotQueue) {
     console.log('[Offline] Queueing request:', endpoint);
     return await queueOfflineRequest(endpoint, config);
+  }
+  
+  // If offline and endpoint requires server (auth), throw error immediately
+  if (!isOnline && shouldNotQueue) {
+    throw new Error('This action requires internet connection. Please check your network and try again.');
   }
 
   try {
