@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Role Management</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0..200"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0284c7",
+                        "alert-red": "#ef4444",
+                        "warning-yellow": "#facc15",
+                        "success-green": "#22c55e",
+                        "info-blue": "#3b82f6",
+                        "neutral-900": "#0f172a"
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"],
+                        "orbitron": ["Orbitron", "sans-serif"]
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        .material-symbols-rounded {
+            font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+
+<body class="bg-neutral-100 font-sans text-neutral-800 min-h-screen">
+    <div id="customAlert"
+        class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] hidden items-center p-4 text-sm text-white rounded-xl bg-success-green shadow-lg transition-all duration-300 transform scale-90"
+        role="alert">
+        <span class="material-symbols-rounded mr-2">check_circle</span>
+        <span class="font-medium" id="alertMessage">Success!</span>
+    </div>
+
+    <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+        <div
+            class="sticky top-0 z-30 flex items-center bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] px-4 py-3 justify-between shadow-lg">
+            <a href="admin-home.html" class="text-white hover:text-primary-light transition">
+                <span class="material-symbols-rounded text-2xl">arrow_back</span>
+            </a>
+            <h1 class="text-xl font-[Orbitron] tracking-widest text-white">Role Management</h1>
+            <button id="addRoleBtn" class="text-white hover:text-primary-light transition">
+                <span class="material-symbols-rounded text-2xl">add_circle</span>
+            </button>
+        </div>
+
+        <main class="flex-1 p-4 pb-6">
+            <div class="grid grid-cols-1 gap-3 mb-4">
+                <div class="bg-white p-4 rounded-2xl shadow-md flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-neutral-500">Total Roles</p>
+                        <p id="stat-total" class="text-2xl font-bold text-neutral-800">0</p>
+                    </div>
+                    <div class="bg-primary/10 text-primary p-3 rounded-xl">
+                        <span class="material-symbols-rounded text-2xl">badge</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4 space-y-3">
+                <div class="relative">
+                    <span
+                        class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">search</span>
+                    <input id="search-input" type="text" placeholder="Search roles..."
+                        class="w-full pl-10 pr-4 py-3 bg-white border-neutral-200 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition">
+                </div>
+            </div>
+
+            <div id="role-list" class="space-y-3">
+            </div>
+
+            <div id="emptyState" class="hidden bg-white p-12 rounded-2xl text-center shadow-sm">
+                <div class="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="material-symbols-rounded text-4xl text-neutral-400">policy</span>
+                </div>
+                <h3 class="text-lg font-bold mb-2">No Roles Found</h3>
+                <p class="text-neutral-500 text-sm">Add a new role to get started</p>
+            </div>
+        </main>
+    </div>
+
+    <div id="roleModal"
+        class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="modal-backdrop fixed inset-0" onclick="closeModal()"></div>
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-11/12 max-w-lg mx-auto z-10 relative transform scale-95 transition-transform duration-300"
+            id="modalContent">
+            <div class="flex justify-between items-center border-b border-neutral-200 pb-3 mb-4">
+                <h3 class="text-xl font-bold text-neutral-800 flex items-center gap-2" id="modalTitle">
+                    <span class="material-symbols-rounded text-primary">add_moderator</span>
+                    Add Role
+                </h3>
+                <button onclick="closeModal()" class="text-neutral-400 hover:text-neutral-600">
+                    <span class="material-symbols-rounded text-2xl">close</span>
+                </button>
+            </div>
+            <form id="roleForm" class="space-y-4">
+                <input type="hidden" id="roleId">
+
+                <div>
+                    <label for="roleName" class="block text-sm font-medium text-neutral-600 mb-2">Role Name</label>
+                    <input type="text" id="roleName" name="roleName" required placeholder="e.g., Safety Officer"
+                        class="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+
+                <div>
+                    <label for="roleDesc" class="block text-sm font-medium text-neutral-600 mb-2">Description</label>
+                    <textarea id="roleDesc" name="description" rows="3" placeholder="Define access level..."
+                        class="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button type="button" onclick="closeModal()"
+                        class="flex-1 bg-neutral-200 hover:bg-neutral-300 text-neutral-800 font-bold py-3 px-4 rounded-xl transition">Cancel</button>
+                    <button type="submit"
+                        class="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg shadow-primary/30">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../api.client.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 1. AUTH CHECK ---
+            const token = localStorage.getItem("token");
+            if (!token) { window.location.href = "../index.html"; return; }
+
+            // --- 2. STATE ---
+            let allRoles = [];
+            let isEditMode = false;
+
+            // --- 3. DOM ELEMENTS ---
+            const roleList = document.getElementById('role-list');
+            const emptyState = document.getElementById('emptyState');
+            const searchInput = document.getElementById('search-input');
+            const modal = document.getElementById('roleModal');
+            const modalContent = document.getElementById('modalContent');
+            const modalTitle = document.getElementById('modalTitle');
+            const roleForm = document.getElementById('roleForm');
+            const statTotal = document.getElementById('stat-total');
+            const customAlert = document.getElementById('customAlert');
+            const alertMessage = document.getElementById('alertMessage');
+
+            // --- 4. UI FUNCTIONS ---
+            const showAlert = (message, type = 'success') => {
+                alertMessage.textContent = message;
+                customAlert.className = `fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex items-center p-4 text-sm text-white rounded-xl shadow-lg transition-all duration-300 ${type === 'error' ? 'bg-alert-red' : 'bg-success-green'}`;
+                customAlert.classList.remove('hidden');
+                customAlert.classList.remove('scale-90');
+                customAlert.classList.add('scale-100');
+
+                setTimeout(() => {
+                    customAlert.classList.add('hidden');
+                    customAlert.classList.remove('scale-100');
+                    customAlert.classList.add('scale-90');
+                }, 3000);
+            };
+
+            window.openModal = (mode = 'add', data = null) => {
+                isEditMode = mode === 'edit';
+                modal.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    modal.classList.remove('opacity-0');
+                    modalContent.classList.remove('scale-95');
+                    modalContent.classList.add('scale-100');
+                });
+
+                if (isEditMode && data) {
+                    modalTitle.innerHTML = `<span class="material-symbols-rounded text-primary">edit_square</span> Edit Role`;
+                    document.getElementById('roleId').value = data._id;
+                    document.getElementById('roleName').value = data.roleName;
+                    document.getElementById('roleDesc').value = data.description || '';
+                } else {
+                    modalTitle.innerHTML = `<span class="material-symbols-rounded text-primary">add_moderator</span> Add Role`;
+                    roleForm.reset();
+                    document.getElementById('roleId').value = '';
+                }
+            };
+
+            window.closeModal = () => {
+                modal.classList.add('opacity-0');
+                modalContent.classList.remove('scale-100');
+                modalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            };
+
+            // --- 5. RENDER LOGIC ---
+            const renderRoles = () => {
+                const term = searchInput.value.toLowerCase();
+                const filtered = allRoles.filter(r =>
+                    r.roleName.toLowerCase().includes(term) ||
+                    (r.description && r.description.toLowerCase().includes(term))
+                );
+
+                statTotal.textContent = allRoles.length;
+                roleList.innerHTML = '';
+
+                if (filtered.length === 0) {
+                    roleList.classList.add('hidden');
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                roleList.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+
+                filtered.forEach(role => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-5 rounded-2xl shadow-md flex items-center justify-between group transition-all duration-200 hover:shadow-lg';
+
+                    card.innerHTML = `
+                        <div class="flex-1 min-w-0 pr-4">
+                            <h4 class="font-bold text-neutral-800 text-lg mb-1 truncate">${role.roleName}</h4>
+                            <p class="text-sm text-neutral-500 line-clamp-2">${role.description || 'No description provided.'}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick='handleEdit(${JSON.stringify(role)})' 
+                                class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-100 text-neutral-600 hover:bg-primary hover:text-white transition">
+                                <span class="material-symbols-rounded">edit</span>
+                            </button>
+                            <button onclick="handleDelete('${role._id}')" 
+                                class="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-100 text-neutral-600 hover:bg-alert-red hover:text-white transition">
+                                <span class="material-symbols-rounded">delete</span>
+                            </button>
+                        </div>
+                    `;
+                    roleList.appendChild(card);
+                });
+            };
+
+            // --- 6. API ACTIONS ---
+            const fetchRoles = async () => {
+                try {
+                    // Note: Your backend returns { roles: [], pagination: {} } inside data
+                    const res = await roleAPI.getAll(1, 100);
+                    allRoles = res.data.roles || [];
+                    renderRoles();
+                } catch (error) {
+                    console.error(error);
+                    showAlert("Failed to load roles", "error");
+                }
+            };
+
+            window.handleEdit = (data) => {
+                openModal('edit', data);
+            };
+
+            window.handleDelete = async (id) => {
+                if (!confirm("Are you sure you want to delete this role?")) return;
+                try {
+                    await roleAPI.delete(id);
+                    showAlert("Role deleted successfully");
+                    fetchRoles();
+                } catch (error) {
+                    console.error(error);
+                    // The backend sends a specific error message if users are assigned
+                    showAlert(error.message || "Failed to delete", "error");
+                }
+            };
+
+            // --- 7. EVENT LISTENERS ---
+            document.getElementById('addRoleBtn').addEventListener('click', () => openModal('add'));
+            searchInput.addEventListener('input', renderRoles);
+
+            roleForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // Matches your backend schema: roleName, description
+                const roleName = document.getElementById('roleName').value;
+                const description = document.getElementById('roleDesc').value;
+                const id = document.getElementById('roleId').value;
+
+                try {
+                    if (isEditMode) {
+                        await roleAPI.update(id, { roleName, description });
+                        showAlert("Role updated successfully");
+                    } else {
+                        await roleAPI.create({ roleName, description });
+                        showAlert("Role created successfully");
+                    }
+                    closeModal();
+                    fetchRoles();
+                } catch (error) {
+                    console.error(error);
+                    showAlert(error.message || "Operation failed", "error");
+                }
+            });
+
+            // --- 8. INIT ---
+            fetchRoles();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Checklist Management</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0..200"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0284c7",
+                        "alert-red": "#ef4444",
+                        "success-green": "#22c55e",
+                        "neutral-900": "#0f172a"
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"],
+                        "orbitron": ["Orbitron", "sans-serif"]
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        .material-symbols-rounded {
+            font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .badge {
+            @apply inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full;
+        }
+    </style>
+</head>
+
+<body class="bg-neutral-100 font-sans text-neutral-800 min-h-screen">
+    <div id="customAlert"
+        class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] hidden items-center p-4 text-sm text-white rounded-xl bg-success-green shadow-lg transition-all duration-300 transform scale-90"
+        role="alert">
+        <span class="material-symbols-rounded mr-2">check_circle</span>
+        <span class="font-medium" id="alertMessage">Success!</span>
+    </div>
+
+    <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+        <div
+            class="sticky top-0 z-30 flex items-center bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] px-4 py-3 justify-between shadow-lg">
+            <a href="admin-home.html" class="text-white hover:text-primary-light transition">
+                <span class="material-symbols-rounded text-2xl">arrow_back</span>
+            </a>
+            <h1 class="text-xl font-[Orbitron] tracking-widest text-white">Checklists</h1>
+            <button id="addChecklistBtn" class="text-white hover:text-primary-light transition">
+                <span class="material-symbols-rounded text-2xl">post_add</span>
+            </button>
+        </div>
+
+        <main class="flex-1 p-4 pb-6">
+            <div class="grid grid-cols-1 gap-3 mb-4">
+                <div class="bg-white p-4 rounded-2xl shadow-md flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-neutral-500">Total Checklists</p>
+                        <p id="stat-total" class="text-2xl font-bold text-neutral-800">0</p>
+                    </div>
+                    <div class="bg-primary/10 text-primary p-3 rounded-xl">
+                        <span class="material-symbols-rounded text-2xl">checklist</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="checklist-list" class="space-y-3">
+            </div>
+
+            <div id="emptyState" class="hidden bg-white p-12 rounded-2xl text-center shadow-sm">
+                <div class="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="material-symbols-rounded text-4xl text-neutral-400">playlist_remove</span>
+                </div>
+                <h3 class="text-lg font-bold mb-2">No Checklists Found</h3>
+                <p class="text-neutral-500 text-sm">Create a checklist to get started</p>
+            </div>
+        </main>
+    </div>
+
+    <div id="checklistModal"
+        class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="modal-backdrop fixed inset-0" onclick="closeModal('checklistModal')"></div>
+        <div
+            class="bg-white rounded-2xl shadow-xl p-6 w-11/12 max-w-lg mx-auto z-10 relative transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center border-b border-neutral-200 pb-3 mb-4">
+                <h3 class="text-xl font-bold text-neutral-800 flex items-center gap-2">
+                    <span class="material-symbols-rounded text-primary">add_task</span>
+                    New Checklist
+                </h3>
+                <button onclick="closeModal('checklistModal')" class="text-neutral-400 hover:text-neutral-600">
+                    <span class="material-symbols-rounded text-2xl">close</span>
+                </button>
+            </div>
+            <form id="checklistForm" class="space-y-4">
+                <input type="hidden" id="checklistId">
+                <div>
+                    <label class="block text-sm font-medium text-neutral-600 mb-2">Checklist Name</label>
+                    <input type="text" id="checklistName" name="name" required
+                        placeholder="e.g., Daily Safety Inspection"
+                        class="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-600 mb-2">Assign Role</label>
+                    <select id="roleSelect" name="role_id" required
+                        class="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary">
+                        <option value="">Loading Roles...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-600 mb-2">Assign Task</label>
+                    <select id="taskSelect" name="task_id" required
+                        class="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary">
+                        <option value="">Loading Tasks...</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button type="button" onclick="closeModal('checklistModal')"
+                        class="flex-1 bg-neutral-200 hover:bg-neutral-300 text-neutral-800 font-bold py-3 px-4 rounded-xl">Cancel</button>
+                    <button type="submit"
+                        class="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-xl shadow-lg">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="itemsModal"
+        class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="modal-backdrop fixed inset-0" onclick="closeModal('itemsModal')"></div>
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-11/12 max-w-lg mx-auto z-10 relative h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-neutral-200 pb-3 mb-4 shrink-0">
+                <div>
+                    <h3 class="text-lg font-bold text-neutral-800" id="itemsModalTitle">Checklist Items</h3>
+                    <p class="text-xs text-neutral-500">Add steps for this checklist</p>
+                </div>
+                <button onclick="closeModal('itemsModal')" class="text-neutral-400 hover:text-neutral-600">
+                    <span class="material-symbols-rounded text-2xl">close</span>
+                </button>
+            </div>
+
+            <div id="itemsList" class="flex-1 overflow-y-auto space-y-2 pr-2 mb-4">
+            </div>
+
+            <form id="addItemForm" class="shrink-0 pt-3 border-t border-neutral-200 bg-neutral-50 p-3 rounded-xl">
+                <input type="hidden" id="currentChecklistId">
+                <div class="flex gap-2 mb-2">
+                    <input type="text" id="itemDesc" required placeholder="New item description..."
+                        class="flex-1 border-neutral-200 rounded-lg text-sm px-3 py-2">
+                    <input type="number" id="itemOrder" required placeholder="#"
+                        class="w-16 border-neutral-200 rounded-lg text-sm px-2 py-2" value="1">
+                </div>
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center gap-2 text-sm text-neutral-600">
+                        <input type="checkbox" id="itemMandatory" class="rounded text-primary focus:ring-primary">
+                        Mandatory?
+                    </label>
+                    <button type="submit"
+                        class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-1">
+                        <span class="material-symbols-rounded text-sm">add</span> Add
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../api.client.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem("token");
+            if (!token) { window.location.href = "../index.html"; return; }
+
+            // State
+            let allChecklists = [];
+            let currentUser = JSON.parse(localStorage.getItem('user'));
+
+            // DOM
+            const listContainer = document.getElementById('checklist-list');
+            const emptyState = document.getElementById('emptyState');
+            const roleSelect = document.getElementById('roleSelect');
+            const taskSelect = document.getElementById('taskSelect');
+
+            // --- 1. UI HELPERS ---
+            const showAlert = (msg, type = 'success') => {
+                const el = document.getElementById('customAlert');
+                const msgEl = document.getElementById('alertMessage');
+                msgEl.textContent = msg;
+                el.className = `fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex items-center p-4 text-sm text-white rounded-xl shadow-lg transition-all duration-300 scale-100 ${type === 'error' ? 'bg-alert-red' : 'bg-success-green'}`;
+                el.classList.remove('hidden');
+                setTimeout(() => { el.classList.add('hidden'); el.classList.remove('scale-100'); }, 3000);
+            };
+
+            window.openModal = (id) => {
+                const modal = document.getElementById(id);
+                modal.classList.remove('hidden');
+                requestAnimationFrame(() => modal.classList.remove('opacity-0'));
+            };
+
+            window.closeModal = (id) => {
+                const modal = document.getElementById(id);
+                modal.classList.add('opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            };
+
+            // --- 2. DATA LOADING ---
+            const loadData = async () => {
+                try {
+                    // Load Dropdowns
+                    const [rolesRes, tasksRes] = await Promise.all([
+                        roleAPI.getAll(1, 100),
+                        taskAPI.getAll(1, 100)
+                    ]);
+
+                    roleSelect.innerHTML = '<option value="">Select Role</option>';
+                    (rolesRes.data.roles || []).forEach(r => {
+                        roleSelect.innerHTML += `<option value="${r._id}">${r.roleName}</option>`;
+                    });
+
+                    taskSelect.innerHTML = '<option value="">Select Task</option>';
+                    (tasksRes.data.tasks || []).forEach(t => {
+                        taskSelect.innerHTML += `<option value="${t._id}">${t.taskName}</option>`;
+                    });
+
+                    // Load Checklists
+                    fetchChecklists();
+
+                } catch (e) {
+                    console.error(e);
+                    showAlert("Failed to load initial data", "error");
+                }
+            };
+
+            const fetchChecklists = async () => {
+                try {
+                    const res = await checklistAPI.getAll();
+                    allChecklists = res.data.checklists || [];
+                    renderChecklists();
+                } catch (e) {
+                    console.error(e);
+                    showAlert("Failed to fetch checklists", "error");
+                }
+            };
+
+            const renderChecklists = () => {
+                document.getElementById('stat-total').textContent = allChecklists.length;
+                listContainer.innerHTML = '';
+
+                if (allChecklists.length === 0) {
+                    listContainer.classList.add('hidden');
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                listContainer.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+
+                allChecklists.forEach(list => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-4 rounded-2xl shadow-md';
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-bold text-lg text-neutral-800">${list.name}</h4>
+                                <div class="flex gap-2 mt-1">
+                                    <span class="badge bg-blue-100 text-blue-700">${list.role_id?.roleName || 'No Role'}</span>
+                                    <span class="badge bg-orange-100 text-orange-700">${list.task_id?.taskName || 'No Task'}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-1">
+                                <button onclick="deleteChecklist('${list._id}')" class="p-2 text-alert-red hover:bg-red-50 rounded-lg"><span class="material-symbols-rounded">delete</span></button>
+                            </div>
+                        </div>
+                        <button onclick="manageItems('${list._id}', '${list.name}')" class="w-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition">
+                            <span class="material-symbols-rounded text-lg">list</span> Manage Items
+                        </button>
+                    `;
+                    listContainer.appendChild(card);
+                });
+            };
+
+            // --- 3. CHECKLIST ACTIONS ---
+            document.getElementById('addChecklistBtn').addEventListener('click', () => openModal('checklistModal'));
+
+            document.getElementById('checklistForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    name: document.getElementById('checklistName').value,
+                    role_id: roleSelect.value,
+                    task_id: taskSelect.value,
+                    created_by: currentUser._id
+                };
+
+                try {
+                    await checklistAPI.create(payload);
+                    showAlert("Checklist created!");
+                    closeModal('checklistModal');
+                    fetchChecklists();
+                    document.getElementById('checklistForm').reset();
+                } catch (e) {
+                    showAlert(e.message || "Failed to create", "error");
+                }
+            });
+
+            window.deleteChecklist = async (id) => {
+                if (!confirm("Delete this checklist?")) return;
+                try {
+                    await checklistAPI.delete(id);
+                    showAlert("Deleted successfully");
+                    fetchChecklists();
+                } catch (e) { showAlert("Delete failed", "error"); }
+            };
+
+            // --- 4. ITEM ACTIONS ---
+            window.manageItems = async (checklistId, name) => {
+                document.getElementById('currentChecklistId').value = checklistId;
+                document.getElementById('itemsModalTitle').textContent = name;
+                openModal('itemsModal');
+                fetchItems(checklistId);
+            };
+
+            const fetchItems = async (checklistId) => {
+                const container = document.getElementById('itemsList');
+                container.innerHTML = '<div class="text-center py-4 text-neutral-400">Loading...</div>';
+                try {
+                    const res = await checklistItemAPI.getByChecklist(checklistId);
+                    const items = res.data || [];
+                    container.innerHTML = '';
+
+                    if (items.length === 0) {
+                        container.innerHTML = '<div class="text-center py-4 text-neutral-400 text-sm">No items yet. Add one below.</div>';
+                        return;
+                    }
+
+                    items.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'flex items-center justify-between bg-neutral-50 p-3 rounded-xl border border-neutral-100';
+                        div.innerHTML = `
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-mono text-neutral-400 font-bold">#${item.order}</span>
+                                <div>
+                                    <p class="text-sm font-medium text-neutral-800">${item.description}</p>
+                                    ${item.is_mandatory ? '<span class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold uppercase">Required</span>' : ''}
+                                </div>
+                            </div>
+                            <button onclick="deleteItem('${item._id}', '${checklistId}')" class="text-neutral-400 hover:text-red-500"><span class="material-symbols-rounded text-lg">delete</span></button>
+                        `;
+                        container.appendChild(div);
+                    });
+                } catch (e) {
+                    container.innerHTML = '<div class="text-red-500 text-center text-sm">Error loading items</div>';
+                }
+            };
+
+            document.getElementById('addItemForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const checklistId = document.getElementById('currentChecklistId').value;
+                const payload = {
+                    checklist_id: checklistId,
+                    description: document.getElementById('itemDesc').value,
+                    order: parseInt(document.getElementById('itemOrder').value),
+                    is_mandatory: document.getElementById('itemMandatory').checked
+                };
+
+                try {
+                    await checklistItemAPI.create(payload);
+                    document.getElementById('itemDesc').value = '';
+                    document.getElementById('itemOrder').value = parseInt(payload.order) + 1; // Auto increment
+                    fetchItems(checklistId); // Refresh list
+                } catch (e) {
+                    showAlert(e.message || "Failed to add item", "error");
+                }
+            });
+
+            window.deleteItem = async (itemId, checklistId) => {
+                if (!confirm("Remove item?")) return;
+                try {
+                    await checklistItemAPI.delete(itemId);
+                    fetchItems(checklistId);
+                } catch (e) { showAlert("Failed to delete item", "error"); }
+            };
+
+            // --- INIT ---
+            loadData();
+        });
+    </script>
+</body>
+
+</html>

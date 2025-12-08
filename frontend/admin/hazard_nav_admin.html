@@ -73,9 +73,9 @@
                     <select id="filter-status"
                         class="w-full bg-white border-neutral-200 border rounded-xl py-3 pl-4 pr-10 focus:ring-2 focus:ring-primary">
                         <option value="all">All Statuses</option>
-                        <option value="New">New</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Resolved">Resolved</option>
+                        <option value="open">Open</option>
+                        <option value="in-progress">Assigned</option>
+                        <option value="closed">Resolved</option>
                     </select>
                 </div>
             </div>
@@ -93,7 +93,7 @@
                     <span class="material-symbols-rounded">dashboard</span><span
                         class="text-xs font-medium mt-1">Dashboard</span>
                 </a>
-                <a href="admin_hazards.html"
+                <a href="hazard_nav_admin.html"
                     class="flex flex-col items-center justify-center pt-3 pb-2 w-1/4 text-primary">
                     <span class="material-symbols-rounded">warning</span><span
                         class="text-xs font-medium mt-1">Hazards</span>
@@ -103,10 +103,10 @@
                     <span class="material-symbols-rounded">groups</span><span
                         class="text-xs font-medium mt-1">Workforce</span>
                 </a>
-                <a href="activity_admin.html"
+                <a href="admin_task.html"
                     class="flex flex-col items-center justify-center pt-3 pb-2 w-1/4 text-neutral-400 hover:text-white">
-                    <span class="material-symbols-rounded">notifications</span><span
-                        class="text-xs font-medium mt-1">Activity</span>
+                    <span class="material-symbols-rounded">apps</span><span
+                        class="text-xs font-medium mt-1">More</span>
                 </a>
             </div>
         </nav>
@@ -114,8 +114,10 @@
 
     <div id="assignModal" class="fixed inset-0 z-50 items-center justify-center hidden">
         <div class="modal-backdrop fixed inset-0" onclick="closeAssignModal()"></div>
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-11/12 max-w-lg mx-auto z-10 relative">
-            <div class="flex justify-between items-center border-b border-neutral-200 pb-3 mb-4">
+        <div
+            class="bg-white rounded-2xl shadow-xl p-6 w-11/12 max-w-lg mx-auto z-10 relative max-h-[90vh] overflow-y-auto">
+            <div
+                class="flex justify-between items-center border-b border-neutral-200 pb-3 mb-4 sticky top-0 bg-white z-10">
                 <h3 class="text-xl font-bold text-neutral-800" id="modalTitle">Assign Hazard</h3>
                 <button onclick="closeAssignModal()" class="text-neutral-400 hover:text-neutral-600">
                     <span class="material-symbols-rounded text-2xl">close</span>
@@ -136,6 +138,20 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-neutral-600 mb-2">Hazard Evidence</label>
+                    <div id="mediaLoader" class="flex items-center gap-2 text-xs text-neutral-400 py-2">
+                        <span class="material-symbols-rounded text-sm animate-spin">progress_activity</span>
+                        <span>Loading media...</span>
+                    </div>
+                    <div id="mediaContainer" class="hidden space-y-3">
+                        <!-- Media will be loaded here -->
+                    </div>
+                    <div id="noMediaMessage" class="hidden text-xs text-neutral-400 italic py-2">
+                        No media attached to this hazard.
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-neutral-100">
                     <label for="assignWorker" class="block text-sm font-medium text-neutral-600 mb-2">Assign To
                         Worker</label>
                     <select id="assignWorker" required
@@ -189,6 +205,25 @@
             const assignForm = document.getElementById('assignForm');
             const workerSelect = document.getElementById('assignWorker');
             const customAlert = document.getElementById('customAlert');
+            const mediaContainer = document.getElementById('mediaContainer');
+            const mediaLoader = document.getElementById('mediaLoader');
+
+            // --- Helpers ---
+            const getStatusLabel = (backendStatus) => {
+                const s = (backendStatus || 'open').toLowerCase();
+                if (s === 'open' || s === 'new') return 'Open';
+                if (s === 'in-progress') return 'Assigned';
+                if (s === 'closed' || s === 'resolved') return 'Resolved';
+                return 'Open';
+            };
+
+            const getStatusColorClass = (backendStatus) => {
+                const s = (backendStatus || 'open').toLowerCase();
+                if (s === 'open' || s === 'new') return 'bg-blue-100 text-blue-700';
+                if (s === 'in-progress') return 'bg-orange-100 text-orange-700';
+                if (s === 'closed' || s === 'resolved') return 'bg-green-100 text-green-700';
+                return 'bg-gray-100 text-gray-700';
+            };
 
             // --- UI Functions ---
             window.closeAssignModal = () => {
@@ -197,6 +232,7 @@
                 assignForm.reset();
                 document.getElementById('existingAssignmentId').value = '';
                 document.getElementById('assignmentInfo').classList.add('hidden');
+                mediaContainer.innerHTML = ''; // Clear media
             };
 
             const showAlert = (message, type = 'success') => {
@@ -224,10 +260,16 @@
                     const description = h.description ? h.description : "";
                     const location = h.location ? h.location : "";
                     const severityLevel = h.severity_id?.level || h.severity || "Low";
+                    const status = (h.status || 'open').toLowerCase();
 
                     const searchMatch = description.toLowerCase().includes(searchTerm) || location.toLowerCase().includes(searchTerm);
                     const severityMatch = (selectedSeverity === 'all' || severityLevel === selectedSeverity);
-                    const statusMatch = (selectedStatus === 'all' || h.status === selectedStatus);
+
+                    let statusMatch = true;
+                    if (selectedStatus !== 'all') {
+                        statusMatch = status === selectedStatus;
+                        if (selectedStatus === 'open' && status === 'new') statusMatch = true;
+                    }
 
                     return searchMatch && severityMatch && statusMatch;
                 });
@@ -247,9 +289,12 @@
                     const severityVal = report.severity_id?.level || report.severity || "Low";
                     const dateStr = new Date(report.createdAt).toLocaleDateString();
 
+                    const displayStatus = getStatusLabel(report.status);
+                    const statusClass = getStatusColorClass(report.status);
+
                     const item = document.createElement('div');
                     item.className = 'bg-white p-4 rounded-2xl shadow-card flex items-start gap-4 cursor-pointer hover:shadow-lg transition-all border border-transparent hover:border-primary/20 active:scale-[0.99]';
-                    item.onclick = () => openAssignModal(report._id); // Click to open modal
+                    item.onclick = () => openAssignModal(report._id);
 
                     item.innerHTML = `
                     <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center ${severityClasses[severityVal] || severityClasses.Low} rounded-xl">
@@ -260,13 +305,13 @@
                         <p class="text-sm text-neutral-500 mb-2">${report.location || "Unknown Location"}</p>
                         <div class="flex items-center gap-2 flex-wrap">
                             <span class="badge ${severityClasses[severityVal] || severityClasses.Low}">${severityVal}</span>
-                            <span class="badge ${statusClasses[report.status] || ''}">${report.status}</span>
+                            <span class="badge ${statusClass}">${displayStatus}</span>
                         </div>
                     </div>
                     <div class="flex flex-col items-end gap-2">
                         <span class="text-xs text-neutral-400">${dateStr}</span>
-                        <button class="bg-neutral-100 hover:bg-neutral-200 text-neutral-600 p-2 rounded-full transition">
-                            <span class="material-symbols-rounded text-xl">assignment_add</span>
+                        <button class="bg-neutral-100 hover:bg-neutral-200 text-neutral-600 p-2 rounded-full transition" title="Assign Hazard">
+                            <span class="material-symbols-rounded text-xl">assignment_ind</span>
                         </button>
                     </div>
                 `;
@@ -279,19 +324,200 @@
                 const report = allHazards.find(h => h._id === reportId);
                 if (!report) return;
 
-                // 1. Populate Modal UI
+                // 1. Populate Modal Header
                 document.getElementById('assignReportId').value = reportId;
                 document.getElementById('assignHazardTitle').textContent = report.description || "Hazard Report";
 
                 const severityVal = report.severity_id?.level || report.severity || "Low";
                 const sevBadge = document.getElementById('assignHazardSeverity');
                 sevBadge.textContent = severityVal;
-                // quick styling
                 sevBadge.className = `badge ${severityVal === 'High' ? 'bg-red-100 text-red-800' : severityVal === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}`;
 
-                document.getElementById('assignHazardStatus').textContent = report.status;
+                document.getElementById('assignHazardStatus').textContent = getStatusLabel(report.status);
 
-                // 2. Check existing assignment
+                // 2. Load Media for this report
+                const mediaContainerEl = document.getElementById('mediaContainer');
+                const mediaLoaderEl = document.getElementById('mediaLoader');
+                const noMediaEl = document.getElementById('noMediaMessage');
+
+                // Reset states
+                mediaContainerEl.innerHTML = '';
+                mediaContainerEl.classList.add('hidden');
+                noMediaEl.classList.add('hidden');
+                mediaLoaderEl.classList.remove('hidden');
+
+                try {
+                    console.log('[Media] Fetching media for report:', reportId);
+                    
+                    // Try multiple approaches to fetch media
+                    let reportMedia = [];
+                    
+                    try {
+                        // Approach 1: Try to fetch media by report ID directly
+                        const mediaRes = await hazardMediaAPI.getByReport(reportId);
+                        reportMedia = Array.isArray(mediaRes.data) ? mediaRes.data : [];
+                        console.log('[Media] Fetched via getByReport:', reportMedia.length);
+                    } catch (e) {
+                        console.log('[Media] getByReport failed, trying getAll:', e.message);
+                        
+                        // Approach 2: Fallback to fetching all media and filtering
+                        try {
+                            const allMediaRes = await hazardMediaAPI.getAll();
+                            const allMedia = Array.isArray(allMediaRes.data) ? allMediaRes.data : 
+                                           (allMediaRes.data?.media ? allMediaRes.data.media : []);
+                            
+                            // Filter by report_id
+                            reportMedia = allMedia.filter(m => {
+                                const mRepId = m.report_id && typeof m.report_id === 'object' ? m.report_id._id : m.report_id;
+                                return mRepId === reportId;
+                            });
+                            console.log('[Media] Filtered from getAll:', reportMedia.length);
+                        } catch (e2) {
+                            console.error('[Media] Both methods failed:', e2);
+                        }
+                    }
+
+                    console.log('[Media] Final media count:', reportMedia.length);
+
+                    if (reportMedia.length === 0) {
+                        noMediaEl.classList.remove('hidden');
+                        mediaContainerEl.classList.add('hidden');
+                    } else {
+                        mediaContainerEl.classList.remove('hidden');
+                        noMediaEl.classList.add('hidden');
+
+                        // Separate media by type
+                        const images = reportMedia.filter(m => {
+                            const type = (m.media_type || '').toLowerCase();
+                            return type === 'image' || type === 'photo' || type.includes('image');
+                        });
+
+                        const audios = reportMedia.filter(m => {
+                            const type = (m.media_type || '').toLowerCase();
+                            return type === 'audio' || type.includes('audio');
+                        });
+
+                        const videos = reportMedia.filter(m => {
+                            const type = (m.media_type || '').toLowerCase();
+                            return type === 'video' || type.includes('video');
+                        });
+
+                        console.log('[Media] Images:', images.length, 'Audios:', audios.length, 'Videos:', videos.length);
+
+                        // Display Images
+                        if (images.length > 0) {
+                            const imgTitle = document.createElement('p');
+                            imgTitle.className = 'text-xs font-semibold text-neutral-600 mb-2 flex items-center gap-1';
+                            imgTitle.innerHTML = '<span class="material-symbols-rounded text-sm">image</span> Images';
+                            mediaContainerEl.appendChild(imgTitle);
+
+                            const imgContainer = document.createElement('div');
+                            imgContainer.className = "grid grid-cols-2 gap-2 mb-3";
+                            
+                            images.forEach((img, idx) => {
+                                const mediaUrl = img.url || img.media_url || img.file_path;
+                                if (!mediaUrl) {
+                                    console.warn('[Media] Image missing URL:', img);
+                                    return;
+                                }
+
+                                const wrapper = document.createElement('div');
+                                wrapper.className = 'relative group';
+                                
+                                const link = document.createElement('a');
+                                link.href = mediaUrl;
+                                link.target = '_blank';
+                                link.className = 'block';
+                                
+                                const imgEl = document.createElement('img');
+                                imgEl.src = mediaUrl;
+                                imgEl.alt = `Evidence ${idx + 1}`;
+                                imgEl.className = 'h-24 w-full object-cover rounded-lg border border-neutral-200 hover:opacity-90 transition cursor-pointer';
+                                
+                                // Error handling for images
+                                imgEl.onerror = function() {
+                                    console.error('[Media] Failed to load image:', mediaUrl);
+                                    this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23f0f0f0" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" font-size="14" text-anchor="middle" dy=".3em" fill="%23999"%3EImage Error%3C/text%3E%3C/svg%3E';
+                                    this.className = 'h-24 w-full object-cover rounded-lg border border-red-200';
+                                };
+
+                                imgEl.onload = function() {
+                                    console.log('[Media] Image loaded successfully:', mediaUrl);
+                                };
+                                
+                                link.appendChild(imgEl);
+                                wrapper.appendChild(link);
+                                
+                                // Add expand icon overlay
+                                const overlay = document.createElement('div');
+                                overlay.className = 'absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all rounded-lg flex items-center justify-center';
+                                overlay.innerHTML = '<span class="material-symbols-rounded text-white opacity-0 group-hover:opacity-100 transition-opacity">open_in_new</span>';
+                                wrapper.appendChild(overlay);
+                                
+                                imgContainer.appendChild(wrapper);
+                            });
+                            mediaContainerEl.appendChild(imgContainer);
+                        }
+
+                        // Display Audio
+                        if (audios.length > 0) {
+                            const audioTitle = document.createElement('p');
+                            audioTitle.className = 'text-xs font-semibold text-neutral-600 mb-2 flex items-center gap-1 mt-3';
+                            audioTitle.innerHTML = '<span class="material-symbols-rounded text-sm">mic</span> Audio Notes';
+                            mediaContainerEl.appendChild(audioTitle);
+
+                            audios.forEach((aud, idx) => {
+                                const mediaUrl = aud.url || aud.media_url || aud.file_path;
+                                if (!mediaUrl) return;
+
+                                const wrapper = document.createElement('div');
+                                wrapper.className = "bg-neutral-50 p-3 rounded-lg border border-neutral-100 mb-2";
+                                
+                                const audioEl = document.createElement('audio');
+                                audioEl.controls = true;
+                                audioEl.src = mediaUrl;
+                                audioEl.className = 'w-full';
+                                
+                                wrapper.innerHTML = `<p class="text-xs text-neutral-500 mb-2">Audio Note ${idx + 1}</p>`;
+                                wrapper.appendChild(audioEl);
+                                mediaContainerEl.appendChild(wrapper);
+                            });
+                        }
+
+                        // Display Videos
+                        if (videos.length > 0) {
+                            const videoTitle = document.createElement('p');
+                            videoTitle.className = 'text-xs font-semibold text-neutral-600 mb-2 flex items-center gap-1 mt-3';
+                            videoTitle.innerHTML = '<span class="material-symbols-rounded text-sm">videocam</span> Videos';
+                            mediaContainerEl.appendChild(videoTitle);
+
+                            videos.forEach((vid, idx) => {
+                                const mediaUrl = vid.url || vid.media_url || vid.file_path;
+                                if (!mediaUrl) return;
+
+                                const wrapper = document.createElement('div');
+                                wrapper.className = "bg-neutral-50 p-3 rounded-lg border border-neutral-100 mb-2";
+                                
+                                const videoEl = document.createElement('video');
+                                videoEl.controls = true;
+                                videoEl.src = mediaUrl;
+                                videoEl.className = 'w-full rounded-lg';
+                                
+                                wrapper.innerHTML = `<p class="text-xs text-neutral-500 mb-2">Video ${idx + 1}</p>`;
+                                wrapper.appendChild(videoEl);
+                                mediaContainerEl.appendChild(wrapper);
+                            });
+                        }
+                    }
+                } catch (err) {
+                    console.error('[Media] Error loading media:', err);
+                    mediaContainerEl.classList.remove('hidden');
+                    mediaContainerEl.innerHTML = '<div class="text-xs text-red-400 bg-red-50 p-3 rounded-lg border border-red-100">Failed to load media. Please try again.</div>';
+                } finally {
+                    mediaLoaderEl.classList.add('hidden');
+                }
+
+                // 3. Check existing assignment
                 const btn = document.getElementById('submitAssignBtn');
                 btn.textContent = "Loading...";
                 btn.disabled = true;
@@ -302,12 +528,11 @@
 
                     if (assignments && assignments.length > 0) {
                         // Edit Mode
-                        const current = assignments[0]; // Assuming one active assignment
+                        const current = assignments[0];
                         document.getElementById('modalTitle').textContent = "Update Assignment";
                         document.getElementById('existingAssignmentId').value = current._id;
                         document.getElementById('assignmentInfo').classList.remove('hidden');
 
-                        // Pre-fill
                         workerSelect.value = current.assigned_to_id?._id || current.assigned_to_id;
                         if (current.due_date) {
                             document.getElementById('assignDueDate').value = new Date(current.due_date).toISOString().split('T')[0];
@@ -324,7 +549,6 @@
                     }
                 } catch (e) {
                     console.error("Check assignment failed", e);
-                    // Assume create mode if check fails (or handle error)
                     btn.textContent = "Assign";
                 } finally {
                     btn.disabled = false;
@@ -361,15 +585,16 @@
                     } else {
                         // Create
                         await hazardAssignmentAPI.create(payload);
-                        // Also update hazard status to 'In Progress' if currently 'New'
-                        const report = allHazards.find(h => h._id === reportId);
-                        if (report && report.status === 'New') {
-                            await hazardReportAPI.update(reportId, { status: 'In Progress' });
-                        }
+                        // Update status to in-progress
+                        await hazardReportAPI.update(reportId, { status: 'in-progress' });
+
                         showAlert("Hazard assigned successfully!");
                     }
                     closeAssignModal();
-                    initializePage(); // Refresh list to reflect status changes
+                    // Reload hazards
+                    const res = await hazardReportAPI.getAll();
+                    allHazards = res.data || [];
+                    renderHazards();
                 } catch (error) {
                     console.error(error);
                     showAlert(error.message || "Operation failed", "error");

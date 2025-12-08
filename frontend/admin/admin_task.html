@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Task Manager - Suraksha Sathi</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3b82f6", // blue-500
+                        dark: "#0f172a", // slate-900
+                        darker: "#020617", // slate-950
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        orbitron: ["Orbitron", "sans-serif"],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Animations */
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+
+        /* Hide scrollbar for horizontal scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen pb-20">
+
+    <!-- Top Dark Header Section -->
+    <div class="bg-[#0f172a] text-white pt-8 pb-12 px-6 rounded-b-[2.5rem] shadow-xl relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header Nav -->
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center gap-4">
+                    <div>
+                        <h2 id="page-title" class="text-2xl font-bold font-orbitron tracking-wide text-white">Admin Task </h2>
+                    </div>
+                </div>
+                <div class="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-white shadow-lg border border-white/20">
+                    <span class="font-bold text-sm">AD</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="w-full max-w-7xl mx-auto px-4 md:px-8 -mt-6 relative z-20">
+        
+        <!-- Dashboard Overview (Feature Tiles) -->
+        <div id="dashboard" class="content-section active fade-in">
+            <div class="bg-white rounded-3xl shadow-lg p-6 mb-6">
+                <h3 class="text-slate-700 font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-th-large text-blue-500"></i> Management Hub
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                    
+                    <!-- Tile Component -->
+                    <a href="manage-users.html" 
+                        class="group flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-100 hover:border-blue-200 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md">
+                        <div class="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                            <i class="fas fa-user-group text-lg md:text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-sm text-slate-700 text-center">Workforce</h3>
+                    </a>
+
+                    <a href="task.html" 
+                        class="group flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-100 hover:border-emerald-200 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md">
+                        <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                            <i class="fas fa-clipboard-list text-lg md:text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-sm text-slate-700 text-center">Task Manager</h3>
+                    </a>
+
+                    <a href="categories.html" 
+                        class="group flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-100 hover:border-pink-200 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md">
+                        <div class="h-12 w-12 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                            <i class="fas fa-layer-group text-lg md:text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-sm text-slate-700 text-center">Categories</h3>
+                    </a>
+
+                    <a href="roles.html" 
+                        class="group flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-100 hover:border-cyan-200 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md">
+                        <div class="h-12 w-12 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                            <i class="fas fa-id-badge text-lg md:text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-sm text-slate-700 text-center">Roles</h3>
+                    </a>
+
+                    <a href="checklist.html" 
+                        class="group flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-100 hover:border-indigo-200 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md">
+                        <div class="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                            <i class="fas fa-clipboard-check text-lg md:text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-sm text-slate-700 text-center">Checklists</h3>
+                    </a>
+                    
+                    <a href="hazardmap.html" 
+                        class="group flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-100 hover:border-indigo-200 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md">
+                        <div class="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                            <i class="fas fa-map-marked-alt text-lg md:text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-sm text-slate-700 text-center">Hazard Map</h3>
+                    </a>
+                    
+                    <a href="tasks.html" 
+                        class="group flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-100 hover:border-indigo-200 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md">
+                        <div class="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                            <i class="fas fa-tasks text-lg md:text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-sm text-slate-700 text-center">Tasks</h3>
+                    </a>
+
+                </div>
+            </div>
+            
+        </div>
+
+        
+
+    </main>
+
+</body>
+</html>
