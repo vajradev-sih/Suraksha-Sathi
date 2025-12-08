@@ -1483,55 +1483,48 @@
         document.addEventListener("DOMContentLoaded", () => {
             // --- 1. AUTHENTICATION & INITIALIZATION ---
             const token = localStorage.getItem("token");
-            const user = JSON.parse(localStorage.getItem("user"));
 
-            // If no token or user data, redirect to login page
-            if (!token || !user) {
+            // If no token, redirect to login page
+            if (!token) {
                 window.location.href = "../index.html";
                 return;
             }
 
-            // --- 2. RENDER FUNCTIONS (To create dynamic HTML) ---
+            // --- 2. RENDER FUNCTIONS ---
 
-            /**
-             * Renders the welcome message and profile picture.
-             */
-            const renderWelcomeHeader = (currentUser) => {
+            const renderWelcomeHeader = (userData) => {
                 const userNameSpan = document.getElementById("user-name");
-                const profileImage = document.getElementById("profile-image");
+                const profileImage = document.querySelector(".rounded-full img");
 
-                if (userNameSpan && currentUser.fullName) {
-                    userNameSpan.textContent = currentUser.fullName;
+                if (userNameSpan && userData.fullName) {
+                    userNameSpan.textContent = userData.fullName;
                 }
                 if (profileImage) {
-                    // Uses DiceBear Avatars with the username as a seed for a unique avatar
-                    profileImage.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.fullName || 'default'}`;
+                    profileImage.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.fullName || 'default'}`;
                 }
             };
 
-            /**
-             * Renders the Critical Alerts section.
-             * @param {Array} alerts - An array of notification objects.
-             */
             const appendCriticalAlerts = (alerts) => {
-                // Target the specific list element you added the ID to
                 const container = document.getElementById("alerts-list");
                 if (!container || !alerts || alerts.length === 0) return;
 
-                const alertsHTML = alerts.map(alert => `
-                    <div class="bg-alert-red/5 hover:bg-alert-red/10 rounded-xl p-3 flex items-center gap-4">
-                        <div class="bg-alert-red/10 h-10 w-10 aspect-square rounded-full flex items-center justify-center">
-                            <span class="material-symbols-rounded text-alert-red">crisis_alert</span>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-neutral-800 font-semibold">${alert.message}</p>
-                            <div class="flex items-center gap-2 mt-1 text-xs text-neutral-500">
-                                <span>${new Date(alert.createdAt).toLocaleString()}</span>
-                            </div>
-                        </div>
-                    </div>`).join('');
+                // Clear purely static alerts if you want, or just prepend
+                // container.innerHTML = ''; 
 
-                // Use insertAdjacentHTML to add to the end of the list
+                const alertsHTML = alerts.map(alert => `
+                <div class="bg-alert-red/5 hover:bg-alert-red/10 rounded-xl p-3 flex items-center gap-4 transition-colors animate-slideInUp">
+                    <div class="bg-alert-red/10 h-10 w-10 aspect-square rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-rounded text-alert-red">crisis_alert</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-neutral-800 font-semibold text-sm">${alert.message || alert.description || 'Critical Alert'}</p>
+                        <div class="flex items-center gap-2 mt-1 text-xs text-neutral-500">
+                            <span class="font-bold text-alert-red">High Priority</span>
+                            <span>${new Date(alert.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                    </div>
+                </div>`).join('');
+
                 container.insertAdjacentHTML('afterbegin', alertsHTML);
 
                 // Update the active alerts count badge
@@ -1546,48 +1539,42 @@
                 }
             };
 
-
-            /**
-             * Renders the Recent Activity section.
-             * @param {Array} activities - An array of notification objects.
-             */
             const appendRecentActivity = (activities) => {
-                // Target the container for activity items
                 const container = document.getElementById("recent-activity-container");
                 if (!container || !activities || activities.length === 0) return;
 
-                const activitiesHTML = activities.map(activity => `
-                    <div class="activity-item cursor-pointer group bg-neutral-50 hover:bg-neutral-100 rounded-lg p-3">
-                        <div class="flex items-center gap-3">
-                            <div class="activity-icon bg-blue-500 h-9 w-9 aspect-square rounded-full flex items-center justify-center">
-                                <span class="material-symbols-rounded text-white text-sm">info</span>
-                            </div>
-                            <div class="flex-1">
-                                <p class="activity-title text-neutral-800 text-sm font-medium">${activity.message}</p>
-                                <p class="activity-time text-neutral-500 text-xs">${new Date(activity.createdAt).toLocaleString()}</p>
-                            </div>
-                        </div>
-                    </div>`).join('');
+                const validActivities = activities.filter(a => a.type !== 'alert');
 
-                // Use insertAdjacentHTML to add to the end of the list
-                container.insertAdjacentHTML('afterbegin', activitiesHTML);
+                const activitiesHTML = validActivities.map(activity => `
+                <div class="activity-item cursor-pointer group bg-neutral-50 hover:bg-neutral-100 rounded-lg p-3 transition-all duration-200 border border-transparent hover:border-neutral-200">
+                    <div class="flex items-center gap-3">
+                        <div class="activity-icon bg-primary h-9 w-9 aspect-square rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-rounded text-white text-sm">info</span>
+                        </div>
+                        <div class="flex-1">
+                            <p class="activity-title text-neutral-800 text-sm font-medium">${activity.message || 'New Activity'}</p>
+                            <p class="activity-time text-neutral-500 text-xs">${new Date(activity.createdAt).toLocaleString()}</p>
+                        </div>
+                    </div>
+                </div>`).join('');
+
+                if (validActivities.length > 0) {
+                    container.insertAdjacentHTML('afterbegin', activitiesHTML);
+                }
             };
 
             const renderVideoOfTheDay = (videoData) => {
-                const videoElement = document.querySelector("#video-of-the-day-container video");
-                const titleElement = document.querySelector("#video-of-the-day-container .font-semibold");
-                const descriptionElement = document.querySelector("#video-of-the-day-container .text-sm");
+                const container = document.getElementById("video-of-the-day-container");
+                if (!container || !videoData) return;
 
-                if (!videoElement || !videoData) {
-                    console.warn("Video of the day elements not found or no video data provided.");
-                    return;
-                }
+                const videoElement = container.querySelector("video");
+                const titleElement = container.querySelector(".font-semibold");
+                const descElement = container.querySelector(".text-sm.text-neutral-500");
 
-                // Assuming videoData has properties like: videoUrl, thumbnailUrl, title, description
-                if (videoData.videoUrl) videoElement.src = videoData.videoUrl;
-                if (videoData.thumbnailUrl) videoElement.poster = videoData.thumbnailUrl;
+                if (videoElement && videoData.videoUrl) videoElement.src = videoData.videoUrl;
+                if (videoElement && videoData.thumbnailUrl) videoElement.poster = videoData.thumbnailUrl;
                 if (titleElement && videoData.title) titleElement.textContent = videoData.title;
-                if (descriptionElement && videoData.description) descriptionElement.textContent = videoData.description;
+                if (descElement && videoData.description) descElement.textContent = videoData.description;
             };
 
             // --- 3. API CALLS & PAGE POPULATION ---
@@ -1649,7 +1636,6 @@
             };
             // --- 4. EVENT LISTENERS ---
 
-            // Logout button functionality
             const logoutButton = document.getElementById("logout-button");
             if (logoutButton) {
                 logoutButton.addEventListener("click", async (e) => {
@@ -1657,9 +1643,8 @@
                     try {
                         await authAPI.logout();
                     } catch (error) {
-                        console.error("Server logout failed, clearing session locally.", error);
+                        console.error("Logout error", error);
                     } finally {
-                        // Always clear local storage and redirect
                         localStorage.removeItem("token");
                         localStorage.removeItem("user");
                         window.location.href = "../index.html";
@@ -1667,7 +1652,7 @@
                 });
             }
 
-            // --- 5. INITIALIZE THE PAGE ---
+            // --- 5. INITIALIZE ---
             initializeDashboard();
         });
     </script>

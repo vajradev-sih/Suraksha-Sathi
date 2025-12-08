@@ -21,6 +21,9 @@
     <style>
         .material-symbols-rounded { font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24; }
         .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
+        /* Skeleton loading animation */
+        .skeleton { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; background-color: #e2e8f0; color: transparent; border-radius: 4px;}
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
 </head>
 
@@ -28,7 +31,7 @@
     <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
         <header class="sticky top-0 z-50 flex items-center bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] px-4 py-3 justify-between shadow-lg">
             <div class="flex size-12 shrink-0 items-center justify-start">
-                <a href="#" id="backBtn" class="text-white">
+                <a href="updated-home-page.html" id="backBtn" class="text-white">
                     <span class="material-symbols-rounded">arrow_back</span>
                 </a>
             </div>
@@ -42,9 +45,9 @@
 
         <main class="p-4 space-y-6">
             <div class="flex flex-col items-center justify-center pt-4">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="User's profile picture" class="w-28 h-28 rounded-full border-4 border-white shadow-lg mb-3">
-                <p class="text-neutral-800 text-2xl font-bold">Alex Johnson</p>
-                <p class="text-neutral-500 text-base">Blaster</p>
+                <img id="user-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" alt="User's profile picture" class="w-28 h-28 rounded-full border-4 border-white shadow-lg mb-3">
+                <p id="user-name" class="text-neutral-800 text-2xl font-bold skeleton">Loading...</p>
+                <p id="user-role" class="text-neutral-500 text-base mt-1 skeleton">Loading...</p>
             </div>
 
             <div class="space-y-4">
@@ -53,22 +56,22 @@
                     <div class="flex items-center gap-4 p-3">
                         <span class="material-symbols-rounded text-neutral-500">badge</span>
                         <p class="text-neutral-700 flex-1">Employee ID</p>
-                        <p class="text-neutral-500">54321</p>
+                        <p id="user-empid" class="text-neutral-500 skeleton">...</p>
                     </div>
                     <div class="flex items-center gap-4 p-3">
                         <span class="material-symbols-rounded text-neutral-500">email</span>
                         <p class="text-neutral-700 flex-1">Email</p>
-                        <p class="text-neutral-500">alex.j@minecorp.com</p>
+                        <p id="user-email" class="text-neutral-500 skeleton">...</p>
                     </div>
                     <div class="flex items-center gap-4 p-3">
                         <span class="material-symbols-rounded text-neutral-500">phone</span>
                         <p class="text-neutral-700 flex-1">Phone</p>
-                        <p class="text-neutral-500">(123) 456-7890</p>
+                        <p id="user-phone" class="text-neutral-500 skeleton">...</p>
                     </div>
                     <div class="flex items-center gap-4 p-3">
                         <span class="material-symbols-rounded text-neutral-500">contact_emergency</span>
                         <p class="text-neutral-700 flex-1">Emergency Contact</p>
-                        <p class="text-neutral-500">(098) 765-4321</p>
+                        <p id="user-emergency" class="text-neutral-500 skeleton">...</p>
                     </div>
                 </div>
             </div>
@@ -106,7 +109,7 @@
             </div>
 
             <div class="p-4">
-                <button class="w-full bg-alert-red/10 text-alert-red font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-alert-red/20 transition-colors">
+                <button id="logoutBtn" class="w-full bg-alert-red/10 text-alert-red font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-alert-red/20 transition-colors cursor-pointer">
                     <span class="material-symbols-rounded">logout</span>
                     <span>Log Out</span>
                 </button>
@@ -126,10 +129,118 @@
         .toggle-checkbox:checked { background-color: #0284c7; }
         .toggle-checkbox:checked::before { transform: translateX(16px); }
     </style>
+
+    <script src="../api.client.js"></script>
     <script>
-        document.getElementById('backBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            history.back();
+        document.addEventListener('DOMContentLoaded', async () => {
+            
+            // Check authentication
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../index.html';
+                return;
+            }
+
+            // --- 1. Fetch User Details ---
+            async function fetchUserDetails() {
+                try {
+                    const response = await authAPI.getCurrentUser();
+                    console.log('User API Response:', response);
+                    
+                    if (!response || (!response.success && !response.data)) {
+                        throw new Error('Failed to fetch user details');
+                    }
+
+                    // Handle different response structures
+                    const user = response.data || response.user || response;
+
+                    // Log user data for debugging
+                    console.log('User Data:', user);
+
+                    // Update UI with data - checking multiple possible field names
+                    document.getElementById('user-name').textContent = 
+                        user.name || user.full_name || user.fullName || user.username || 'N/A';
+                    
+                    document.getElementById('user-role').textContent = 
+                        user.role || user.designation || user.position || 'Worker';
+                    
+                    document.getElementById('user-empid').textContent = 
+                        user.employee_id || user.employeeId || user.emp_id || user._id || 'N/A';
+                    
+                    document.getElementById('user-email').textContent = 
+                        user.email || 'N/A';
+                    
+                    document.getElementById('user-phone').textContent = 
+                        user.phone_number || user.phoneNumber || user.phone || user.contact || user.mobile || 'N/A';
+                    
+                    document.getElementById('user-emergency').textContent = 
+                        user.emergency_contact || user.emergencyContact || user.emergency_phone || 'N/A';
+                    
+                    // Update Avatar using name or email as seed
+                    const avatarSeed = user.name || user.full_name || user.username || user.email || 'User';
+                    document.getElementById('user-avatar').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(avatarSeed)}`;
+
+                    // Remove skeleton loading styles
+                    const skeletons = document.querySelectorAll('.skeleton');
+                    skeletons.forEach(el => {
+                        el.classList.remove('skeleton');
+                    });
+
+                } catch (error) {
+                    console.error('Error fetching user details:', error);
+                    document.getElementById('user-name').textContent = "Error Loading Profile";
+                    
+                    // Remove skeleton styles even on error
+                    const skeletons = document.querySelectorAll('.skeleton');
+                    skeletons.forEach(el => {
+                        el.classList.remove('skeleton');
+                    });
+                    
+                    // If unauthorized, redirect to login
+                    if (error.message && (error.message.includes('401') || error.message.includes('Unauthorized'))) {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        alert('Session expired. Please login again.');
+                        window.location.href = '../index.html';
+                    }
+                }
+            }
+
+            // --- 2. Logout Functionality ---
+            const logoutBtn = document.getElementById('logoutBtn');
+            
+            logoutBtn.addEventListener('click', async () => {
+                if(confirm("Are you sure you want to log out?")) {
+                    try {
+                        // Call logout API
+                        await authAPI.logout();
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                    } finally {
+                        // Clear stored data (tokens, user info)
+                        localStorage.removeItem('token'); 
+                        localStorage.removeItem('user');
+                        sessionStorage.clear();
+
+                        // Redirect to index.html
+                        window.location.href = '../index.html';
+                    }
+                }
+            });
+
+            // --- 3. Back Button ---
+            document.getElementById('backBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                // Check if history exists, otherwise go to home
+                if (window.history.length > 1) {
+                    history.back();
+                } else {
+                    window.location.href = 'updated-home-page.html';
+                }
+            });
+
+            // Trigger Fetch
+            await fetchUserDetails();
         });
     </script>
 </body>
