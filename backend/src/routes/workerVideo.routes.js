@@ -26,7 +26,6 @@ const router = Router();
 router.use((req, res, next) => {
   console.log(`[WORKER-VIDEO ROUTE] ${req.method} ${req.originalUrl}`);
   console.log('[WORKER-VIDEO ROUTE] Content-Type:', req.get('content-type'));
-  console.log('[WORKER-VIDEO ROUTE] Body keys:', Object.keys(req.body));
   next();
 });
 
