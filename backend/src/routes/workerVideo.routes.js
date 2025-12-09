@@ -73,15 +73,15 @@ router.get('/my-videos', verifyJWT, getMyVideos);
 router.get('/approved', verifyJWT, getApprovedVideos);
 
 // Admin routes - review and manage videos
-router.get('/pending', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer'), getPendingVideos);
-router.get('/all', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer'), getAllWorkerVideos);
+router.get('/pending', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer'), getPendingVideos);
+router.get('/all', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer'), getAllWorkerVideos);
 router.post('/:id/approve', verifyJWT, requireApprovalPermission, approveVideo);
 router.post('/:id/reject', verifyJWT, requireApprovalPermission, rejectVideo);
 
 // Moderation routes (admin only)
-router.get('/moderation/auto-rejected', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer'), getAutoRejectedVideos);
-router.get('/moderation/flagged', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer'), getFlaggedVideos);
-router.get('/moderation/stats', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer'), getModerationStats);
+router.get('/moderation/auto-rejected', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer'), getAutoRejectedVideos);
+router.get('/moderation/flagged', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer'), getFlaggedVideos);
+router.get('/moderation/stats', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer'), getModerationStats);
 
 // Video management
 router.get('/:id', verifyJWT, requireApprovedVideo, getWorkerVideoById);

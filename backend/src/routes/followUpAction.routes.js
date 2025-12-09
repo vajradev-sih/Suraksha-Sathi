@@ -10,9 +10,9 @@ import { authorizeRoles } from '../middlewares/authorizeRoles.js';
 
 const router = Router();
 
-router.post('/', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer', 'Manager'), createFollowUpAction);
-router.get('/report/:report_id', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer', 'Manager', 'Worker'), getFollowUpsByReport);
-router.put('/:id', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer', 'Manager'), updateFollowUpAction);
-router.delete('/:id', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer', 'Manager'), deleteFollowUpAction);
+router.post('/', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer', 'Manager'), createFollowUpAction);
+router.get('/report/:report_id', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer', 'Manager', 'Worker'), getFollowUpsByReport);
+router.put('/:id', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer', 'Manager'), updateFollowUpAction);
+router.delete('/:id', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer', 'Manager'), deleteFollowUpAction);
 
 export default router;

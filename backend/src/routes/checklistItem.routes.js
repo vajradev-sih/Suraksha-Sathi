@@ -17,16 +17,16 @@ import upload from '../middlewares/upload.middleware.js';
 
 const router = Router();
 
-// Create checklist item with equipment image (Admin, SafetyOfficer, Manager only)
+// Create checklist item with equipment image (Admin, TrainingOfficer, Manager only)
 router.post('/with-image', 
   verifyJWT, 
-  authorizeRoles('Admin', 'SafetyOfficer', 'Manager'),
+  authorizeRoles('Admin', 'TrainingOfficer', 'Manager'),
   upload.single('equipment_image'),
   createChecklistItemWithImage
 );
 
-// Create checklist item (Admin, SafetyOfficer, Manager only)
-router.post('/', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer', 'Manager'), createChecklistItem);
+// Create checklist item (Admin, TrainingOfficer, Manager only)
+router.post('/', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer', 'Manager'), createChecklistItem);
 
 // Get items for a checklist (all authenticated users)
 router.get('/', verifyJWT, getItemsForChecklist);
@@ -34,18 +34,18 @@ router.get('/', verifyJWT, getItemsForChecklist);
 // Get single item by ID (all authenticated users)
 router.get('/:id', verifyJWT, getChecklistItemById);
 
-// Update checklist item with new equipment image (Admin, SafetyOfficer, Manager only)
+// Update checklist item with new equipment image (Admin, TrainingOfficer, Manager only)
 router.put('/:id/with-image',
   verifyJWT,
-  authorizeRoles('Admin', 'SafetyOfficer', 'Manager'),
+  authorizeRoles('Admin', 'TrainingOfficer', 'Manager'),
   upload.single('equipment_image'),
   updateChecklistItemWithImage
 );
 
-// Update checklist item (Admin, SafetyOfficer, Manager only)
-router.put('/:id', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer', 'Manager'), updateChecklistItem);
+// Update checklist item (Admin, TrainingOfficer, Manager only)
+router.put('/:id', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer', 'Manager'), updateChecklistItem);
 
-// Delete checklist item (Admin, SafetyOfficer only)
-router.delete('/:id', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer'), deleteChecklistItem);
+// Delete checklist item (Admin, TrainingOfficer only)
+router.delete('/:id', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer'), deleteChecklistItem);
 
 export default router;

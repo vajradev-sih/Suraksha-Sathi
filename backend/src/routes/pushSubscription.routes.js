@@ -24,7 +24,7 @@ router.get('/subscriptions', verifyJWT, getUserSubscriptions);
 router.post('/test', verifyJWT, sendTestNotification);
 
 // Admin endpoints
-router.post('/send', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer'), sendNotificationToUser);
+router.post('/send', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer'), sendNotificationToUser);
 router.delete('/cleanup', verifyJWT, authorizeRoles('Admin'), cleanupSubscriptions);
 
 export default router;

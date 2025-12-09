@@ -52,9 +52,9 @@ router.get('/', verifyJWT, getAllChecklistItemMedia);
 router.get('/:id', verifyJWT, getChecklistItemMediaById);
 
 // Update media metadata (admin only)
-router.put('/:id', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer', 'Manager'), updateChecklistItemMedia);
+router.put('/:id', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer', 'Manager'), updateChecklistItemMedia);
 
 // Delete media (admin only)
-router.delete('/:id', verifyJWT, authorizeRoles('Admin', 'SafetyOfficer'), deleteChecklistItemMedia);
+router.delete('/:id', verifyJWT, authorizeRoles('Admin', 'TrainingOfficer'), deleteChecklistItemMedia);
 
 export default router;
