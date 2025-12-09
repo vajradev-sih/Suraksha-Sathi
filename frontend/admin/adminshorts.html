@@ -453,12 +453,9 @@
                         
                         <div class="overlay-layer">
                             <div class="actions-bar interactive">
-                                <div class="flex flex-col items-center">
-                                    <button class="action-btn like-btn" onclick="toggleLike(this, ${video.likes})">
-                                        <span class="material-symbols-rounded">favorite</span>
-                                    </button>
-                                    <span class="action-label">${video.likes}</span>
-                                </div>
+                                <button class="action-btn like-btn" onclick="toggleLike(this)">
+                                    <span class="material-symbols-rounded">favorite</span>
+                                </button>
                             </div>
 
                             <div class="info-area interactive">
@@ -501,7 +498,7 @@
         });
       };
 
-      window.toggleLike = (btn, count) => {
+      window.toggleLike = (btn) => {
         btn.classList.toggle('liked');
         // Just visual in this demo
         showToast(btn.classList.contains('liked') ? "Liked" : "Unliked");
