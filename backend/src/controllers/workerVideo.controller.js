@@ -11,6 +11,11 @@ import { shouldAutoReject, getModerationSummary } from '../utils/contentModerati
 
 // Worker uploads video (pending approval)
 const uploadWorkerVideo = asyncHandler(async (req, res) => {
+  console.log('=== UPLOAD STARTED ===');
+  console.log('Body:', req.body);
+  console.log('File:', req.file ? req.file.filename : 'No file');
+  console.log('User:', req.user ? req.user._id : 'No user');
+  
   const { title, description, category, duration } = req.body;
   
   if (!req.file) {
@@ -21,24 +26,28 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Title is required');
   }
 
+  console.log('Uploading to Cloudinary...');
   // Upload video to Cloudinary with moderation enabled
   const result = await cloudinary.uploader.upload(req.file.path, { 
     folder: 'worker_videos',
     resource_type: 'video',
     moderation: 'aws_rek:explicit_nudity:suggestive:violence:visually_disturbing' // Enable AI moderation
   });
+  console.log('Cloudinary upload complete:', result.secure_url);
 
   // Delete local file after upload
-  await fs.unlink(req.file.path);
+  await fs.unlink(req.file.path).catch(err => console.error('File cleanup error:', err));
 
+  console.log('Starting content moderation...');
   // Perform comprehensive content moderation
   const moderationResult = await moderateCloudinaryContent(result, title, description);
+  console.log('Moderation result:', moderationResult);
 
   // Check if content should be auto-rejected
   if (shouldAutoReject(moderationResult)) {
     // Create record as auto-rejected for audit trail
     const rejectedVideo = await WorkerVideo.create({
-      uploaded_by: req.user._id,
+      uploaded_by: req.user?._id || req.user?.id || req.body.uploaded_by,
       title,
       description,
       video_url: result.secure_url,
@@ -61,6 +70,7 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
     );
   }
 
+  console.log('Creating video record...');
   // Create video record with pending status and moderation info
   const video = await WorkerVideo.create({
     uploaded_by: req.user._id,
@@ -76,17 +86,22 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
     moderation_flags: moderationResult.reasons,
     requires_manual_review: moderationResult.requiresReview || false
   });
+  console.log('Video record created:', video._id);
 
+  console.log('Populating video data...');
   const populatedVideo = await WorkerVideo.findById(video._id)
     .populate('uploaded_by', 'fullName email role_name');
+  console.log('Population complete');
 
   const message = moderationResult.requiresReview
     ? 'Video uploaded successfully. Flagged for additional review before admin approval.'
     : 'Video uploaded successfully and pending approval';
 
+  console.log('Sending response...');
   res.status(201).json(
     new ApiResponse(201, populatedVideo, message)
   );
+  console.log('=== UPLOAD COMPLETE ===');
 });
 
 // Admin approves video
