@@ -42,35 +42,23 @@ router.post('/upload',
     console.log('[UPLOAD ROUTE] User authenticated:', req.user?._id);
     next();
   },
+  upload.any(), // Simplified - use multer directly
   (req, res, next) => {
-    console.log('[UPLOAD ROUTE] Step 3: About to call multer - accepting ANY file field');
+    console.log('[UPLOAD ROUTE] Step 3: Multer complete');
+    console.log('[UPLOAD ROUTE] Files received:', req.files?.length || 0);
     
-    // Use upload.any() to accept any field name
-    const multerMiddleware = upload.any();
+    // Normalize to req.file
+    if (req.files && req.files.length > 0) {
+      req.file = req.files[0];
+      console.log('[UPLOAD ROUTE] File normalized:', req.file.fieldname);
+    } else {
+      console.log('[UPLOAD ROUTE] WARNING: No files received');
+    }
     
-    multerMiddleware(req, res, (err) => {
-      if (err) {
-        console.error('[UPLOAD ROUTE] Multer error:', err);
-        return next(err);
-      }
-      
-      console.log('[UPLOAD ROUTE] Step 4: Multer complete');
-      console.log('[UPLOAD ROUTE] Files received:', req.files?.length || 0);
-      
-      // Get the first file from the files array
-      if (req.files && req.files.length > 0) {
-        req.file = req.files[0];
-        console.log('[UPLOAD ROUTE] File field name was:', req.file.fieldname);
-        console.log('[UPLOAD ROUTE] File normalized to req.file');
-      } else {
-        console.log('[UPLOAD ROUTE] WARNING: No files in request');
-      }
-      
-      next();
-    });
+    next();
   },
   (req, res, next) => {
-    console.log('[UPLOAD ROUTE] Step 5: About to call controller');
+    console.log('[UPLOAD ROUTE] Step 4: About to call controller');
     next();
   },
   uploadWorkerVideo
