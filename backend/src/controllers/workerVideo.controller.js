@@ -1,6 +1,4 @@
 import { WorkerVideo } from '../models/workerVideo.model.js';
-import { Like } from '../models/like.model.js';
-import { Follow } from '../models/follow.model.js';
 import { asyncHandler } from '../utils/AsyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
@@ -9,81 +7,49 @@ import fs from 'fs/promises';
 
 // Worker uploads video (pending approval)
 const uploadWorkerVideo = asyncHandler(async (req, res) => {
-  try {
-    console.log('=== UPLOAD STARTED ===');
-    console.log('User ID:', req.user?._id);
-    console.log('Body:', req.body);
-    console.log('File path:', req.file?.path);
-    console.log('File mimetype:', req.file?.mimetype);
+  const { title, description, category, duration } = req.body;
 
-    const { title, description, category, duration } = req.body;
-
-    // Validate file
-    if (!req.file) {
-      console.log('ERROR: No file uploaded');
-      throw new ApiError(400, 'Video file is required');
-    }
-
-    // Validate title
-    if (!title) {
-      console.log('ERROR: No title provided');
-      throw new ApiError(400, 'Title is required');
-    }
-
-    console.log('Uploading to Cloudinary...');
-    // Upload video to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, { 
-      folder: 'worker_videos',
-      resource_type: 'video',
-      timeout: 120000 // 2 minutes timeout
-    });
-    console.log('Cloudinary upload complete!');
-    console.log('Video URL:', result.secure_url);
-    console.log('Duration:', result.duration);
-
-    // Delete local file after upload
-    await fs.unlink(req.file.path).catch(err => console.error('File cleanup error:', err));
-
-    console.log('Creating video record in database...');
-    // Create video record with pending status
-    const video = await WorkerVideo.create({
-      uploaded_by: req.user._id,
-      title,
-      description: description || '',
-      video_url: result.secure_url,
-      thumbnail_url: result.secure_url.replace(/\.[^.]+$/, '.jpg'),
-      category: category || 'other',
-      duration: duration || result.duration || 0,
-      approval_status: 'pending',
-      moderation_status: 'passed',
-      moderation_score: 1,
-      moderation_flags: [],
-      requires_manual_review: false
-    });
-    console.log('Video record created with ID:', video._id);
-
-    console.log('Populating video data...');
-    const populatedVideo = await WorkerVideo.findById(video._id)
-      .populate('uploaded_by', 'fullName email role_name');
-
-    console.log('SUCCESS! Sending response...');
-    res.status(201).json(
-      new ApiResponse(201, populatedVideo, 'Video uploaded successfully and pending approval')
-    );
-    console.log('=== UPLOAD COMPLETE ===');
-  } catch (error) {
-    console.error('=== UPLOAD FAILED ===');
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    
-    // Clean up file on error
-    if (req.file?.path) {
-      await fs.unlink(req.file.path).catch(() => {});
-    }
-    
-    throw error;
+  // Validate file
+  if (!req.file) {
+    throw new ApiError(400, 'Video file is required');
   }
+
+  // Validate title
+  if (!title) {
+    throw new ApiError(400, 'Title is required');
+  }
+
+  // Upload video to Cloudinary
+  const result = await cloudinary.uploader.upload(req.file.path, { 
+    folder: 'worker_videos',
+    resource_type: 'video'
+  });
+
+  // Delete local file after upload
+  await fs.unlink(req.file.path).catch(() => {});
+
+  // Create video record with pending status
+  const video = await WorkerVideo.create({
+    uploaded_by: req.user._id,
+    title,
+    description: description || '',
+    video_url: result.secure_url,
+    thumbnail_url: result.secure_url.replace(/\.[^.]+$/, '.jpg'),
+    category: category || 'other',
+    duration: duration || result.duration || 0,
+    approval_status: 'pending',
+    moderation_status: 'passed',
+    moderation_score: 1,
+    moderation_flags: [],
+    requires_manual_review: false
+  });
+
+  const populatedVideo = await WorkerVideo.findById(video._id)
+    .populate('uploaded_by', 'fullName email role_name');
+
+  res.status(201).json(
+    new ApiResponse(201, populatedVideo, 'Video uploaded successfully and pending approval')
+  );
 });
 
 // Admin approves video
@@ -197,30 +163,8 @@ const getApprovedVideos = asyncHandler(async (req, res) => {
     .populate('approved_by', 'fullName email role_name')
     .sort({ createdAt: -1 });
 
-  // Add social context (like status and uploader follow status)
-  // Note: Only if user is logged in
-  const userId = req.user?._id;
-
-  const videosWithSocialContext = await Promise.all(
-    videos.map(async (video) => {
-      let isLiked = false;
-      let isFollowingUploader = false;
-
-      if (userId) {
-        isLiked = await video.isLikedBy(userId);
-        isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
-      }
-
-      return {
-        ...video.toObject(),
-        is_liked: isLiked,
-        is_following_uploader: isFollowingUploader
-      };
-    })
-  );
-
   res.status(200).json(
-    new ApiResponse(200, videosWithSocialContext, 'Approved videos fetched successfully')
+    new ApiResponse(200, videos, 'Approved videos fetched successfully')
   );
 });
 
@@ -240,24 +184,8 @@ const getWorkerVideoById = asyncHandler(async (req, res) => {
   video.views += 1;
   await video.save();
 
-  // Add social context
-  const userId = req.user?._id;
-  let isLiked = false;
-  let isFollowingUploader = false;
-
-  if (userId) {
-    isLiked = await video.isLikedBy(userId);
-    isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
-  }
-
-  const videoWithSocialContext = {
-    ...video.toObject(),
-    is_liked: isLiked,
-    is_following_uploader: isFollowingUploader
-  };
-
   res.status(200).json(
-    new ApiResponse(200, videoWithSocialContext, 'Video fetched successfully')
+    new ApiResponse(200, video, 'Video fetched successfully')
   );
 });
 
@@ -267,19 +195,8 @@ const getMyVideos = asyncHandler(async (req, res) => {
     .populate('approved_by', 'fullName email role_name')
     .sort({ createdAt: -1 });
 
-  // Add like status for each video
-  const videosWithLikeStatus = await Promise.all(
-    videos.map(async (video) => {
-      const isLiked = await video.isLikedBy(req.user._id);
-      return {
-        ...video.toObject(),
-        is_liked: isLiked
-      };
-    })
-  );
-
   res.status(200).json(
-    new ApiResponse(200, videosWithLikeStatus, 'Your videos fetched successfully')
+    new ApiResponse(200, videos, 'Your videos fetched successfully')
   );
 });
 
@@ -345,7 +262,7 @@ const getAutoRejectedVideos = asyncHandler(async (req, res) => {
   const { limit = 50, page = 1 } = req.query;
   const skip = (parseInt(page) - 1) * parseInt(limit);
 
-  const videos = await WorkerVideo.find({
+  const videos = await WorkerVideo.find({ 
     approval_status: 'auto_rejected',
     moderation_status: 'auto_rejected'
   })
@@ -354,7 +271,7 @@ const getAutoRejectedVideos = asyncHandler(async (req, res) => {
     .skip(skip)
     .limit(parseInt(limit));
 
-  const total = await WorkerVideo.countDocuments({
+  const total = await WorkerVideo.countDocuments({ 
     approval_status: 'auto_rejected',
     moderation_status: 'auto_rejected'
   });
@@ -371,7 +288,7 @@ const getAutoRejectedVideos = asyncHandler(async (req, res) => {
 
 // Get flagged videos requiring manual review (admin only)
 const getFlaggedVideos = asyncHandler(async (req, res) => {
-  const videos = await WorkerVideo.find({
+  const videos = await WorkerVideo.find({ 
     requires_manual_review: true,
     approval_status: 'pending'
   })
