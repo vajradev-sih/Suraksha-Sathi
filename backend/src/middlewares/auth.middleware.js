@@ -4,11 +4,13 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import jwt from "jsonwebtoken";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
+    console.log('[AUTH] Starting JWT verification');
     // 1️⃣ Extract access token from cookies or Authorization header
     const token =
         req.cookies?.accessToken ||
         req.header("Authorization")?.replace("Bearer ", "");
 
+    console.log('[AUTH] Token present:', !!token);
     // Immediately reject if no token
     if (!token) {
         throw new ApiError(401, "Unauthorized request: Access Token missing");
@@ -32,6 +34,8 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     if (!user) {
         throw new ApiError(401, "Invalid Access Token: User not found");
     }
+
+    console.log('[AUTH] User authenticated:', user._id);
 
     // 4️⃣ Session revocation check (ensures user hasn't logged out)
     if (!user.refreshToken) {
@@ -62,5 +66,6 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
             }
     };
 
+    console.log('[AUTH] Calling next() - auth complete');
     next(); // ✅ continue to the next middleware/controller
 });
