@@ -50,7 +50,7 @@
                         <span class="text-sm font-medium">Filter</span>
                     </button>
                     <div
-                        class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 hidden group-hover:block p-1">
+                        class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 hidden group-hover:block p-1 z-20">
                         <button onclick="filterVideos('')"
                             class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">All
                             Videos</button>
@@ -93,7 +93,8 @@
                     return apiRequest(url, { method: "GET" });
                 },
                 approve: (id) => apiRequest(`/api/v1/worker-videos/${id}/approve`, { method: "POST" }),
-                reject: (id, reason) => apiRequest(`/api/v1/worker-videos/${id}/reject`, { method: "POST", body: JSON.stringify({ rejection_reason: reason }) })
+                reject: (id, reason) => apiRequest(`/api/v1/worker-videos/${id}/reject`, { method: "POST", body: JSON.stringify({ rejection_reason: reason }) }),
+                delete: (id) => apiRequest(`/api/v1/worker-videos/${id}`, { method: "DELETE" })
             };
         }
 
@@ -151,7 +152,7 @@
 
             try {
                 const response = await workerVideoAPI.getAll(1, 100, status);
-                allVideos = response.data || []; // API returns array directly based on controller
+                allVideos = response.data || [];
                 renderVideos(allVideos);
             } catch (error) {
                 console.error("Failed to load videos:", error);
@@ -172,7 +173,6 @@
             videos.forEach(video => {
                 const uploaderName = video.uploaded_by?.fullName || "Unknown User";
                 const dateStr = timeAgo(video.createdAt);
-                // Handle different field names if necessary (e.g. video_url vs url)
                 const videoUrl = video.video_url || video.url;
                 const thumbnailUrl = video.thumbnail_url || video.thumbnail || "";
                 const status = video.approval_status || 'pending';
@@ -194,11 +194,16 @@
                         <div class="w-full py-2 px-4 rounded-lg bg-emerald-50/50 text-emerald-600 font-medium text-sm flex items-center justify-center gap-2 border border-emerald-100">
                             <i data-lucide="check" class="w-4 h-4"></i> Approved by ${video.approved_by?.fullName || 'Admin'}
                         </div>`;
-                } else {
+                } else if (status === 'rejected') {
                     actionButtonsHtml = `
-                        <div class="w-full py-2 px-4 rounded-lg bg-red-50/50 text-red-600 font-medium text-sm flex flex-col items-center justify-center text-center border border-red-100">
-                            <div class="flex items-center gap-2"><i data-lucide="x" class="w-4 h-4"></i> Rejected</div>
-                            <span class="text-xs text-red-400 mt-1 italic line-clamp-1">"${video.rejection_reason || 'No reason'}"</span>
+                        <div class="space-y-2">
+                            <div class="w-full py-2 px-4 rounded-lg bg-red-50/50 text-red-600 font-medium text-sm flex flex-col items-center justify-center text-center border border-red-100">
+                                <div class="flex items-center gap-2"><i data-lucide="x" class="w-4 h-4"></i> Rejected</div>
+                                <span class="text-xs text-red-400 mt-1 italic line-clamp-1">"${video.rejection_reason || 'No reason'}"</span>
+                            </div>
+                            <button onclick="handleDelete('${video._id}')" class="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 font-medium text-sm transition-colors">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Video
+                            </button>
                         </div>`;
                 }
 
@@ -275,6 +280,20 @@
             }
         };
 
+        window.handleDelete = async (id) => {
+            if (!confirm("Are you sure you want to permanently delete this video?")) return;
+            try {
+                await workerVideoAPI.delete(id);
+                showAlert("Video deleted successfully");
+                // Remove from local state immediately for better UX
+                allVideos = allVideos.filter(v => v._id !== id);
+                renderVideos(allVideos);
+            } catch (error) {
+                console.error(error);
+                showAlert("Failed to delete video", "error");
+            }
+        };
+
         window.filterVideos = (status) => {
             currentStatusFilter = status;
             loadVideos(status);
@@ -299,7 +318,6 @@
             if (!url) return alert("Video URL not available");
             player.src = url;
             modal.classList.remove('hidden');
-            // Small delay to allow display change before opacity transition
             requestAnimationFrame(() => {
                 modal.classList.remove('opacity-0');
                 player.play();

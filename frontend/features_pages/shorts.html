@@ -412,7 +412,6 @@
                         title: v.title,
                         description: v.description,
                         uploader: "Safety Team",
-                        likes: Math.floor(Math.random() * 500) + 100, // Mock stats
                         comments: Math.floor(Math.random() * 50)
                     }));
 
@@ -461,12 +460,6 @@
                                         <span class="material-symbols-rounded">favorite</span>
                                     </button>
                                     <span class="action-label">${video.likes}</span>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <button class="action-btn" onclick="shareVideo('${video.title}')">
-                                        <span class="material-symbols-rounded">share</span>
-                                    </button>
-                                    <span class="action-label">Share</span>
                                 </div>
                             </div>
 
