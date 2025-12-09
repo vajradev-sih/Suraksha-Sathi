@@ -22,6 +22,12 @@ import { moderateUploadedContent } from '../middlewares/contentModeration.middle
 
 const router = Router();
 
+// Add logging middleware to trace all requests to this router
+router.use((req, res, next) => {
+  console.log(`[WORKER-VIDEO ROUTE] ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // Worker routes - any authenticated user can upload (with content moderation)
 router.post('/upload', verifyJWT, upload.single('file'), uploadWorkerVideo);
 router.get('/my-videos', verifyJWT, getMyVideos);
