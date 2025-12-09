@@ -11,16 +11,20 @@ import { shouldAutoReject, getModerationSummary } from '../utils/contentModerati
 
 // Worker uploads video (pending approval)
 const uploadWorkerVideo = asyncHandler(async (req, res) => {
+  if (!req.user || !req.user._id) {
+    throw new ApiError(401, 'Unauthorized: User not found');
+  }
+
   console.log('=== UPLOAD STARTED ===');
   console.log('Body:', req.body);
   console.log('File:', req.file ? req.file.filename : 'No file');
-  
+
   // FIX: Resolve User ID from Token (req.user) OR Body (req.body for testing)
   const userId = req.user?._id || req.user?.id || req.body.uploaded_by;
   console.log('Resolved User ID:', userId);
 
   const { title, description, category, duration } = req.body;
-  
+
   if (!userId) {
     throw new ApiError(400, "User ID (uploaded_by) is required. Please log in or provide it in the body.");
   }
@@ -35,11 +39,14 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
 
   console.log('Uploading to Cloudinary...');
   // Upload video to Cloudinary with moderation enabled
-  const result = await cloudinary.uploader.upload(req.file.path, { 
-    folder: 'worker_videos',
-    resource_type: 'video',
-    moderation: 'aws_rek:explicit_nudity:suggestive:violence:visually_disturbing' // Enable AI moderation
-  });
+  let result;
+  try {
+    result = await cloudinary.uploader.upload(...);
+  } catch (err) {
+    console.error('Cloudinary Error:', err);
+    throw new ApiError(500, 'Video upload failed');
+  }
+
   console.log('Cloudinary upload complete:', result.secure_url);
 
   // Delete local file after upload
@@ -222,17 +229,17 @@ const getApprovedVideos = asyncHandler(async (req, res) => {
   // Add social context (like status and uploader follow status)
   // Note: Only if user is logged in
   const userId = req.user?._id;
-  
+
   const videosWithSocialContext = await Promise.all(
     videos.map(async (video) => {
       let isLiked = false;
       let isFollowingUploader = false;
-      
+
       if (userId) {
         isLiked = await video.isLikedBy(userId);
         isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
       }
-      
+
       return {
         ...video.toObject(),
         is_liked: isLiked,
@@ -266,7 +273,7 @@ const getWorkerVideoById = asyncHandler(async (req, res) => {
   const userId = req.user?._id;
   let isLiked = false;
   let isFollowingUploader = false;
-  
+
   if (userId) {
     isLiked = await video.isLikedBy(userId);
     isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
@@ -367,7 +374,7 @@ const getAutoRejectedVideos = asyncHandler(async (req, res) => {
   const { limit = 50, page = 1 } = req.query;
   const skip = (parseInt(page) - 1) * parseInt(limit);
 
-  const videos = await WorkerVideo.find({ 
+  const videos = await WorkerVideo.find({
     approval_status: 'auto_rejected',
     moderation_status: 'auto_rejected'
   })
@@ -376,7 +383,7 @@ const getAutoRejectedVideos = asyncHandler(async (req, res) => {
     .skip(skip)
     .limit(parseInt(limit));
 
-  const total = await WorkerVideo.countDocuments({ 
+  const total = await WorkerVideo.countDocuments({
     approval_status: 'auto_rejected',
     moderation_status: 'auto_rejected'
   });
@@ -393,7 +400,7 @@ const getAutoRejectedVideos = asyncHandler(async (req, res) => {
 
 // Get flagged videos requiring manual review (admin only)
 const getFlaggedVideos = asyncHandler(async (req, res) => {
-  const videos = await WorkerVideo.find({ 
+  const videos = await WorkerVideo.find({
     requires_manual_review: true,
     approval_status: 'pending'
   })

@@ -23,7 +23,7 @@ import { moderateUploadedContent } from '../middlewares/contentModeration.middle
 const router = Router();
 
 // Worker routes - any authenticated user can upload (with content moderation)
-router.post('/upload', verifyJWT, upload.single('file'), moderateUploadedContent, uploadWorkerVideo);
+router.post('/upload', verifyJWT, upload.single('file'), uploadWorkerVideo);
 router.get('/my-videos', verifyJWT, getMyVideos);
 
 // Public routes - approved videos only
