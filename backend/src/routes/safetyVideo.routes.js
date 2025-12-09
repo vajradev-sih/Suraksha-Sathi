@@ -16,9 +16,9 @@ const router = Router();
 router.use(verifyJWT);
 
 // Admin/SafetyOfficer only routes
-router.post('/upload', authorizeRoles('Admin', 'SafetyOfficer'), upload.single('file'), uploadSafetyVideo);
-router.put('/:id', authorizeRoles('Admin', 'SafetyOfficer'), updateSafetyVideo);
-router.delete('/:id', authorizeRoles('Admin', 'SafetyOfficer'), deleteSafetyVideo);
+router.post('/upload', authorizeRoles('Admin', 'TrainingOfficer'), upload.single('file'), uploadSafetyVideo);
+router.put('/:id', authorizeRoles('Admin', 'TrainingOfficer'), updateSafetyVideo);
+router.delete('/:id', authorizeRoles('Admin', 'TrainingOfficer'), deleteSafetyVideo);
 
 // Authenticated user routes
 router.get('/', getAllSafetyVideos);
