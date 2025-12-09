@@ -32,13 +32,10 @@ router.use((req, res, next) => {
 router.post('/upload', 
   verifyJWT, 
   (req, res, next) => {
-    console.log('[ROUTE] About to call multer');
-    // Try multiple possible field names
-    const multerMiddleware = upload.fields([
-      { name: 'file', maxCount: 1 },
-      { name: 'video', maxCount: 1 },
-      { name: 'upload', maxCount: 1 }
-    ]);
+    console.log('[ROUTE] About to call multer - accepting ANY file field');
+    
+    // Use upload.any() to accept any field name
+    const multerMiddleware = upload.any();
     
     multerMiddleware(req, res, (err) => {
       if (err) {
@@ -46,12 +43,17 @@ router.post('/upload',
         return next(err);
       }
       
-      // Normalize file to req.file
-      if (req.files) {
-        req.file = req.files.file?.[0] || req.files.video?.[0] || req.files.upload?.[0];
+      console.log('[ROUTE] Files received:', req.files);
+      
+      // Get the first file from the files array
+      if (req.files && req.files.length > 0) {
+        req.file = req.files[0];
+        console.log('[ROUTE] File field name was:', req.file.fieldname);
+        console.log('[ROUTE] File normalized to req.file');
+      } else {
+        console.log('[ROUTE] No files in request');
       }
       
-      console.log('[ROUTE] File normalized:', req.file ? 'YES' : 'NO');
       next();
     });
   },
