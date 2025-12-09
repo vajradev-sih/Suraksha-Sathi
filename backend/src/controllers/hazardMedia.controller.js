@@ -5,43 +5,37 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import cloudinary from '../utils/cloudinary.js';
 import fs from 'fs/promises';
 
-const uploadHazardMedia = async (req, res, next) => {
-  try {
-    if (!req.file) throw new ApiError(400, 'File not provided');
+const uploadHazardMedia = asyncHandler(async (req, res) => {
+  if (!req.file) throw new ApiError(400, 'File not provided');
 
-    const result = await cloudinary.uploader.upload(req.file.path, { 
-      folder: 'hazard_media',
-      resource_type: 'auto' // Automatically detect resource type (image, video, raw for audio)
-    });
-    await fs.unlink(req.file.path);
+  const result = await cloudinary.uploader.upload(req.file.path, { 
+    folder: 'hazard_media',
+    resource_type: 'auto' // Automatically detect resource type (image, video, raw for audio)
+  });
+  await fs.unlink(req.file.path).catch(() => {});
 
-    // Determine media type from mimetype
-    let mediaType = req.body.media_type;
-    if (!mediaType) {
-      const mimeType = req.file.mimetype;
-      if (mimeType.startsWith('image/')) mediaType = 'photo';
-      else if (mimeType.startsWith('video/')) mediaType = 'video';
-      else if (mimeType.startsWith('audio/')) mediaType = 'audio';
-      else mediaType = 'file';
-    }
-
-    const media = await HazardMedia.create({
-      report_id: req.body.report_id,
-      media_type: mediaType,
-      language_code: req.body.language_code || '',
-      url: result.secure_url,
-      duration: req.body.duration ? parseInt(req.body.duration) : null,
-      file_size: req.file.size,
-      mime_type: req.file.mimetype
-    });
-
-    res.status(201).json({ message: 'Hazard media uploaded', data: media });
-  } catch (error) {
-    console.error("Cloudinary/Upload Error:", error)
-    if (req.file) await fs.unlink(req.file.path).catch(() => { });
-    next(error);
+  // Determine media type from mimetype
+  let mediaType = req.body.media_type;
+  if (!mediaType) {
+    const mimeType = req.file.mimetype;
+    if (mimeType.startsWith('image/')) mediaType = 'photo';
+    else if (mimeType.startsWith('video/')) mediaType = 'video';
+    else if (mimeType.startsWith('audio/')) mediaType = 'audio';
+    else mediaType = 'file';
   }
-};
+
+  const media = await HazardMedia.create({
+    report_id: req.body.report_id,
+    media_type: mediaType,
+    language_code: req.body.language_code || '',
+    url: result.secure_url,
+    duration: req.body.duration ? parseInt(req.body.duration) : null,
+    file_size: req.file.size,
+    mime_type: req.file.mimetype
+  });
+
+  res.status(201).json(new ApiResponse(201, media, 'Hazard media uploaded'));
+});
 
 const getAllHazardMedia = asyncHandler(async (req, res) => {
   const media = await HazardMedia.find().populate('report_id');
