@@ -54,8 +54,14 @@
 
     /* Video styling */
     video {
-        height: 100%;
-        width: 100%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        min-height: 100%;
+        min-width: 100%;
+        width: auto;
+        height: auto;
         object-fit: cover;
         /* prevent default video controls */
         pointer-events: none; 
@@ -274,9 +280,9 @@
     <!-- Top Navigation (Fixed) -->
     <div class="top-nav">
         <!-- Back Button -->
-        <button onclick="window.history.back()" class="nav-btn">
+        <a href="updated-home-page.html" class="nav-btn">
             <span class="material-symbols-rounded">arrow_back</span>
-        </button>
+        </a>
 
         <!-- TITLE (Optional branding) -->
         <div class="mt-2 font-bold text-lg tracking-wide opacity-90 drop-shadow-md">
@@ -314,6 +320,7 @@
             title: "Gas Detection Protocol",
             description: "Step-by-step guide on using the MX4 detector in deep shafts.",
             likes: 1205,
+            comments: 85,
             shares: 45
         },
         {
@@ -324,6 +331,7 @@
             title: "Helmet & Light Inspection",
             description: "Daily routine checks for your personal protective gear.",
             likes: 850,
+            comments: 42,
             shares: 120
         },
         {
@@ -334,6 +342,7 @@
             title: "Emergency Evacuation",
             description: "Follow the blue markers to the nearest refuge chamber.",
             likes: 2300,
+            comments: 156,
             shares: 512
         },
         {
@@ -344,6 +353,7 @@
             title: "Heavy Loader Safety",
             description: "Blind spots you need to be aware of around heavy loaders.",
             likes: 945,
+            comments: 67,
             shares: 30
         }
     ];
@@ -357,9 +367,19 @@
     const toast = document.getElementById('toast');
     let isMuted = true; // Global mute state
 
+    // Calculate engagement score (likes + comments weighted)
+    function calculateEngagement(video) {
+        return (video.likes * 1) + (video.comments * 2); // Comments weighted 2x
+    }
+
+    // Sort videos by engagement score (highest first)
+    const sortedVideoData = [...videoData].sort((a, b) => 
+        calculateEngagement(b) - calculateEngagement(a)
+    );
+
     // 1. Render Videos dynamically
     function renderApp() {
-        container.innerHTML = videoData.map((video, index) => `
+        container.innerHTML = sortedVideoData.map((video, index) => `
             <div class="video-slide" id="slide-${index}">
                 <video 
                     src="${video.url}" 
@@ -388,7 +408,7 @@
                             <button class="action-btn" onclick="showToast('Comments disabled in demo')">
                                 <span class="material-symbols-rounded">chat_bubble</span>
                             </button>
-                            <span class="action-label">42</span>
+                            <span class="action-label">${formatCount(video.comments)}</span>
                         </div>
 
                         <!-- Share Button -->

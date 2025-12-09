@@ -28,6 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
             en: "Video Library",
             hi: "वीडियो लाइब्रेरी"
         },
+        hazards_map_menu: {
+            en: "Hazards Map",
+            hi: "खतरों का मानचित्र"
+        },
         help_support: {
             en: "Help & Support",
             hi: "सहायता और समर्थन"

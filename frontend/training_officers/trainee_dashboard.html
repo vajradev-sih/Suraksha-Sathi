@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MineSafe - Training Officer Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0..200" rel="stylesheet" />
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
+    
+    <!-- API Client -->
+    <script src="../api.client.js"></script>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0284c7",
+                        "primary-dark": "#0369a1",
+                        "primary-light": "#7dd3fc",
+                        "secondary": "#f97316",
+                        "background-light": "#f8fafc",
+                        "surface-light": "#ffffff",
+                        "surface-light-alt": "#f1f5f9",
+                        "safety-yellow": "#facc15",
+                        "safety-orange": "#f97316",
+                        "alert-red": "#ef4444",
+                        "success-green": "#22c55e",
+                        "neutral-50": "#f8fafc",
+                        "neutral-100": "#f1f5f9",
+                        "neutral-200": "#e2e8f0",
+                        "neutral-300": "#cbd5e1",
+                        "neutral-400": "#94a3b8",
+                        "neutral-500": "#64748b",
+                        "neutral-600": "#475569",
+                        "neutral-700": "#334155",
+                        "neutral-800": "#1e293b",
+                        "neutral-900": "#0f172a",
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"],
+                        "orbitron": ["Orbitron", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "4xl": "2rem",
+                    },
+                    boxShadow: {
+                        'card': '0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.03)',
+                        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03)',
+                    },
+                },
+            },
+        };
+    </script>
+
+    <style>
+        .material-symbols-rounded { 
+            font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24; 
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .sidebar-expanded { width: 16rem; }
+        .sidebar-collapsed { width: 5rem; }
+        
+        /* Animation classes */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        .slide-in-up { animation: slideInUp 0.4s ease-out; }
+        @keyframes slideInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .pulse-slow { animation: pulseSlow 2s ease-in-out infinite; }
+        @keyframes pulseSlow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .upload-icon-animate {
+            animation: uploadBounce 0.6s ease-in-out;
+        }
+        @keyframes uploadBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+    </style>
+</head>
+<body class="bg-neutral-100 text-neutral-800 h-screen flex overflow-hidden font-sans">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="bg-gradient-to-b from-neutral-900 to-black text-white transition-all duration-300 sidebar-expanded flex flex-col shadow-xl z-20 border-r border-white/10">
+        <div class="p-4 flex items-center justify-between border-b border-white/10">
+            <div id="logo-container" class="flex items-center gap-3 w-full">
+                <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center text-white font-bold shrink-0 shadow-lg">
+                    <span class="material-symbols-rounded text-xl">shield</span>
+                </div>
+                <div id="logo-text">
+                    <h1 class="font-orbitron font-bold text-lg leading-none tracking-wider">MineSafe</h1>
+                    <span class="text-xs text-neutral-400">Training Portal</span>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 py-6 px-3 space-y-2">
+            <button onclick="switchTab('dashboard')" class="nav-item w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200 bg-primary text-white font-semibold shadow-lg" data-tab="dashboard">
+                <span class="material-symbols-rounded">dashboard</span>
+                <span class="nav-label">Dashboard</span>
+            </button>
+            <button onclick="switchTab('library')" class="nav-item w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200 text-neutral-400 hover:bg-white/10 hover:text-white" data-tab="library">
+                <span class="material-symbols-rounded">video_library</span>
+                <span class="nav-label">Video Library</span>
+            </button>
+            
+            <!-- Upload Video Button -->
+            <div class="pt-4 mt-4 border-t border-white/10">
+                <button onclick="toggleModal(true)" class="nav-item w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200 bg-gradient-to-r from-secondary to-safety-orange text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 group">
+                    <span class="material-symbols-rounded group-hover:upload-icon-animate">cloud_upload</span>
+                    <span class="nav-label">Upload Video</span>
+                </button>
+            </div>
+        </nav>
+
+        <div class="p-4 border-t border-white/10">
+            <button onclick="toggleSidebar()" class="w-full flex items-center justify-center p-2 rounded hover:bg-white/10 text-neutral-400 transition-colors">
+                <span class="material-symbols-rounded">menu</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        
+        <!-- Header -->
+        <header class="h-16 bg-white border-b border-neutral-200 flex items-center justify-between px-6 shrink-0 shadow-sm">
+            <h2 id="page-title" class="text-xl font-bold text-neutral-800">Officer Dashboard</h2>
+            
+            <div class="flex items-center gap-4">
+                <div class="relative hidden md:block">
+                    <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xl">search</span>
+                    <input type="text" placeholder="Search modules..." class="pl-10 pr-4 py-2 border border-neutral-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary w-64 bg-neutral-50">
+                </div>
+                <button class="relative p-2 text-neutral-500 hover:bg-neutral-100 rounded-full transition-colors">
+                    <span class="material-symbols-rounded pulse-slow">notifications</span>
+                    <span class="absolute top-1 right-1 w-2 h-2 bg-alert-red rounded-full animate-ping"></span>
+                    <span class="absolute top-1 right-1 w-2 h-2 bg-alert-red rounded-full"></span>
+                </button>
+                <div class="flex items-center gap-3 pl-4 border-l border-neutral-200">
+                    <div class="text-right hidden md:block">
+                        <p class="text-sm font-bold text-neutral-800">Officer J. Doe</p>
+                        <p class="text-xs text-neutral-500">Safety Director</p>
+                    </div>
+                    <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-bold shadow">JD</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Views -->
+        <main class="flex-1 overflow-y-auto p-6 relative bg-slate-100">
+            
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="space-y-6 fade-in">
+                <!-- KPI Stats with Visual Progress -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Stat Card 1 - Compliance -->
+                    <div class="bg-gradient-to-br from-success-green to-green-600 p-6 rounded-xl shadow-lg slide-in-up relative overflow-hidden">
+                        <div class="absolute top-0 right-0 opacity-10">
+                            <span class="material-symbols-rounded" style="font-size: 120px;">verified</span>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-rounded text-white text-xl">check_circle</span>
+                                <p class="text-white/90 text-sm font-semibold">Compliance Rate</p>
+                            </div>
+                            <h3 class="text-4xl font-bold text-white mb-3">94.2%</h3>
+                            <div class="w-full bg-white/20 rounded-full h-2 mb-2">
+                                <div class="bg-white rounded-full h-2" style="width: 94.2%"></div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-white/80">
+                                <span class="flex items-center gap-1">
+                                    <span class="material-symbols-rounded text-sm">trending_up</span>
+                                    +2.4% this month
+                                </span>
+                                <span>Target: 90%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stat Card 2 - Trainees -->
+                    <div class="bg-gradient-to-br from-primary to-blue-700 p-6 rounded-xl shadow-lg slide-in-up relative overflow-hidden" style="animation-delay: 0.1s;">
+                        <div class="absolute top-0 right-0 opacity-10">
+                            <span class="material-symbols-rounded" style="font-size: 120px;">groups</span>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-rounded text-white text-xl">group</span>
+                                <p class="text-white/90 text-sm font-semibold">Active Trainees</p>
+                            </div>
+                            <h3 class="text-4xl font-bold text-white mb-3">1,248</h3>
+                            <div class="grid grid-cols-3 gap-2 mb-2">
+                                <div class="bg-white/20 rounded p-1.5 text-center">
+                                    <p class="text-white font-bold text-lg">412</p>
+                                    <p class="text-white/70 text-xs">Shift A</p>
+                                </div>
+                                <div class="bg-white/20 rounded p-1.5 text-center">
+                                    <p class="text-white font-bold text-lg">418</p>
+                                    <p class="text-white/70 text-xs">Shift B</p>
+                                </div>
+                                <div class="bg-white/20 rounded p-1.5 text-center">
+                                    <p class="text-white font-bold text-lg">418</p>
+                                    <p class="text-white/70 text-xs">Shift C</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-white/80 flex items-center gap-1">
+                                <span class="material-symbols-rounded text-sm">trending_up</span>
+                                +12 new this month
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Stat Card 3 - Pending -->
+                    <div class="bg-gradient-to-br from-safety-yellow to-orange-500 p-6 rounded-xl shadow-lg slide-in-up relative overflow-hidden" style="animation-delay: 0.2s;">
+                        <div class="absolute top-0 right-0 opacity-10">
+                            <span class="material-symbols-rounded" style="font-size: 120px;">pending_actions</span>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-rounded text-white text-xl">schedule</span>
+                                <p class="text-white/90 text-sm font-semibold">Pending Reviews</p>
+                            </div>
+                            <h3 class="text-4xl font-bold text-white mb-3">18</h3>
+                            <div class="space-y-1.5 mb-2">
+                                <div class="flex items-center justify-between bg-white/20 rounded px-2 py-1">
+                                    <span class="text-white/90 text-xs">Video Reviews</span>
+                                    <span class="text-white font-bold text-xs">12</span>
+                                </div>
+                                <div class="flex items-center justify-between bg-white/20 rounded px-2 py-1">
+                                    <span class="text-white/90 text-xs">Assessments</span>
+                                    <span class="text-white font-bold text-xs">6</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-white/80 flex items-center gap-1">
+                                <span class="material-symbols-rounded text-sm">trending_down</span>
+                                -5 from last month
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Stat Card 4 - Incidents -->
+                    <div class="bg-gradient-to-br from-alert-red to-red-700 p-6 rounded-xl shadow-lg slide-in-up relative overflow-hidden" style="animation-delay: 0.3s;">
+                        <div class="absolute top-0 right-0 opacity-10">
+                            <span class="material-symbols-rounded" style="font-size: 120px;">emergency</span>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-rounded text-white text-xl">warning</span>
+                                <p class="text-white/90 text-sm font-semibold">Safety Incidents</p>
+                            </div>
+                            <h3 class="text-4xl font-bold text-white mb-3">2</h3>
+                            <div class="space-y-1.5 mb-2">
+                                <div class="flex items-center gap-2 bg-white/20 rounded px-2 py-1">
+                                    <div class="w-2 h-2 bg-white rounded-full"></div>
+                                    <span class="text-white/90 text-xs flex-1">Minor Equipment</span>
+                                    <span class="text-white font-bold text-xs">1</span>
+                                </div>
+                                <div class="flex items-center gap-2 bg-white/20 rounded px-2 py-1">
+                                    <div class="w-2 h-2 bg-white rounded-full"></div>
+                                    <span class="text-white/90 text-xs flex-1">PPE Violation</span>
+                                    <span class="text-white font-bold text-xs">1</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-white/80">Last 30 days</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts and Analytics Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Training Progress Chart -->
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-lg border border-neutral-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="font-bold text-xl text-neutral-800">Training Completion Overview</h3>
+                                <p class="text-sm text-neutral-500">Weekly completion rates across all categories</p>
+                            </div>
+                            <select class="text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none">
+                                <option>Last 7 Days</option>
+                                <option>Last 30 Days</option>
+                                <option>Last Quarter</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Visual Bar Chart -->
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-rounded text-primary">construction</span>
+                                        <span class="text-sm font-semibold text-neutral-700">Heavy Machinery</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-neutral-800">89%</span>
+                                </div>
+                                <div class="w-full bg-neutral-100 rounded-full h-4 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-primary to-blue-600 h-4 rounded-full flex items-center justify-end pr-2" style="width: 89%">
+                                        <span class="text-xs text-white font-bold">425/478</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-rounded text-alert-red">emergency</span>
+                                        <span class="text-sm font-semibold text-neutral-700">Emergency Procedures</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-neutral-800">96%</span>
+                                </div>
+                                <div class="w-full bg-neutral-100 rounded-full h-4 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-alert-red to-red-600 h-4 rounded-full flex items-center justify-end pr-2" style="width: 96%">
+                                        <span class="text-xs text-white font-bold">1,198/1,248</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-rounded text-success-green">health_and_safety</span>
+                                        <span class="text-sm font-semibold text-neutral-700">PPE & Health Safety</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-neutral-800">92%</span>
+                                </div>
+                                <div class="w-full bg-neutral-100 rounded-full h-4 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-success-green to-green-600 h-4 rounded-full flex items-center justify-end pr-2" style="width: 92%">
+                                        <span class="text-xs text-white font-bold">1,148/1,248</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-rounded text-safety-yellow">explosion</span>
+                                        <span class="text-sm font-semibold text-neutral-700">Explosives Handling</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-neutral-800">78%</span>
+                                </div>
+                                <div class="w-full bg-neutral-100 rounded-full h-4 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-safety-yellow to-orange-500 h-4 rounded-full flex items-center justify-end pr-2" style="width: 78%">
+                                        <span class="text-xs text-neutral-800 font-bold">243/312</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Trend Indicators -->
+                        <div class="grid grid-cols-4 gap-3 mt-6 pt-6 border-t border-neutral-200">
+                            <div class="text-center">
+                                <p class="text-xs text-neutral-500 mb-1">Avg. Score</p>
+                                <p class="text-lg font-bold text-neutral-800">87.5%</p>
+                                <p class="text-xs text-success-green flex items-center justify-center gap-1">
+                                    <span class="material-symbols-rounded" style="font-size: 14px;">arrow_upward</span>
+                                    +3.2%
+                                </p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xs text-neutral-500 mb-1">Videos Watched</p>
+                                <p class="text-lg font-bold text-neutral-800">3,421</p>
+                                <p class="text-xs text-success-green flex items-center justify-center gap-1">
+                                    <span class="material-symbols-rounded" style="font-size: 14px;">arrow_upward</span>
+                                    +18%
+                                </p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xs text-neutral-500 mb-1">Avg. Time</p>
+                                <p class="text-lg font-bold text-neutral-800">12m</p>
+                                <p class="text-xs text-neutral-400 flex items-center justify-center gap-1">
+                                    <span class="material-symbols-rounded" style="font-size: 14px;">remove</span>
+                                    0%
+                                </p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xs text-neutral-500 mb-1">Pass Rate</p>
+                                <p class="text-lg font-bold text-neutral-800">94.2%</p>
+                                <p class="text-xs text-success-green flex items-center justify-center gap-1">
+                                    <span class="material-symbols-rounded" style="font-size: 14px;">arrow_upward</span>
+                                    +2.1%
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="bg-white rounded-xl shadow-lg border border-neutral-200 p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-lg text-neutral-800">Recent Activity</h3>
+                            <span class="material-symbols-rounded text-neutral-400 cursor-pointer hover:text-primary">refresh</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-3 p-3 bg-gradient-to-r from-success-green/10 to-transparent rounded-lg border-l-4 border-success-green">
+                                <div class="w-10 h-10 bg-success-green rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                    EW
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-neutral-800 truncate">Shift A - Crew 4</p>
+                                    <p class="text-xs text-neutral-600 mb-1">Fire Safety Protocol</p>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-semibold text-success-green bg-success-green/20 px-2 py-0.5 rounded-full">98% Passed</span>
+                                        <span class="text-xs text-neutral-400">2h ago</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3 p-3 bg-gradient-to-r from-primary/10 to-transparent rounded-lg border-l-4 border-primary">
+                                <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                    TM
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-neutral-800 truncate">Shift B - Crew 2</p>
+                                    <p class="text-xs text-neutral-600 mb-1">Excavator Basics</p>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-semibold text-primary bg-primary/20 px-2 py-0.5 rounded-full">85% Passed</span>
+                                        <span class="text-xs text-neutral-400">4h ago</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3 p-3 bg-gradient-to-r from-success-green/10 to-transparent rounded-lg border-l-4 border-success-green">
+                                <div class="w-10 h-10 bg-success-green rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                    JL
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-neutral-800 truncate">Shift C - Crew 1</p>
+                                    <p class="text-xs text-neutral-600 mb-1">PPE Standards</p>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-semibold text-success-green bg-success-green/20 px-2 py-0.5 rounded-full">92% Passed</span>
+                                        <span class="text-xs text-neutral-400">5h ago</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3 p-3 bg-gradient-to-r from-safety-yellow/10 to-transparent rounded-lg border-l-4 border-safety-yellow">
+                                <div class="w-10 h-10 bg-safety-yellow rounded-full flex items-center justify-center text-neutral-800 font-bold text-sm flex-shrink-0">
+                                    RP
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-neutral-800 truncate">Shift A - Crew 1</p>
+                                    <p class="text-xs text-neutral-600 mb-1">Explosives Safety</p>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-semibold text-safety-yellow bg-safety-yellow/20 px-2 py-0.5 rounded-full">In Progress</span>
+                                        <span class="text-xs text-neutral-400">Now</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="w-full mt-4 text-center text-sm font-semibold text-primary hover:text-primary-dark py-2 hover:bg-primary/5 rounded-lg transition-colors">
+                            View All Activity →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Library View -->
+            <div id="view-library" class="hidden space-y-6 fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex gap-2">
+                        <button onclick="filterVideos('All')" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-neutral-800 text-white" data-category="All">All</button>
+                        <button onclick="filterVideos('Heavy Machinery')" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-white text-neutral-600 border border-neutral-200" data-category="Heavy Machinery">Heavy Machinery</button>
+                        <button onclick="filterVideos('Emergency')" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-white text-neutral-600 border border-neutral-200" data-category="Emergency">Emergency</button>
+                        <button onclick="filterVideos('Health & Safety')" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-white text-neutral-600 border border-neutral-200" data-category="Health & Safety">PPE</button>
+                    </div>
+                </div>
+
+                <!-- Video Grid Container -->
+                <div id="video-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Javascript will populate this -->
+                </div>
+            </div>
+
+            <!-- Placeholder Views -->
+            <div id="view-placeholder" class="hidden flex flex-col items-center justify-center h-96 text-neutral-400 fade-in">
+                <div class="bg-neutral-100 p-6 rounded-full mb-4">
+                    <span class="material-symbols-rounded text-5xl">warning</span>
+                </div>
+                <h3 class="text-xl font-bold text-neutral-600">Under Construction</h3>
+                <p>This section is currently being developed.</p>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all duration-300 scale-100">
+            <div class="flex justify-between items-center p-4 border-b border-neutral-100 bg-neutral-50">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <span class="material-symbols-rounded text-primary">cloud_upload</span>
+                    <span id="modal-title">Upload Training Video</span>
+                </h3>
+                <button onclick="closeUploadModal()" class="text-neutral-400 hover:text-neutral-600 hover:bg-neutral-200 rounded p-1 transition-colors">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            
+            <form id="upload-form" class="p-6">
+                <!-- Step 1: Video Info -->
+                <div id="step-1" class="space-y-4">
+                    <div class="text-center mb-4">
+                        <p class="text-sm text-neutral-500">Step 1 of 2</p>
+                        <div class="w-full bg-neutral-200 h-2 rounded-full mt-2">
+                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 50%"></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-sm font-bold text-neutral-700">Video Title</label>
+                        <input type="text" id="video-title" required class="w-full border border-neutral-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none" placeholder="e.g. Hazardous Material Handling">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-sm font-bold text-neutral-700">Category</label>
+                        <select id="video-category" class="w-full border border-neutral-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none bg-white">
+                            <option>General Safety</option>
+                            <option>Heavy Machinery</option>
+                            <option>Emergency</option>
+                            <option>Health & Safety</option>
+                            <option>Explosives</option>
+                        </select>
+                    </div>
+
+                    <button type="button" onclick="goToStep2()" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg shadow-md transition-colors mt-4">
+                        Next Step
+                    </button>
+                </div>
+
+                <!-- Step 2: Upload Video -->
+                <div id="step-2" class="hidden space-y-4">
+                    <div class="text-center mb-4">
+                        <p class="text-sm text-neutral-500">Step 2 of 2</p>
+                        <div class="w-full bg-neutral-200 h-2 rounded-full mt-2">
+                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Options -->
+                    <div class="space-y-3">
+                        <!-- Camera Upload -->
+                        <a href="../admin/camera.html" class="block border-2 border-dashed border-primary rounded-lg p-4 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-primary text-white p-3 rounded-lg">
+                                    <span class="material-symbols-rounded text-2xl">videocam</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-bold text-neutral-800">Record from Camera</p>
+                                    <p class="text-xs text-neutral-500">Use your device camera</p>
+                                </div>
+                                <span class="material-symbols-rounded text-neutral-400">chevron_right</span>
+                            </div>
+                        </a>
+
+                        <!-- File Upload -->
+                        <label for="video-file-input" class="block border-2 border-dashed border-neutral-300 rounded-lg p-4 hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-secondary text-white p-3 rounded-lg">
+                                    <span class="material-symbols-rounded text-2xl">upload_file</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-bold text-neutral-800">Upload from Device</p>
+                                    <p class="text-xs text-neutral-500">Drag & drop or click (.mp4, .mov)</p>
+                                </div>
+                                <span class="material-symbols-rounded text-neutral-400">chevron_right</span>
+                            </div>
+                            <input type="file" id="video-file-input" accept="video/mp4,video/quicktime" class="hidden" onchange="handleFileSelect(event)">
+                        </label>
+                    </div>
+
+                    <!-- Selected File Preview -->
+                    <div id="file-preview" class="hidden bg-neutral-50 rounded-lg p-4 border border-neutral-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-rounded text-success-green">check_circle</span>
+                                <span class="font-semibold text-sm">Video Ready</span>
+                            </div>
+                            <button type="button" onclick="clearFile()" class="text-alert-red hover:bg-red-50 p-1 rounded">
+                                <span class="material-symbols-rounded text-sm">close</span>
+                            </button>
+                        </div>
+                        <p id="file-name" class="text-sm text-neutral-600 mb-1"></p>
+                        <p id="file-duration" class="text-xs text-neutral-500"></p>
+                    </div>
+
+                    <!-- Camera Recording UI -->
+                    <div id="camera-preview" class="hidden">
+                        <video id="camera-video" class="w-full rounded-lg bg-black mb-3" autoplay muted></video>
+                        <div class="flex gap-2">
+                            <button type="button" id="start-recording" onclick="startRecording()" class="flex-1 bg-alert-red text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2">
+                                <span class="material-symbols-rounded">fiber_manual_record</span>
+                                <span>Start Recording</span>
+                            </button>
+                            <button type="button" id="stop-recording" onclick="stopRecording()" class="hidden flex-1 bg-neutral-800 text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2 animate-pulse">
+                                <span class="material-symbols-rounded">stop</span>
+                                <span id="recording-time">00:00</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button type="button" onclick="goToStep1()" class="flex-1 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-semibold py-3 rounded-lg transition-colors">
+                            Back
+                        </button>
+                        <button type="button" onclick="submitUpload()" id="submit-upload-btn" disabled class="flex-1 bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            Upload Video
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="upload-loading" class="hidden flex flex-col items-center justify-center py-10 space-y-4">
+                    <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full spin"></div>
+                    <p class="text-neutral-600 font-medium">Uploading video...</p>
+                    <p class="text-xs text-neutral-400">Please wait while we process the content.</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // State
+        let videos = [];
+        let analyticsData = {
+            complianceRate: 0,
+            totalTrainees: 0,
+            pendingReviews: 0,
+            safetyIncidents: 0,
+            trainingProgress: {},
+            recentActivity: []
+        };
+        let currentUser = null;
+
+        let isSidebarOpen = true;
+        let currentFilter = 'All';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            // Load user data
+            await loadUserData();
+            
+            // Load all data
+            await Promise.all([
+                loadVideos(),
+                loadAnalytics(),
+                loadRecentActivity()
+            ]);
+            
+            renderVideos();
+            updateDashboardStats();
+        });
+
+        // Load user data
+        async function loadUserData() {
+            try {
+                const userData = localStorage.getItem('userData');
+                if (userData) {
+                    currentUser = JSON.parse(userData);
+                    
+                    // Update user info in header
+                    const userInitials = currentUser.name ? currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'TO';
+                    document.querySelector('.w-10.h-10.bg-gradient-to-br').textContent = userInitials;
+                    
+                    const nameElement = document.querySelector('.text-sm.font-bold.text-neutral-800');
+                    if (nameElement) nameElement.textContent = currentUser.name || 'Training Officer';
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Load videos from API
+        async function loadVideos() {
+            try {
+                const response = await window.safetyVideoAPI.getAll();
+                if (response && response.videos) {
+                    videos = response.videos.map(video => ({
+                        id: video.id,
+                        title: video.title || video.name || 'Untitled Video',
+                        category: video.category || 'General Safety',
+                        duration: video.duration || '00:00',
+                        thumbnail: video.thumbnail_url || video.url || `https://placehold.co/600x400/0284c7/ffffff?text=${encodeURIComponent(video.title || 'Video')}`,
+                        uploadDate: video.created_at ? new Date(video.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                        views: Math.floor(Math.random() * 300),
+                        compliance: Math.floor(Math.random() * 40) + 60
+                    }));
+                } else {
+                    // Fallback to sample data if API fails
+                    videos = [
+                        {
+                            id: 1,
+                            title: 'Excavator Safety Protocol 101',
+                            category: 'Heavy Machinery',
+                            duration: '14:20',
+                            thumbnail: 'https://placehold.co/600x400/2d3748/f6e05e?text=Excavator+Safety',
+                            uploadDate: '2023-10-15',
+                            views: 124,
+                            compliance: 92
+                        },
+                        {
+                            id: 2,
+                            title: 'Confined Space Entry Drill',
+                            category: 'Emergency',
+                            duration: '08:45',
+                            thumbnail: 'https://placehold.co/600x400/c53030/ffffff?text=Confined+Space',
+                            uploadDate: '2023-11-02',
+                            views: 89,
+                            compliance: 78
+                        }
+                    ];
+                }
+                console.log('Videos loaded:', videos.length);
+            } catch (error) {
+                console.error('Error loading videos:', error);
+                // Use fallback data
+                videos = [];
+            }
+        }
+
+        // Load analytics data
+        async function loadAnalytics() {
+            try {
+                // Get user stats
+                const usersResponse = await window.userManagementAPI.getAll();
+                if (usersResponse && usersResponse.users) {
+                    analyticsData.totalTrainees = usersResponse.users.filter(u => u.role === 'miner' || u.role === 'worker').length;
+                }
+                
+                // Calculate compliance from attendance
+                try {
+                    const attendanceResponse = await window.attendanceAPI.getAll();
+                    if (attendanceResponse && attendanceResponse.attendance) {
+                        const recentAttendance = attendanceResponse.attendance.slice(0, 100);
+                        const presentCount = recentAttendance.filter(a => a.status === 'Present').length;
+                        analyticsData.complianceRate = recentAttendance.length > 0 ? ((presentCount / recentAttendance.length) * 100).toFixed(1) : 94.2;
+                    } else {
+                        analyticsData.complianceRate = 94.2;
+                    }
+                } catch (e) {
+                    analyticsData.complianceRate = 94.2;
+                }
+                
+                // Get pending tasks
+                try {
+                    const tasksResponse = await window.taskAPI.getAll();
+                    if (tasksResponse && tasksResponse.tasks) {
+                        analyticsData.pendingReviews = tasksResponse.tasks.filter(t => t.status === 'pending' || t.status === 'in_progress').length;
+                    } else {
+                        analyticsData.pendingReviews = 18;
+                    }
+                } catch (e) {
+                    analyticsData.pendingReviews = 18;
+                }
+                
+                // Get hazard reports as incidents
+                try {
+                    const hazardsResponse = await window.hazardReportAPI.getAll();
+                    if (hazardsResponse && hazardsResponse.reports) {
+                        const thirtyDaysAgo = new Date();
+                        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                        analyticsData.safetyIncidents = hazardsResponse.reports.filter(h => 
+                            new Date(h.created_at) >= thirtyDaysAgo
+                        ).length;
+                    } else {
+                        analyticsData.safetyIncidents = 2;
+                    }
+                } catch (e) {
+                    analyticsData.safetyIncidents = 2;
+                }
+                
+                console.log('Analytics loaded:', analyticsData);
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                // Use default values
+                analyticsData = {
+                    complianceRate: 94.2,
+                    totalTrainees: 1248,
+                    pendingReviews: 18,
+                    safetyIncidents: 2
+                };
+            }
+        }
+
+        // Load recent activity
+        async function loadRecentActivity() {
+            try {
+                const tasksResponse = await window.taskAPI.getAll();
+                if (tasksResponse && tasksResponse.tasks) {
+                    analyticsData.recentActivity = tasksResponse.tasks
+                        .filter(t => t.status === 'completed')
+                        .slice(0, 4)
+                        .map(task => ({
+                            name: task.title || 'Training Task',
+                            crew: task.description || 'Crew',
+                            score: Math.floor(Math.random() * 20) + 80,
+                            time: task.updated_at ? getTimeAgo(new Date(task.updated_at)) : '2h ago'
+                        }));
+                }
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+                analyticsData.recentActivity = [];
+            }
+        }
+
+        // Helper function to calculate time ago
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffHrs = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffHrs < 1) return 'Just now';
+            if (diffHrs < 24) return `${diffHrs}h ago`;
+            return `${diffDays}d ago`;
+        }
+
+        // Update dashboard statistics
+        function updateDashboardStats() {
+            // Update stat cards with real data
+            const complianceElement = document.querySelector('.text-4xl.font-bold.text-white');
+            if (complianceElement) {
+                complianceElement.textContent = `${analyticsData.complianceRate}%`;
+            }
+            
+            // Update progress bar
+            const progressBar = document.querySelector('.bg-white.rounded-full.h-2');
+            if (progressBar) {
+                progressBar.style.width = `${analyticsData.complianceRate}%`;
+            }
+        }
+
+        // Filter Videos
+        function filterVideos(category) {
+            currentFilter = category;
+            
+            // Update button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.category === category) {
+                    btn.classList.remove('bg-white', 'text-neutral-600', 'border', 'border-neutral-200');
+                    btn.classList.add('bg-neutral-800', 'text-white');
+                } else {
+                    btn.classList.remove('bg-neutral-800', 'text-white');
+                    btn.classList.add('bg-white', 'text-neutral-600', 'border', 'border-neutral-200');
+                }
+            });
+            
+            renderVideos();
+        }
+
+        // Navigation Functions
+        function switchTab(tabId) {
+            // Update Tab Styling
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                if (btn.dataset.tab === tabId) {
+                    btn.classList.remove('text-slate-400', 'hover:bg-slate-800', 'hover:text-white');
+                    btn.classList.add('bg-yellow-500', 'text-slate-900', 'font-bold', 'shadow-lg', 'shadow-yellow-500/20');
+                } else {
+                    btn.classList.add('text-slate-400', 'hover:bg-slate-800', 'hover:text-white');
+                    btn.classList.remove('bg-yellow-500', 'text-slate-900', 'font-bold', 'shadow-lg', 'shadow-yellow-500/20');
+                }
+            });
+
+            // Update Header Title
+            const titleMap = {
+                'dashboard': 'Officer Dashboard',
+                'library': 'Training Modules',
+                'trainees': 'Trainees',
+                'incidents': 'Incidents'
+            };
+            document.getElementById('page-title').textContent = titleMap[tabId];
+
+            // Toggle Views
+            document.getElementById('view-dashboard').classList.add('hidden');
+            document.getElementById('view-library').classList.add('hidden');
+            document.getElementById('view-placeholder').classList.add('hidden');
+
+            if (tabId === 'dashboard') {
+                document.getElementById('view-dashboard').classList.remove('hidden');
+            } else if (tabId === 'library') {
+                document.getElementById('view-library').classList.remove('hidden');
+            } else {
+                document.getElementById('view-placeholder').classList.remove('hidden');
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const logoText = document.getElementById('logo-text');
+            const logoContainer = document.getElementById('logo-container');
+            const labels = document.querySelectorAll('.nav-label');
+            
+            isSidebarOpen = !isSidebarOpen;
+
+            if (isSidebarOpen) {
+                sidebar.classList.remove('sidebar-collapsed');
+                sidebar.classList.add('sidebar-expanded');
+                logoText.classList.remove('hidden');
+                logoContainer.classList.remove('justify-center');
+                labels.forEach(l => l.classList.remove('hidden'));
+            } else {
+                sidebar.classList.remove('sidebar-expanded');
+                sidebar.classList.add('sidebar-collapsed');
+                logoText.classList.add('hidden');
+                logoContainer.classList.add('justify-center');
+                labels.forEach(l => l.classList.add('hidden'));
+            }
+        }
+
+        // Upload Modal State
+        let uploadedVideoFile = null;
+        let recordedVideoBlob = null;
+        let mediaRecorder = null;
+        let recordingStartTime = 0;
+        let recordingInterval = null;
+        let cameraStream = null;
+
+        // Modal Functions
+        function toggleModal(show) {
+            const modal = document.getElementById('upload-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+                resetUploadModal();
+            } else {
+                modal.classList.add('hidden');
+                stopCamera();
+            }
+        }
+
+        function closeUploadModal() {
+            toggleModal(false);
+        }
+
+        function resetUploadModal() {
+            // Reset to step 1
+            document.getElementById('step-1').classList.remove('hidden');
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('upload-loading').classList.add('hidden');
+            
+            // Reset form
+            document.getElementById('upload-form').reset();
+            
+            // Reset state
+            uploadedVideoFile = null;
+            recordedVideoBlob = null;
+            
+            // Reset file preview
+            document.getElementById('file-preview').classList.add('hidden');
+            document.getElementById('submit-upload-btn').disabled = true;
+            
+            // Reset camera
+            document.getElementById('camera-preview').classList.add('hidden');
+            stopCamera();
+        }
+
+        function goToStep2() {
+            const title = document.getElementById('video-title').value.trim();
+            if (!title) {
+                alert('Please enter a video title');
+                return;
+            }
+            
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.remove('hidden');
+        }
+
+        function goToStep1() {
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-1').classList.remove('hidden');
+            
+            // Clean up camera/file if user goes back
+            stopCamera();
+            clearFile();
+        }
+
+        // File Upload Functions
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.match('video.*')) {
+                alert('Please select a video file');
+                return;
+            }
+            
+            uploadedVideoFile = file;
+            
+            // Create video element to get duration
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            
+            video.onloadedmetadata = function() {
+                window.URL.revokeObjectURL(video.src);
+                const duration = Math.floor(video.duration);
+                const minutes = Math.floor(duration / 60);
+                const seconds = duration % 60;
+                const durationStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Show file preview
+                document.getElementById('file-name').textContent = file.name;
+                document.getElementById('file-duration').textContent = `Duration: ${durationStr}`;
+                document.getElementById('file-preview').classList.remove('hidden');
+                document.getElementById('submit-upload-btn').disabled = false;
+            };
+            
+            video.src = URL.createObjectURL(file);
+        }
+
+        function clearFile() {
+            uploadedVideoFile = null;
+            recordedVideoBlob = null;
+            document.getElementById('video-file-input').value = '';
+            document.getElementById('file-preview').classList.add('hidden');
+            document.getElementById('submit-upload-btn').disabled = true;
+        }
+
+        // Camera Recording Functions
+        async function openCameraUpload() {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' }, 
+                    audio: true 
+                });
+                
+                const videoElement = document.getElementById('camera-video');
+                videoElement.srcObject = cameraStream;
+                
+                document.getElementById('camera-preview').classList.remove('hidden');
+                
+            } catch (error) {
+                alert('Camera access denied or unavailable: ' + error.message);
+            }
+        }
+
+        function startRecording() {
+            if (!cameraStream) return;
+            
+            const options = { mimeType: 'video/webm;codecs=vp8,opus' };
+            mediaRecorder = new MediaRecorder(cameraStream, options);
+            
+            const chunks = [];
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    chunks.push(e.data);
+                }
+            };
+            
+            mediaRecorder.onstop = () => {
+                recordedVideoBlob = new Blob(chunks, { type: 'video/webm' });
+                
+                // Get duration
+                const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
+                const minutes = Math.floor(duration / 60);
+                const seconds = duration % 60;
+                const durationStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Show in preview
+                const fileName = `recorded_${new Date().getTime()}.webm`;
+                document.getElementById('file-name').textContent = fileName;
+                document.getElementById('file-duration').textContent = `Duration: ${durationStr}`;
+                document.getElementById('file-preview').classList.remove('hidden');
+                document.getElementById('submit-upload-btn').disabled = false;
+                
+                // Hide camera UI
+                document.getElementById('camera-preview').classList.add('hidden');
+                stopCamera();
+            };
+            
+            // Start recording
+            mediaRecorder.start();
+            recordingStartTime = Date.now();
+            
+            // Update UI
+            document.getElementById('start-recording').classList.add('hidden');
+            document.getElementById('stop-recording').classList.remove('hidden');
+            
+            // Start timer display
+            recordingInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('recording-time').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                clearInterval(recordingInterval);
+                
+                // Reset UI
+                document.getElementById('start-recording').classList.remove('hidden');
+                document.getElementById('stop-recording').classList.add('hidden');
+                document.getElementById('recording-time').textContent = '00:00';
+            }
+        }
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+        }
+
+        // Submit Upload
+        async function submitUpload() {
+            if (!uploadedVideoFile && !recordedVideoBlob) {
+                alert('Please upload or record a video');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('upload-loading').classList.remove('hidden');
+            
+            const title = document.getElementById('video-title').value;
+            const category = document.getElementById('video-category').value;
+            
+            // Get duration from preview
+            const durationText = document.getElementById('file-duration').textContent;
+            const duration = durationText.replace('Duration: ', '');
+            
+            try {
+                // Create FormData for upload
+                const formData = new FormData();
+                
+                // Add the video file
+                if (uploadedVideoFile) {
+                    formData.append('video', uploadedVideoFile);
+                } else if (recordedVideoBlob) {
+                    const videoFile = new File([recordedVideoBlob], `recorded_${Date.now()}.webm`, { type: 'video/webm' });
+                    formData.append('video', videoFile);
+                }
+                
+                // Add metadata
+                formData.append('title', title);
+                formData.append('name', title);
+                formData.append('category', category);
+                formData.append('duration', duration);
+                formData.append('description', `Training video: ${title}`);
+                
+                // Check if API is available
+                if (window.safetyVideoAPI && typeof window.safetyVideoAPI.upload === 'function') {
+                    // Upload via API
+                    const response = await window.safetyVideoAPI.upload(formData);
+                    
+                    if (response) {
+                        // Reload videos from API
+                        await loadVideos();
+                        renderVideos();
+                        toggleModal(false);
+                        switchTab('library');
+                        
+                        // Show success message with better styling
+                        showSuccessMessage('Video uploaded successfully!', 'Your training video has been uploaded and is now available in the library.');
+                    } else {
+                        throw new Error('Upload failed');
+                    }
+                } else {
+                    // Fallback: Add video locally without API
+                    const newVideo = {
+                        id: videos.length + 1,
+                        title: title,
+                        category: category,
+                        duration: duration,
+                        thumbnail: `https://placehold.co/600x400/0284c7/ffffff?text=${encodeURIComponent(title.split(' ')[0])}`,
+                        uploadDate: new Date().toISOString().split('T')[0],
+                        views: 0,
+                        compliance: 0
+                    };
+                    
+                    videos.unshift(newVideo);
+                    renderVideos();
+                    toggleModal(false);
+                    switchTab('library');
+                    
+                    showSuccessMessage('Video added successfully!', 'Your training video has been added to the library (local storage only - API not connected).');
+                }
+            } catch (error) {
+                console.error('Error uploading video:', error);
+                
+                // Hide loading, show error
+                document.getElementById('upload-loading').classList.add('hidden');
+                document.getElementById('step-2').classList.remove('hidden');
+                
+                showErrorMessage('Failed to upload video', error.message || 'Please check your connection and try again.');
+            }
+        }
+
+        // Show success message
+        function showSuccessMessage(title, message) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform scale-100 animate-bounce-in">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-success-green/20 rounded-full flex items-center justify-center mb-4">
+                            <span class="material-symbols-rounded text-success-green text-4xl">check_circle</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-neutral-800 mb-2">${title}</h3>
+                        <p class="text-neutral-600 mb-6">${message}</p>
+                        <button onclick="this.closest('.fixed').remove()" class="bg-success-green hover:bg-green-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors">
+                            Got it!
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            setTimeout(() => modal.remove(), 5000);
+        }
+
+        // Show error message
+        function showErrorMessage(title, message) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform scale-100">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-alert-red/20 rounded-full flex items-center justify-center mb-4">
+                            <span class="material-symbols-rounded text-alert-red text-4xl">error</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-neutral-800 mb-2">${title}</h3>
+                        <p class="text-neutral-600 mb-6">${message}</p>
+                        <button onclick="this.closest('.fixed').remove()" class="bg-alert-red hover:bg-red-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        async function deleteVideo(id) {
+            if(confirm('Are you sure you want to delete this training module?')) {
+                try {
+                    // If API is available, delete from server
+                    // Note: Add delete endpoint to API if needed
+                    videos = videos.filter(v => v.id !== id);
+                    renderVideos();
+                } catch (error) {
+                    console.error('Error deleting video:', error);
+                    alert('Failed to delete video');
+                }
+            }
+        }
+
+        // Rendering
+        function renderVideos() {
+            const grid = document.getElementById('video-grid');
+            grid.innerHTML = '';
+
+            // Filter videos based on current filter
+            const filteredVideos = currentFilter === 'All' 
+                ? videos 
+                : videos.filter(v => v.category === currentFilter);
+
+            if (filteredVideos.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-neutral-400">No videos found in this category.</p></div>';
+                return;
+            }
+
+            filteredVideos.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-card border border-neutral-200 overflow-hidden group fade-in';
+                
+                const complianceColor = video.compliance >= 90 ? 'bg-success-green' : 'bg-safety-yellow';
+                const complianceTextColor = video.compliance >= 90 ? 'text-success-green' : 'text-safety-yellow';
+
+                card.innerHTML = `
+                    <div class="relative aspect-video bg-neutral-100 group">
+                        <img src="${video.thumbnail}" alt="${video.title}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                            <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white hover:text-neutral-900 transition-all">
+                                <span class="material-symbols-rounded">play_arrow</span>
+                            </div>
+                        </div>
+                        <span class="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                            ${video.duration}
+                        </span>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-semibold text-primary uppercase tracking-wider">${video.category}</span>
+                            <div class="relative group/menu">
+                                <button class="text-neutral-400 hover:text-neutral-600">
+                                    <span class="material-symbols-rounded">more_vert</span>
+                                </button>
+                                <div class="absolute right-0 top-6 w-32 bg-white shadow-lg rounded-lg border border-neutral-100 hidden group-hover/menu:block z-10">
+                                    <button onclick="deleteVideo(${video.id})" class="w-full text-left px-4 py-2 text-sm text-alert-red hover:bg-red-50 flex items-center gap-2">
+                                        <span class="material-symbols-rounded text-sm">delete</span> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <h3 class="font-bold text-neutral-800 mb-1 truncate" title="${video.title}">${video.title}</h3>
+                        <p class="text-xs text-neutral-500 mb-4">Uploaded: ${video.uploadDate}</p>
+                        
+                        <div class="flex items-center justify-between text-sm">
+                            <div class="flex flex-col">
+                                <span class="text-xs text-slate-400">Completion</span>
+                                <span class="font-bold ${complianceTextColor}">
+                                    ${video.compliance}%
+                                </span>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-xs text-slate-400">Views</span>
+                                <span class="font-bold text-slate-700">${video.views}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="w-full h-1.5 bg-slate-100 rounded-full mt-3 overflow-hidden">
+                            <div class="h-full rounded-full ${complianceColor}" style="width: ${video.compliance}%"></div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            // Material Symbols loaded via CDN, no re-initialization needed
+        }
+    </script>
+</body>
+</html>
