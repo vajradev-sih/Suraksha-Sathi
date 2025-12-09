@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
             en: "Video Library",
             hi: "वीडियो लाइब्रेरी"
         },
-        hazards_map_menu: {
+        menu_hazards_map: {
             en: "Hazards Map",
             hi: "खतरों का मानचित्र"
         },

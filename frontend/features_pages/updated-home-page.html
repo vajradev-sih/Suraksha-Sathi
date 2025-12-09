@@ -526,11 +526,11 @@
                             <span data-translate-key="video_library_menu">Video
                                 Library</span>
                         </a>
-                        <a href="map.html"
+                        <!-- <a href="map.html"
                             class="flex items-center space-x-3 text-white/90 hover:bg-white/15 hover:text-white p-2 rounded-md transition-colors duration-150 relative">
                             <span class="material-symbols-rounded">map</span>
-                            <span data-translate-key="hazards_map_menu">Hazards Map</span>
-                        </a>
+                            <span data-translate-key="menu_hazards_map">Hazards Map</span>
+                        </a> -->
 
                         <div
                             class="flex items-center justify-between text-white/90 bg-white/10 hover:bg-white/15 p-2 rounded-md transition-colors duration-150">
@@ -629,9 +629,9 @@
                 <div class="flex items-center gap-3 mb-4">
                     <span class="material-symbols-rounded text-3xl">location_on</span>
                     <div>
-                        <p class="text-lg font-medium" data-translate-key="location">Delhi, India</p>
-                        <p class="text-xs opacity-70"><span data-translate-key="district">District</span>: Delhi | <span
-                                data-translate-key="state">State</span>: Delhi</p>
+                        <p class="text-lg font-medium" id="location-text">Locating...</p>
+                        <p class="text-xs opacity-70"><span data-translate-key="district">District</span>: <span id="district-text">...</span> | <span
+                                data-translate-key="state">State</span>: <span id="state-text">...</span></p>
                     </div>
                 </div>
                 <h2 class="text-3xl font-bold mb-2" id="welcome-message">
@@ -1979,6 +1979,48 @@
         if (typeof offlineDB !== 'undefined') {
             offlineDB.init().then(() => console.log('[OfflineDB] Ready'));
         }
+    </script>
+
+    <script>
+        function updateLocation() {
+            const locationText = document.getElementById('location-text');
+            const districtText = document.getElementById('district-text');
+            const stateText = document.getElementById('state-text');
+
+            if (!navigator.geolocation) {
+                locationText.textContent = "Geolocation not supported";
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const { latitude, longitude } = position.coords;
+                
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                    const data = await response.json();
+                    
+                    const address = data.address;
+                    const city = address.city || address.town || address.village || address.hamlet || "Unknown Location";
+                    const district = address.state_district || address.county || "Unknown District";
+                    const state = address.state || "Unknown State";
+                    const country = address.country || "India";
+
+                    locationText.textContent = `${city}, ${country}`;
+                    districtText.textContent = district;
+                    stateText.textContent = state;
+
+                } catch (error) {
+                    console.error("Error fetching location:", error);
+                    locationText.textContent = "Location unavailable";
+                }
+            }, (error) => {
+                console.error("Geolocation error:", error);
+                locationText.textContent = "Location access denied";
+            });
+        }
+
+        // Call the function when the page loads
+        document.addEventListener('DOMContentLoaded', updateLocation);
     </script>
 
 </body>
