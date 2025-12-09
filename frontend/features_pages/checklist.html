@@ -125,6 +125,30 @@
   <script src="language-toggle.js"></script>
 
   <script>
+    // --- Define missing APIs locally if needed ---
+    if (typeof checklistItemMediaAPI === 'undefined') {
+      window.checklistItemMediaAPI = {
+        upload: (formData) => apiRequest("/api/v1/checklist-media/upload", { method: "POST", body: formData }),
+        getByItem: (itemId) => apiRequest(`/api/v1/checklist-media/item/${itemId}`, { method: "GET" })
+      };
+    }
+
+    // Checklist API
+    if (typeof checklistAPI === 'undefined') {
+      window.checklistAPI = {
+        getAll: (roleId) => {
+          const query = roleId ? `?role_id=${roleId}` : "";
+          return apiRequest(`/api/v1/checklists${query}`, { method: "GET" });
+        }
+      };
+    }
+
+    if (typeof checklistItemAPI === 'undefined') {
+      window.checklistItemAPI = {
+        getByChecklist: (id) => apiRequest(`/api/v1/checklist-items/checklist/${id}`, { method: "GET" })
+      };
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       // --- 1. AUTH & INIT ---
       const token = localStorage.getItem("token");
@@ -157,12 +181,14 @@
           document.getElementById('completed-count').textContent = doneToday;
 
           // Fetch API Data
-          const res = await checklistAPI.getAll(roleId);
-          const checklists = res.data.checklists || [];
+          // Assuming roleId is the actual ID string, if object use roleId._id
+          const rId = typeof roleId === 'object' ? roleId._id : roleId;
+          const res = await checklistAPI.getAll(rId);
+          const checklists = res.data.checklists || res.data || [];
 
           renderList(checklists);
 
-          // Calculate pending (Total API items - Locally Completed items)
+          // Calculate pending
           const pending = checklists.filter(c => !completedChecklists.some(done => done.id === c._id)).length;
           document.getElementById('pending-count').textContent = pending;
 
@@ -180,12 +206,9 @@
         }
 
         list.forEach(cl => {
-          // Check if this specific checklist ID is in our completed array
           const isDone = completedChecklists.some(done => done.id === cl._id);
-
           const card = document.createElement('div');
 
-          // DIFFERENT STYLING FOR COMPLETED ITEMS
           if (isDone) {
             card.className = 'bg-green-50 p-4 rounded-2xl shadow-sm border border-green-200 relative overflow-hidden opacity-75';
             card.onclick = () => showToast("This inspection is complete.", "info");
@@ -194,9 +217,8 @@
             card.onclick = () => openChecklist(cl);
           }
 
-          const taskName = cl.task_id?.taskName || cl.name || 'Unnamed Task';
+          const taskName = (cl.task_id && cl.task_id.taskName) ? cl.task_id.taskName : (cl.name || 'Unnamed Task');
 
-          // Badge Logic
           const badge = isDone
             ? `<span class="bg-green-200 text-green-800 text-[10px] font-bold px-2 py-1 rounded-full uppercase flex items-center gap-1"><span class="material-symbols-rounded text-xs">check</span>Done</span>`
             : `<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">Pending</span>`;
@@ -206,18 +228,18 @@
             : `<div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center"><span class="material-symbols-rounded">play_arrow</span></div>`;
 
           card.innerHTML = `
-                        <div class="absolute left-0 top-0 bottom-0 w-1.5 ${isDone ? 'bg-success-green' : 'bg-primary'}"></div>
-                        <div class="flex justify-between items-center pl-3">
-                            <div>
-                                <h3 class="font-bold text-neutral-800 text-lg">${taskName}</h3>
-                                <div class="flex items-center gap-2 mt-1">
-                                    ${badge}
-                                    <span class="text-xs text-neutral-500">${cl.name}</span>
-                                </div>
-                            </div>
-                            ${icon}
-                        </div>
-                    `;
+            <div class="absolute left-0 top-0 bottom-0 w-1.5 ${isDone ? 'bg-success-green' : 'bg-primary'}"></div>
+            <div class="flex justify-between items-center pl-3">
+                <div>
+                    <h3 class="font-bold text-neutral-800 text-lg">${taskName}</h3>
+                    <div class="flex items-center gap-2 mt-1">
+                        ${badge}
+                        <span class="text-xs text-neutral-500">${cl.name}</span>
+                    </div>
+                </div>
+                ${icon}
+            </div>
+          `;
           container.appendChild(card);
         });
       };
@@ -228,7 +250,6 @@
         document.getElementById('modalTitle').textContent = checklist.name;
         modalItems.innerHTML = '<div class="text-center py-10"><span class="material-symbols-rounded animate-spin">refresh</span></div>';
 
-        // Reset Button
         submitBtn.disabled = true;
         submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
         submitBtn.innerHTML = `<span class="material-symbols-rounded">check_circle</span> <span data-translate-key="submit_inspection">Submit Inspection</span>`;
@@ -239,8 +260,12 @@
         try {
           const res = await checklistItemAPI.getByChecklist(checklist._id);
           currentItems = res.data || [];
-          renderItems(currentItems);
+
+          // Render Items with Images Logic
+          await renderItems(currentItems);
+
         } catch (e) {
+          console.error(e);
           modalItems.innerHTML = '<p class="text-center text-red-500">Error loading items</p>';
         }
       };
@@ -250,7 +275,7 @@
         modal.classList.remove('flex');
       };
 
-      const renderItems = (items) => {
+      const renderItems = async (items) => {
         modalItems.innerHTML = '';
 
         if (items.length === 0) {
@@ -260,30 +285,61 @@
 
         items.sort((a, b) => a.order - b.order);
 
-        items.forEach(item => {
+        // We need to support async rendering if we fetch media individually
+        // Or render placeholders first.
+
+        for (const item of items) {
+          let refImageUrl = item.equipment_image_url || null;
+
+          // Fallback fetch if not directly on item
+          if (!refImageUrl) {
+            try {
+              const mediaRes = await checklistItemMediaAPI.getByItem(item._id);
+              if (mediaRes.data && mediaRes.data.length > 0) {
+                refImageUrl = mediaRes.data[0].url;
+              }
+            } catch (e) {/*ignore*/ }
+          }
+
           const el = document.createElement('div');
           el.className = 'check-item bg-white p-4 rounded-xl border border-neutral-200 shadow-sm';
+
+          // Build HTML
+          let imageHtml = '';
+          if (refImageUrl) {
+            imageHtml = `
+                    <div class="mb-3 rounded-lg overflow-hidden border border-neutral-100">
+                        <img src="${refImageUrl}" class="w-full h-32 object-cover object-center" alt="Reference Image" onclick="window.open('${refImageUrl}', '_blank')">
+                        <p class="text-[10px] text-neutral-400 p-1 text-center bg-neutral-50">Reference Photo</p>
+                    </div>
+                `;
+          }
+
           el.innerHTML = `
-                        <div class="flex items-start gap-3">
-                            <input type="checkbox" id="check_${item._id}" class="mt-1 w-6 h-6 text-primary border-neutral-300 rounded focus:ring-primary transition" onchange="checkValidity()">
-                            <div class="flex-1">
-                                <label for="check_${item._id}" class="text-base font-medium text-neutral-800 block select-none">${item.description}</label>
-                                ${item.is_mandatory ? '<span class="text-[10px] text-red-500 font-bold uppercase tracking-wider">Required</span>' : ''}
-                                <div id="media_preview_${item._id}" class="mt-2 hidden"></div>
-                                <div class="flex gap-2 mt-3">
-                                    <button onclick="triggerCamera('${item._id}')" class="flex items-center gap-1 text-xs font-bold bg-neutral-100 text-neutral-600 px-3 py-2 rounded-lg hover:bg-neutral-200">
-                                        <span class="material-symbols-rounded text-sm">photo_camera</span> Add Photo
-                                    </button>
-                                </div>
-                            </div>
+                ${imageHtml}
+                <div class="flex items-start gap-3">
+                    <input type="checkbox" id="check_${item._id}" class="mt-1 w-6 h-6 text-primary border-neutral-300 rounded focus:ring-primary transition" onchange="checkValidity()">
+                    <div class="flex-1">
+                        <label for="check_${item._id}" class="text-base font-medium text-neutral-800 block select-none leading-tight">${item.description}</label>
+                        ${item.is_mandatory ? '<span class="text-[10px] text-red-500 font-bold uppercase tracking-wider mt-1 block">Required</span>' : ''}
+                        
+                        <div id="media_preview_${item._id}" class="mt-2 hidden"></div>
+                        
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="triggerCamera('${item._id}')" class="flex items-center gap-1 text-xs font-bold bg-neutral-100 text-neutral-600 px-3 py-2 rounded-lg hover:bg-neutral-200 active:scale-95 transition-transform">
+                                <span class="material-symbols-rounded text-sm">photo_camera</span> Add Photo
+                            </button>
                         </div>
-                    `;
+                    </div>
+                </div>
+            `;
           modalItems.appendChild(el);
-        });
-        checkValidity(); // Check immediately in case all optional
+        }
+
+        checkValidity();
       };
 
-      // --- 4. MEDIA UPLOAD LOGIC ---
+      // --- 4. MEDIA UPLOAD LOGIC (User Evidence) ---
       window.triggerCamera = (itemId) => {
         currentMediaItem = itemId;
         mediaInput.click();
@@ -296,23 +352,27 @@
         const formData = new FormData();
         formData.append('file', file);
         formData.append('checklist_item_id', currentMediaItem);
+        // Note: For user evidence, backend might expect 'media_type' or handle it. Assuming standard upload.
 
-        showToast("Uploading...", "info");
+        showToast("Uploading evidence...", "info");
 
         try {
           const res = await checklistItemMediaAPI.upload(formData);
+          // Adjust based on your API response structure: res.data.url or res.data.data.url
+          const url = res.data?.url || res.data?.data?.url || res.url;
 
           const previewContainer = document.getElementById(`media_preview_${currentMediaItem}`);
           previewContainer.classList.remove('hidden');
           previewContainer.innerHTML = `
-                        <div class="relative w-20 h-20 rounded-lg overflow-hidden border border-neutral-200 mt-2">
-                            <img src="${res.data.url}" class="w-full h-full object-cover">
-                            <div class="absolute bottom-0 right-0 bg-green-500 text-white p-0.5 rounded-tl-md">
-                                <span class="material-symbols-rounded text-xs">check</span>
-                            </div>
-                        </div>
-                    `;
+                <div class="relative w-20 h-20 rounded-lg overflow-hidden border border-neutral-200 mt-2">
+                    <img src="${url}" class="w-full h-full object-cover">
+                    <div class="absolute bottom-0 right-0 bg-green-500 text-white p-0.5 rounded-tl-md">
+                        <span class="material-symbols-rounded text-xs">check</span>
+                    </div>
+                </div>
+            `;
 
+          // Auto-check the box if they upload proof
           const checkbox = document.getElementById(`check_${currentMediaItem}`);
           if (checkbox) {
             checkbox.checked = true;
@@ -370,7 +430,7 @@
           closeModal();
           showToast("Inspection Submitted!");
 
-          // 3. Refresh List to show Green Card
+          // 3. Refresh List
           loadData();
 
         }, 800);

@@ -144,7 +144,7 @@
             <div class="flex justify-between items-center border-b border-neutral-200 pb-3 mb-4 shrink-0">
                 <div>
                     <h3 class="text-lg font-bold text-neutral-800" id="itemsModalTitle">Checklist Items</h3>
-                    <p class="text-xs text-neutral-500">Add steps for this checklist</p>
+                    <p class="text-xs text-neutral-500">Add steps and reference images</p>
                 </div>
                 <button onclick="closeModal('itemsModal')" class="text-neutral-400 hover:text-neutral-600">
                     <span class="material-symbols-rounded text-2xl">close</span>
@@ -154,30 +154,61 @@
             <div id="itemsList" class="flex-1 overflow-y-auto space-y-2 pr-2 mb-4">
             </div>
 
-            <form id="addItemForm" class="shrink-0 pt-3 border-t border-neutral-200 bg-neutral-50 p-3 rounded-xl">
+            <form id="addItemForm"
+                class="shrink-0 pt-3 border-t border-neutral-200 bg-neutral-50 p-3 rounded-xl space-y-3">
                 <input type="hidden" id="currentChecklistId">
-                <div class="flex gap-2 mb-2">
-                    <input type="text" id="itemDesc" required placeholder="New item description..."
+
+                <div class="flex gap-2">
+                    <input type="text" id="itemDesc" required placeholder="Item description (e.g. Wear Helmet)"
                         class="flex-1 border-neutral-200 rounded-lg text-sm px-3 py-2">
                     <input type="number" id="itemOrder" required placeholder="#"
-                        class="w-16 border-neutral-200 rounded-lg text-sm px-2 py-2" value="1">
+                        class="w-16 border-neutral-200 rounded-lg text-sm px-2 py-2 text-center" value="1">
                 </div>
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center gap-2 text-sm text-neutral-600">
-                        <input type="checkbox" id="itemMandatory" class="rounded text-primary focus:ring-primary">
-                        Mandatory?
+
+                <div class="flex gap-2 items-center">
+                    <label
+                        class="flex-1 flex items-center gap-2 px-3 py-2 bg-white border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-100 transition">
+                        <span class="material-symbols-rounded text-neutral-400 text-lg">image</span>
+                        <span class="text-xs text-neutral-500 truncate" id="fileLabel">Add Reference Photo
+                            (Optional)</span>
+                        <input type="file" id="itemImage" accept="image/*" class="hidden">
                     </label>
-                    <button type="submit"
-                        class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-1">
-                        <span class="material-symbols-rounded text-sm">add</span> Add
-                    </button>
+                    <label
+                        class="flex items-center gap-2 text-xs font-bold text-neutral-600 bg-white border border-neutral-200 px-3 py-2 rounded-lg cursor-pointer">
+                        <input type="checkbox" id="itemMandatory" class="rounded text-primary focus:ring-primary">
+                        Mandatory
+                    </label>
                 </div>
+
+                <button type="submit" id="addItemBtn"
+                    class="w-full bg-primary text-white px-4 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-primary-dark transition shadow-sm">
+                    <span class="material-symbols-rounded text-sm">add_circle</span> Add Item to List
+                </button>
             </form>
         </div>
     </div>
 
     <script src="../api.client.js"></script>
     <script>
+        // --- API DEFINITIONS ---
+        // Ensuring these are defined even if api.client.js doesn't have them yet
+        if (typeof checklistItemMediaAPI === 'undefined') {
+            window.checklistItemMediaAPI = {
+                upload: (formData) => apiRequest("/api/v1/checklist-media/upload", { method: "POST", body: formData }),
+                getByItem: (itemId) => apiRequest(`/api/v1/checklist-media/item/${itemId}`, { method: "GET" })
+            };
+        }
+
+        if (typeof checklistItemAPI === 'undefined') {
+            window.checklistItemAPI = {
+                create: (data) => apiRequest("/api/v1/checklist-items", { method: "POST", body: JSON.stringify(data) }),
+                // Added UPDATE to handle saving the image URL to the item
+                update: (id, data) => apiRequest(`/api/v1/checklist-items/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+                delete: (id) => apiRequest(`/api/v1/checklist-items/${id}`, { method: "DELETE" }),
+                getByChecklist: (id) => apiRequest(`/api/v1/checklist-items/checklist/${id}`, { method: "GET" })
+            };
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem("token");
             if (!token) { window.location.href = "../index.html"; return; }
@@ -191,8 +222,20 @@
             const emptyState = document.getElementById('emptyState');
             const roleSelect = document.getElementById('roleSelect');
             const taskSelect = document.getElementById('taskSelect');
+            const fileInput = document.getElementById('itemImage');
+            const fileLabel = document.getElementById('fileLabel');
 
             // --- 1. UI HELPERS ---
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    fileLabel.textContent = e.target.files[0].name;
+                    fileLabel.classList.add('text-primary');
+                } else {
+                    fileLabel.textContent = "Add Reference Photo (Optional)";
+                    fileLabel.classList.remove('text-primary');
+                }
+            });
+
             const showAlert = (msg, type = 'success') => {
                 const el = document.getElementById('customAlert');
                 const msgEl = document.getElementById('alertMessage');
@@ -217,7 +260,6 @@
             // --- 2. DATA LOADING ---
             const loadData = async () => {
                 try {
-                    // Load Dropdowns
                     const [rolesRes, tasksRes] = await Promise.all([
                         roleAPI.getAll(1, 100),
                         taskAPI.getAll(1, 100)
@@ -233,7 +275,6 @@
                         taskSelect.innerHTML += `<option value="${t._id}">${t.taskName}</option>`;
                     });
 
-                    // Load Checklists
                     fetchChecklists();
 
                 } catch (e) {
@@ -322,7 +363,7 @@
                 } catch (e) { showAlert("Delete failed", "error"); }
             };
 
-            // --- 4. ITEM ACTIONS ---
+            // --- 4. ITEM ACTIONS & MEDIA UPLOAD ---
             window.manageItems = async (checklistId, name) => {
                 document.getElementById('currentChecklistId').value = checklistId;
                 document.getElementById('itemsModalTitle').textContent = name;
@@ -343,43 +384,109 @@
                         return;
                     }
 
-                    items.forEach(item => {
+                    for (const item of items) {
+                        // 1. Try to use URL on item first
+                        let imageUrl = item.equipment_image_url || null;
+
+                        // 2. Fallback: Fetch from media API if item has no URL (Backward compat)
+                        if (!imageUrl) {
+                            try {
+                                const mediaRes = await checklistItemMediaAPI.getByItem(item._id);
+                                if (mediaRes.data && mediaRes.data.length > 0) {
+                                    imageUrl = mediaRes.data[0].url;
+                                }
+                            } catch (err) { /* ignore */ }
+                        }
+
                         const div = document.createElement('div');
-                        div.className = 'flex items-center justify-between bg-neutral-50 p-3 rounded-xl border border-neutral-100';
+                        div.className = 'flex items-start justify-between bg-neutral-50 p-3 rounded-xl border border-neutral-100 gap-3';
                         div.innerHTML = `
-                            <div class="flex items-center gap-3">
-                                <span class="text-xs font-mono text-neutral-400 font-bold">#${item.order}</span>
-                                <div>
-                                    <p class="text-sm font-medium text-neutral-800">${item.description}</p>
-                                    ${item.is_mandatory ? '<span class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold uppercase">Required</span>' : ''}
+                            <div class="flex items-start gap-3 flex-1 min-w-0">
+                                <span class="text-xs font-mono text-neutral-400 font-bold mt-1">#${item.order}</span>
+                                ${imageUrl ? `<img src="${imageUrl}" class="w-12 h-12 object-cover rounded-lg border border-neutral-200 cursor-pointer hover:scale-105 transition" onclick="window.open('${imageUrl}', '_blank')">` : ''}
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-neutral-800 break-words">${item.description}</p>
+                                    ${item.is_mandatory ? '<span class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold uppercase inline-block mt-1">Required</span>' : ''}
                                 </div>
                             </div>
-                            <button onclick="deleteItem('${item._id}', '${checklistId}')" class="text-neutral-400 hover:text-red-500"><span class="material-symbols-rounded text-lg">delete</span></button>
+                            <button onclick="deleteItem('${item._id}', '${checklistId}')" class="text-neutral-400 hover:text-red-500 p-1"><span class="material-symbols-rounded text-lg">delete</span></button>
                         `;
                         container.appendChild(div);
-                    });
+                    }
                 } catch (e) {
+                    console.error(e);
                     container.innerHTML = '<div class="text-red-500 text-center text-sm">Error loading items</div>';
                 }
             };
 
+            // ADD ITEM HANDLER
             document.getElementById('addItemForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const btn = document.getElementById('addItemBtn');
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = 'Saving...';
+
                 const checklistId = document.getElementById('currentChecklistId').value;
-                const payload = {
-                    checklist_id: checklistId,
-                    description: document.getElementById('itemDesc').value,
-                    order: parseInt(document.getElementById('itemOrder').value),
-                    is_mandatory: document.getElementById('itemMandatory').checked
-                };
+                const file = document.getElementById('itemImage').files[0];
 
                 try {
-                    await checklistItemAPI.create(payload);
+                    // Step 1: Create Item
+                    const itemPayload = {
+                        checklist_id: checklistId,
+                        description: document.getElementById('itemDesc').value,
+                        order: parseInt(document.getElementById('itemOrder').value),
+                        is_mandatory: document.getElementById('itemMandatory').checked
+                    };
+
+                    const itemRes = await checklistItemAPI.create(itemPayload);
+
+                    // Robust ID Extraction
+                    let newItemId = null;
+                    if (itemRes.data && itemRes.data._id) newItemId = itemRes.data._id;
+                    else if (itemRes._id) newItemId = itemRes._id;
+                    else if (itemRes.data?.checklistItem?._id) newItemId = itemRes.data.checklistItem._id;
+
+                    if (!newItemId) throw new Error("Failed to get new Item ID");
+
+                    // Step 2: Upload Image & Update Item
+                    if (file) {
+                        const formData = new FormData();
+                        // IMPORTANT: backend expects 'checklist_item_id'
+                        formData.append('checklist_item_id', newItemId);
+                        formData.append('file', file);
+                        formData.append('media_type', 'image');
+                        formData.append('checklist_id', checklistId);
+
+                        const mediaRes = await checklistItemMediaAPI.upload(formData);
+
+                        // Extract URL from upload response (handles various structures)
+                        const uploadedUrl = mediaRes.data?.url || mediaRes.data?.data?.url || mediaRes.url;
+
+                        if (uploadedUrl) {
+                            // Update item with the new URL so it persists
+                            await checklistItemAPI.update(newItemId, {
+                                equipment_image_url: uploadedUrl
+                            });
+                        }
+                    }
+
+                    // Reset Form
                     document.getElementById('itemDesc').value = '';
-                    document.getElementById('itemOrder').value = parseInt(payload.order) + 1; // Auto increment
-                    fetchItems(checklistId); // Refresh list
+                    document.getElementById('itemOrder').value = parseInt(itemPayload.order) + 1;
+                    document.getElementById('itemImage').value = '';
+                    document.getElementById('fileLabel').textContent = "Add Reference Photo (Optional)";
+                    document.getElementById('fileLabel').classList.remove('text-primary');
+
+                    fetchItems(checklistId);
+                    showAlert("Item added successfully!");
+
                 } catch (e) {
+                    console.error("Add Item Error:", e);
                     showAlert(e.message || "Failed to add item", "error");
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
                 }
             });
 
@@ -391,7 +498,6 @@
                 } catch (e) { showAlert("Failed to delete item", "error"); }
             };
 
-            // --- INIT ---
             loadData();
         });
     </script>

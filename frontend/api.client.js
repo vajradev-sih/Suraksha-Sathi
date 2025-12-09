@@ -430,6 +430,7 @@ const hazardMediaAPI = {
 const safetyVideoAPI = {
   upload: (formData) => apiRequest("/api/v1/safety-videos/upload", { method: "POST", body: formData }),
   getAll: () => apiRequest("/api/v1/safety-videos", { method: "GET" }),
+  update: (id, data) => apiRequest(`/api/v1/safety-videos/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   delete: (id) => apiRequest(`/api/v1/safety-videos/${id}`, { method: "DELETE" }),
 };
 
@@ -527,6 +528,106 @@ const hazardAssignmentAPI = {
 const hazardAuditAPI = { create: (data) => apiRequest("/api/v1/hazard-audits", { method: "POST", body: JSON.stringify(data) }) };
 const safetyPromptAPI = { schedule: (data) => apiRequest("/api/v1/safety-prompts", { method: "POST", body: JSON.stringify(data) }) };
 
+// 5. Worker Video API
+const workerVideoAPI = {
+  // Worker: Upload Video
+  // Note: 'data' should be a FormData object containing the file and other fields
+  upload: (formData) =>
+    apiRequest("/api/v1/worker-videos/upload", {
+      method: "POST",
+      body: formData,
+      // Important: When sending FormData, do NOT set Content-Type header manually.
+      // The browser/fetch will set it automatically with the boundary.
+      // Ensure your apiRequest function doesn't force 'application/json' if body is FormData.
+    }),
+
+  // Worker: Get logged-in user's videos
+  getMyVideos: (page = 1, limit = 10) =>
+    apiRequest(`/api/v1/worker-videos/my-videos?page=${page}&limit=${limit}`, {
+      method: "GET",
+    }),
+
+  // Public/Shared: Get list of approved videos
+  getApproved: (page = 1, limit = 10, search = "") =>
+    apiRequest(
+      `/api/v1/worker-videos/approved?page=${page}&limit=${limit}&search=${encodeURIComponent(
+        search
+      )}`,
+      {
+        method: "GET",
+      }
+    ),
+
+  // Public/Shared: Get specific video details
+  getById: (id) =>
+    apiRequest(`/api/v1/worker-videos/${id}`, {
+      method: "GET",
+    }),
+
+  // Admin: Get videos pending approval
+  getPending: (page = 1, limit = 10) =>
+    apiRequest(`/api/v1/worker-videos/pending?page=${page}&limit=${limit}`, {
+      method: "GET",
+    }),
+
+  // Admin: Get all videos (with filters)
+  getAll: (page = 1, limit = 10, status = "") => {
+    let url = `/api/v1/worker-videos/all?page=${page}&limit=${limit}`;
+    if (status) url += `&status=${status}`;
+    return apiRequest(url, { method: "GET" });
+  },
+
+  // Admin: Approve a video
+  approve: (id) =>
+    apiRequest(`/api/v1/worker-videos/${id}/approve`, {
+      method: "POST",
+    }),
+
+  // Admin: Reject a video
+  reject: (id, rejectionReason) =>
+    apiRequest(`/api/v1/worker-videos/${id}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ rejectionReason }),
+    }),
+
+  // Admin: Moderation - Get Auto-Rejected videos
+  getAutoRejected: (page = 1, limit = 10) =>
+    apiRequest(
+      `/api/v1/worker-videos/moderation/auto-rejected?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+      }
+    ),
+
+  // Admin: Moderation - Get Flagged videos
+  getFlagged: (page = 1, limit = 10) =>
+    apiRequest(
+      `/api/v1/worker-videos/moderation/flagged?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+      }
+    ),
+
+  // Admin: Moderation - Get Statistics
+  getModerationStats: () =>
+    apiRequest("/api/v1/worker-videos/moderation/stats", {
+      method: "GET",
+    }),
+
+  // Management: Update video details (title/description)
+  update: (id, data) =>
+    apiRequest(`/api/v1/worker-videos/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  // Management: Delete video
+  delete: (id) =>
+    apiRequest(`/api/v1/worker-videos/${id}`, {
+      method: "DELETE",
+    }),
+};
+
 // ==========================================
 // 5. EXPORTS
 // ==========================================
@@ -554,6 +655,7 @@ window.followUpAPI = followUpAPI;
 window.hazardAssignmentAPI = hazardAssignmentAPI;
 window.hazardAuditAPI = hazardAuditAPI;
 window.safetyPromptAPI = safetyPromptAPI;
+window.workerVideoAPI = workerVideoAPI;
 
 // Export offline utilities
 window.getOfflineQueueStatus = getOfflineQueueStatus;
