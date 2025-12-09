@@ -37,15 +37,52 @@ export const moderateUploadedContent = asyncHandler(async (req, res, next) => {
   // If content is auto-rejected based on text, reject immediately
   if (shouldAutoReject(preliminaryModeration)) {
     console.log('[MODERATION MIDDLEWARE] Content auto-rejected!');
+    console.log('[MODERATION MIDDLEWARE] Reason:', preliminaryModeration.reasons);
+    
     // Clean up uploaded file
     if (req.file && req.file.path) {
       await fs.unlink(req.file.path).catch(() => {});
     }
 
-    throw new ApiError(
-      400,
-      `Upload rejected: ${getModerationSummary(preliminaryModeration)}. Please review our content guidelines.`
-    );
+    // Build detailed, user-friendly error message
+    const rejectionReasons = preliminaryModeration.reasons.join('. ');
+    const foundKeywords = preliminaryModeration.foundKeywords || [];
+    const categories = preliminaryModeration.categories || [];
+    
+    let errorMessage = '❌ Content Rejected - Upload Not Allowed\n\n';
+    errorMessage += `REASON: Your submission contains inappropriate content that violates our community guidelines.\n\n`;
+    
+    if (categories.length > 0) {
+      errorMessage += `VIOLATIONS DETECTED:\n`;
+      categories.forEach(cat => {
+        errorMessage += `  • ${cat.charAt(0).toUpperCase() + cat.slice(1)}\n`;
+      });
+      errorMessage += '\n';
+    }
+    
+    if (foundKeywords.length > 0 && foundKeywords.length <= 5) {
+      errorMessage += `FLAGGED CONTENT: "${foundKeywords.join('", "')}"\n\n`;
+    }
+    
+    errorMessage += `WHY NOT ALLOWED:\n`;
+    errorMessage += `  • This content could be offensive or harmful to others\n`;
+    errorMessage += `  • It violates workplace safety and respect standards\n`;
+    errorMessage += `  • Our platform maintains a professional environment\n\n`;
+    
+    errorMessage += `WHAT YOU CAN DO:\n`;
+    errorMessage += `  • Remove any profanity, cuss words, or offensive language\n`;
+    errorMessage += `  • Ensure your title and description are professional\n`;
+    errorMessage += `  • Focus on safety-related content only\n`;
+    errorMessage += `  • Contact support if you believe this is an error\n\n`;
+    
+    errorMessage += `COMMUNITY GUIDELINES:\n`;
+    errorMessage += `  ✓ Use respectful, professional language\n`;
+    errorMessage += `  ✓ Focus on workplace safety and best practices\n`;
+    errorMessage += `  ✗ No profanity, hate speech, or harassment\n`;
+    errorMessage += `  ✗ No explicit, violent, or offensive content\n`;
+    errorMessage += `  ✗ No substance abuse or dangerous behaviors`;
+
+    throw new ApiError(400, errorMessage);
   }
 
   // Store preliminary moderation result for later use

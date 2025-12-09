@@ -57,7 +57,12 @@ router.post('/upload',
     next();
   },
   (req, res, next) => {
-    console.log('[UPLOAD ROUTE] Step 4: About to call controller');
+    console.log('[UPLOAD ROUTE] Step 4: Content moderation check');
+    next();
+  },
+  moderateUploadedContent, // ✅ CONTENT FILTER - Blocks explicit content before database
+  (req, res, next) => {
+    console.log('[UPLOAD ROUTE] Step 5: Moderation passed, calling controller');
     next();
   },
   uploadWorkerVideo
