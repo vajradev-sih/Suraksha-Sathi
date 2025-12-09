@@ -1,649 +1,617 @@
 <!DOCTYPE html>
-<html class="dark" lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>MineSafe Shorts</title>
-    <!-- Tailwind for layout -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fonts & Icons -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,1,0"
-      rel="stylesheet"
-    />
+<html lang="en">
 
-    <style>
-      :root {
-        --primary: #f9a825; /* Safety Yellow */
-        --accent: #22c55e; /* Safe Green */
-        --danger: #ef4444;
-      }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Safety Cam</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,1,0"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #F9A825;
+      --accent: #22C55E;
+      --danger: #EF4444;
+    }
 
-      body {
-        background-color: #000;
-        font-family: "Inter", sans-serif;
-        color: white;
-        overflow: hidden; /* Prevent body scroll, handle in container */
-      }
+    body {
+      background-color: #000;
+      font-family: 'Inter', sans-serif;
+      color: white;
+      overflow: hidden;
+    }
 
-      /* Scroll Container */
-      #shorts-container {
-        height: 100dvh; /* Dynamic viewport height for mobile */
-        width: 100%;
-        overflow-y: scroll;
-        scroll-snap-type: y mandatory;
-        scroll-behavior: smooth;
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none; /* IE/Edge */
-      }
-      #shorts-container::-webkit-scrollbar {
-        display: none; /* Chrome/Safari */
-      }
+    /* Scroll Container */
+    #shorts-container {
+      height: 100dvh;
+      width: 100%;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
 
-      /* Individual Slide */
-      .video-slide {
-        height: 100dvh;
-        width: 100%;
-        position: relative;
-        scroll-snap-align: start;
-        scroll-snap-stop: always;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: #111;
-        overflow: hidden;
-      }
+    #shorts-container::-webkit-scrollbar {
+      display: none;
+    }
 
-      /* Video styling */
-      video {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        min-height: 100%;
-        min-width: 100%;
-        width: auto;
-        height: auto;
-        object-fit: cover;
-        /* prevent default video controls */
-        pointer-events: none;
-      }
+    /* Individual Slide */
+    .video-slide {
+      height: 100dvh;
+      width: 100%;
+      position: relative;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #111;
+      overflow: hidden;
+    }
 
-      /* UI Overlay Layer */
-      .overlay-layer {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        background: linear-gradient(
-          to top,
-          rgba(0, 0, 0, 0.9) 0%,
-          rgba(0, 0, 0, 0.3) 40%,
-          transparent 100%
-        );
-        padding: 20px;
-        pointer-events: none; /* Let clicks pass through to container */
-      }
+    video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-height: 100%;
+      min-width: 100%;
+      width: auto;
+      height: auto;
+      object-fit: cover;
+      pointer-events: none;
+    }
 
-      /* Interactive elements need pointer-events auto */
-      .interactive {
-        pointer-events: auto;
-      }
+    #camera-feed {
+      /* Camera preview needs separate styling to sit behind UI but above nothing when recording */
+      z-index: 1;
+    }
 
-      /* Right Side Actions */
-      .actions-bar {
-        position: absolute;
-        right: 16px;
-        bottom: 100px;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        align-items: center;
-        z-index: 20;
-      }
+    .short-video-element {
+      /* Feed videos */
+      z-index: 0;
+    }
 
-      .action-btn {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(4px);
-        border: none;
-        color: white;
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      }
+    /* UI Overlay Layer */
+    .overlay-layer {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.3) 40%, transparent 100%);
+      padding: 20px;
+      pointer-events: none;
+      z-index: 10;
+    }
 
-      .action-btn:active {
-        transform: scale(0.9);
-      }
+    .interactive {
+      pointer-events: auto;
+    }
 
-      .action-btn span {
-        font-size: 28px;
-      }
+    .actions-bar {
+      position: absolute;
+      right: 16px;
+      bottom: 100px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+      z-index: 20;
+    }
 
-      .action-btn.liked {
-        color: #ef4444;
-        background: rgba(239, 68, 68, 0.2);
-      }
-      .action-btn.liked span {
-        font-variation-settings: "FILL" 1;
-      }
+    .action-btn {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(4px);
+      border: none;
+      color: white;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
 
-      .action-label {
-        font-size: 11px;
-        margin-top: 4px;
-        font-weight: 600;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-      }
+    .action-btn:active {
+      transform: scale(0.9);
+    }
 
-      /* Text Content */
-      .info-area {
-        width: 80%;
-        margin-bottom: 20px;
-        z-index: 10;
-      }
+    .action-btn.liked {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.2);
+    }
 
-      .tag {
-        background: var(--primary);
-        color: #000;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        display: inline-block;
-        margin-bottom: 8px;
-      }
+    .action-btn.liked span {
+      font-variation-settings: 'FILL' 1;
+    }
 
-      /* Top Navigation */
-      .top-nav {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        padding: 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        z-index: 50;
-        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
-        pointer-events: none;
-      }
+    .action-label {
+      font-size: 11px;
+      margin-top: 4px;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
 
-      .nav-btn {
-        background: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(5px);
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        cursor: pointer;
-        transition: transform 0.2s;
-        pointer-events: auto;
-        text-decoration: none;
-      }
+    .info-area {
+      width: 80%;
+      margin-bottom: 20px;
+      z-index: 10;
+    }
 
-      .nav-btn:active {
-        transform: scale(0.95);
-      }
+    .tag {
+      background: var(--primary);
+      color: #000;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
 
-      /* Camera/Add Button Specifics */
-      .camera-btn {
-        background: transparent;
-        border: 2px solid white;
-      }
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      z-index: 50;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+      pointer-events: none;
+    }
 
-      /* Double Tap Heart Animation */
-      .big-heart {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(0);
-        font-size: 100px;
-        color: rgba(255, 255, 255, 0.9);
-        pointer-events: none;
-        z-index: 30;
-        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
-      }
+    .nav-btn {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(5px);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      pointer-events: auto;
+      text-decoration: none;
+    }
 
-      .animate-heart {
-        animation: heartPop 0.8s ease-out forwards;
-      }
+    /* Camera Mode Styles */
+    .camera-mode .video-slide {
+      display: none;
+    }
 
-      @keyframes heartPop {
-        0% {
-          transform: translate(-50%, -50%) scale(0);
-          opacity: 0;
-        }
-        15% {
-          transform: translate(-50%, -50%) scale(1.2);
-          opacity: 1;
-        }
-        30% {
-          transform: translate(-50%, -50%) scale(1);
-        }
-        80% {
-          transform: translate(-50%, -50%) scale(1);
-          opacity: 1;
-        }
-        100% {
-          transform: translate(-50%, -50%) scale(1.5);
-          opacity: 0;
-        }
-      }
+    .camera-mode #camera-ui {
+      display: flex;
+    }
 
-      /* Play/Pause Icon overlay */
-      .center-play {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 60px;
-        opacity: 0;
-        transition: opacity 0.2s;
-        pointer-events: none;
-        background: rgba(0, 0, 0, 0.4);
-        border-radius: 50%;
-        padding: 20px;
-      }
+    #camera-ui {
+      display: none;
+      /* Hidden by default */
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      flex-direction: column;
+      justify-content: flex-end;
+      background: black;
+    }
 
-      .paused .center-play {
-        opacity: 1;
-      }
+    #camera-feed {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
 
-      /* Progress Bar */
-      .progress-track {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 3px;
-        background: rgba(255, 255, 255, 0.2);
-      }
-      .progress-fill {
-        height: 100%;
-        background: var(--primary);
-        width: 0%;
-        transition: width 0.1s linear;
+    .record-ring {
+      transition: all 0.3s ease;
+      width: 80px;
+      height: 80px;
+      border: 5px solid white;
+      border-radius: 50%;
+    }
+
+    .record-inner {
+      transition: all 0.3s ease;
+      width: 60px;
+      height: 60px;
+      background: #ef4444;
+      border-radius: 50%;
+    }
+
+    .recording .record-ring {
+      transform: scale(1.1);
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+
+    .recording .record-inner {
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+    }
+
+    /* Progress Bar */
+    .progress-track {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+
+    /* Modal & Loaders */
+    .glass-panel {
+      background: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border-left-color: #3b82f6;
+      animation: spin 1s ease infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
       }
 
-      /* Mute Toggle */
-      .mute-toggle {
-        position: absolute;
-        top: 20px;
-        right: 20px; /* Aligns with camera button somewhat */
-        top: 80px; /* Below camera button */
-        z-index: 40;
-        padding: 8px;
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 50%;
-        cursor: pointer;
-        opacity: 0;
-        transition: opacity 0.3s;
+      100% {
+        transform: rotate(360deg);
       }
-      .video-slide:hover .mute-toggle {
-        opacity: 1;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Top Navigation (Fixed) -->
-    <div class="top-nav">
-      <!-- Back Button -->
-      <a href="admin-home.html" class="nav-btn">
-        <span class="material-symbols-rounded">arrow_back</span>
-      </a>
+    }
+  </style>
+</head>
 
-      <!-- TITLE (Optional branding) -->
-      <div
-        class="mt-2 font-bold text-lg tracking-wide opacity-90 drop-shadow-md"
-      >
-        Suraksha Shorts
-      </div>
+<body>
 
-      <!-- NEW: Plus/Camera Icon -->
-      <a href="camera.html" class="nav-btn camera-btn interactive">
-        <span class="material-symbols-rounded">add</span>
-      </a>
+  <div class="top-nav">
+    <a href="admin-home.html" class="nav-btn">
+      <span class="material-symbols-rounded">arrow_back</span>
+    </a>
+    <div class="mt-2 font-bold text-lg tracking-wide opacity-90 drop-shadow-md">
+      Suraksha Shorts
     </div>
+    <button id="open-camera-btn" class="nav-btn camera-btn interactive">
+      <span class="material-symbols-rounded">add_a_photo</span>
+    </button>
+  </div>
 
-    <!-- Main Scroll Container -->
-    <div id="shorts-container">
-      <!-- Videos will be injected here by JavaScript -->
-    </div>
+  <div id="shorts-container">
+  </div>
 
-    <!-- Notification Toast -->
+  <div id="camera-ui">
+    <video id="camera-feed" autoplay playsinline muted></video>
+
     <div
-      id="toast"
-      class="fixed top-20 left-1/2 -translate-x-1/2 bg-white/90 text-black px-6 py-2 rounded-full font-semibold text-sm opacity-0 transition-opacity duration-300 z-[100] pointer-events-none shadow-xl"
-    >
-      Action Completed
+      class="absolute bottom-0 left-0 right-0 z-50 flex flex-col items-center pb-12 pt-20 bg-gradient-to-t from-black via-black/50 to-transparent">
+      <div class="w-full px-12 flex items-center justify-between max-w-md">
+        <div class="flex flex-col items-center justify-center w-16">
+          <input type="file" id="file-input" accept="video/*" class="hidden">
+          <button id="upload-btn"
+            class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center mb-1">
+            <span class="material-symbols-rounded">upload_file</span>
+          </button>
+          <span class="text-[10px] font-medium text-white/70 uppercase">Upload</span>
+        </div>
+
+        <button id="record-btn" class="relative flex items-center justify-center">
+          <div class="record-ring flex items-center justify-center">
+            <div class="record-inner"></div>
+          </div>
+        </button>
+
+        <button id="close-camera-btn" class="flex flex-col items-center justify-center w-16">
+          <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center mb-1">
+            <span class="material-symbols-rounded">close</span>
+          </div>
+          <span class="text-[10px] font-medium text-white/70 uppercase">Close</span>
+        </button>
+      </div>
     </div>
+  </div>
 
-    <script>
-      /**
-       * ==========================================
-       * USER CONFIGURATION AREA - EDIT THIS LIST
-       * ==========================================
-       */
-      const videoData = [
-        {
-          id: 1,
-          url: "https://cdn.pixabay.com/video/2020/03/30/34616-402679736_tiny.mp4",
-          poster: "https://img.youtube.com/vi/6fLxnc5IJ-E/maxresdefault.jpg",
-          category: "Gas Safety",
-          title: "Gas Detection Protocol",
-          description:
-            "Step-by-step guide on using the MX4 detector in deep shafts.",
-          likes: 1205,
-          comments: 85,
-          shares: 45,
-        },
-        {
-          id: 2,
-          url: "https://cdn.pixabay.com/video/2020/05/24/40030-424911975_tiny.mp4",
-          poster: "",
-          category: "PPE Check",
-          title: "Helmet & Light Inspection",
-          description:
-            "Daily routine checks for your personal protective gear.",
-          likes: 850,
-          comments: 42,
-          shares: 120,
-        },
-        {
-          id: 3,
-          url: "https://cdn.pixabay.com/video/2021/08/16/85351-590746476_tiny.mp4",
-          poster: "",
-          category: "Fire Response",
-          title: "Emergency Evacuation",
-          description: "Follow the blue markers to the nearest refuge chamber.",
-          likes: 2300,
-          comments: 156,
-          shares: 512,
-        },
-        {
-          id: 4,
-          url: "https://cdn.pixabay.com/video/2022/12/09/142327-779987365_tiny.mp4",
-          poster: "",
-          category: "Machinery",
-          title: "Heavy Loader Safety",
-          description:
-            "Blind spots you need to be aware of around heavy loaders.",
-          likes: 945,
-          comments: 67,
-          shares: 30,
-        },
-      ];
+  <div id="details-modal"
+    class="hidden absolute inset-0 z-[60] bg-black/80 backdrop-blur-sm flex flex-col justify-end sm:justify-center items-center">
+    <div class="glass-panel w-full sm:w-[400px] sm:rounded-2xl p-6 pb-10 sm:pb-6">
+      <h3 class="text-lg font-bold mb-4">Add Safety Details</h3>
+      <form id="details-form" class="space-y-4">
+        <input type="text" id="video-title" required placeholder="Title (e.g. Site Hazard)"
+          class="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 text-white">
+        <textarea id="video-desc" rows="3" placeholder="Description..."
+          class="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 text-white resize-none"></textarea>
+        <button type="submit" id="confirm-upload-btn"
+          class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl">Upload Video</button>
+      </form>
+    </div>
+  </div>
 
-      /**
-       * ==========================================
-       * APP LOGIC (Rendering & Interaction)
-       * ==========================================
-       */
-      const container = document.getElementById("shorts-container");
-      const toast = document.getElementById("toast");
-      let isMuted = true; // Global mute state
+  <div id="toast"
+    class="fixed top-20 left-1/2 -translate-x-1/2 bg-white/90 text-black px-6 py-2 rounded-full font-semibold text-sm opacity-0 transition-opacity duration-300 z-[100] pointer-events-none shadow-xl">
+    Action Completed
+  </div>
 
-      // Calculate engagement score (likes + comments weighted)
-      function calculateEngagement(video) {
-        return video.likes * 1 + video.comments * 2; // Comments weighted 2x
-      }
+  <div id="loading-overlay"
+    class="hidden absolute inset-0 z-[70] bg-black/90 flex flex-col items-center justify-center text-white">
+    <div class="spinner mb-4"></div>
+    <p>Uploading...</p>
+  </div>
 
-      // Sort videos by engagement score (highest first)
-      const sortedVideoData = [...videoData].sort(
-        (a, b) => calculateEngagement(b) - calculateEngagement(a)
-      );
+  <script src="../api.client.js"></script>
 
-      // 1. Render Videos dynamically
-      function renderApp() {
-        container.innerHTML = sortedVideoData
-          .map(
-            (video, index) => `
-            <div class="video-slide" id="slide-${index}">
-                <video 
-                    src="${video.url}" 
-                    poster="${video.poster}" 
-                    loop 
-                    muted 
-                    playsinline
-                    class="short-video-element"
-                ></video>
-                
-                <span class="material-symbols-rounded big-heart">favorite</span>
-                <span class="material-symbols-rounded center-play">play_arrow</span>
+  <script>
+    // --- API Definitions (Fallback) ---
+    if (typeof workerVideoAPI === 'undefined') {
+      window.workerVideoAPI = {
+        upload: (formData) => apiRequest("/api/v1/worker-videos/upload", { method: "POST", body: formData }),
+        getApproved: (page = 1, limit = 10) => apiRequest(`/api/v1/worker-videos/approved?page=${page}&limit=${limit}`, { method: "GET" })
+      };
+    }
+    if (typeof safetyVideoAPI === 'undefined') {
+      window.safetyVideoAPI = {
+        getAll: () => apiRequest("/api/v1/safety-videos", { method: "GET" })
+      };
+    }
 
-                <div class="overlay-layer">
-                    <div class="actions-bar interactive">
-                        <!-- Like Button -->
-                        <div class="flex flex-col items-center">
-                            <button class="action-btn like-btn" onclick="toggleLike(this, ${
-                              video.likes
-                            })">
-                                <span class="material-symbols-rounded">favorite</span>
-                            </button>
-                            <span class="action-label like-count">${formatCount(
-                              video.likes
-                            )}</span>
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = localStorage.getItem("token");
+      if (!token) { window.location.href = "../index.html"; return; }
+
+      // State
+      let videoData = [];
+      let stream = null;
+      let mediaRecorder = null;
+      let chunks = [];
+      let isRecording = false;
+      let pendingFile = null;
+      let isMuted = true;
+
+      // DOM
+      const container = document.getElementById('shorts-container');
+      const cameraUI = document.getElementById('camera-ui');
+      const videoElement = document.getElementById('camera-feed');
+      const recordBtn = document.getElementById('record-btn');
+
+      // --- 1. DATA FETCHING ---
+      const fetchFeed = async () => {
+        try {
+          // Fetch Official Safety Videos
+          const safetyRes = await safetyVideoAPI.getAll().catch(e => ({ data: [] }));
+          const safetyVideos = (safetyRes.data || []).map(v => ({
+            id: v._id,
+            url: v.url,
+            poster: v.thumbnail_url || '',
+            category: "Official Safety",
+            title: v.title,
+            description: v.description,
+            uploader: "Safety Team",
+            likes: Math.floor(Math.random() * 500) + 100, // Mock stats
+            comments: Math.floor(Math.random() * 50)
+          }));
+
+          // Fetch Approved Worker Videos
+          const workerRes = await workerVideoAPI.getApproved(1, 20).catch(e => ({ data: [] }));
+          // Handle array or pagination object
+          const wData = Array.isArray(workerRes.data) ? workerRes.data : (workerRes.data?.videos || []);
+
+          const workerVideos = wData.map(v => ({
+            id: v._id,
+            url: v.video_url,
+            poster: v.thumbnail_url || '',
+            category: v.category || "Community",
+            title: v.title,
+            description: v.description,
+            uploader: v.uploaded_by?.fullName || "Worker",
+            likes: v.views || 0,
+            comments: 0
+          }));
+
+          // Combine and Shuffle
+          videoData = [...safetyVideos, ...workerVideos].sort(() => 0.5 - Math.random());
+
+          if (videoData.length === 0) {
+            container.innerHTML = '<div class="flex h-screen items-center justify-center text-gray-500">No videos available. Be the first to upload!</div>';
+          } else {
+            renderApp();
+          }
+
+        } catch (e) {
+          console.error("Feed Error:", e);
+          container.innerHTML = '<div class="flex h-screen items-center justify-center text-red-500">Failed to load feed.</div>';
+        }
+      };
+
+      // --- 2. RENDERING ---
+      const renderApp = () => {
+        container.innerHTML = videoData.map((video, index) => `
+                    <div class="video-slide" id="slide-${index}">
+                        <video src="${video.url}" poster="${video.poster}" loop muted playsinline class="short-video-element"></video>
+                        
+                        <div class="overlay-layer">
+                            <div class="actions-bar interactive">
+                                <div class="flex flex-col items-center">
+                                    <button class="action-btn like-btn" onclick="toggleLike(this, ${video.likes})">
+                                        <span class="material-symbols-rounded">favorite</span>
+                                    </button>
+                                    <span class="action-label">${video.likes}</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <button class="action-btn" onclick="shareVideo('${video.title}')">
+                                        <span class="material-symbols-rounded">share</span>
+                                    </button>
+                                    <span class="action-label">Share</span>
+                                </div>
+                            </div>
+
+                            <div class="info-area interactive">
+                                <span class="tag">${video.category}</span>
+                                <h2 class="text-xl font-bold mb-2 drop-shadow-lg">${video.title}</h2>
+                                <p class="text-sm opacity-90 leading-snug line-clamp-2">${video.description || ''}</p>
+                                <p class="text-xs mt-2 opacity-75">Posted by ${video.uploader}</p>
+                            </div>
+
+                            <div class="progress-track"><div class="progress-fill"></div></div>
                         </div>
-
-                        <!-- Comment Button (Mock) -->
-                        <div class="flex flex-col items-center">
-                            <button class="action-btn" onclick="showToast('Comments disabled in demo')">
-                                <span class="material-symbols-rounded">chat_bubble</span>
-                            </button>
-                            <span class="action-label">${formatCount(
-                              video.comments
-                            )}</span>
-                        </div>
-
-                        <!-- Share Button -->
-                        <div class="flex flex-col items-center">
-                            <button class="action-btn share-btn" onclick="shareVideo('${
-                              video.title
-                            }', '${video.description}')">
-                                <span class="material-symbols-rounded">share</span>
-                            </button>
-                            <span class="action-label">Share</span>
-                        </div>
-
-                        <!-- More/Menu Button -->
-                        <button class="action-btn" style="margin-top: 10px;">
-                            <span class="material-symbols-rounded">more_horiz</span>
-                        </button>
                     </div>
+                `).join('');
 
-                    <div class="info-area interactive">
-                        <span class="tag">${video.category}</span>
-                        <h2 class="text-xl font-bold mb-2 drop-shadow-lg">${
-                          video.title
-                        }</h2>
-                        <p class="text-sm opacity-90 leading-snug drop-shadow-md line-clamp-2">${
-                          video.description
-                        }</p>
-                    </div>
-
-                    <div class="progress-track">
-                        <div class="progress-fill"></div>
-                    </div>
-                </div>
-
-                <!-- Mute Toggle (Top Right relative to slide) -->
-                <button class="mute-toggle interactive" onclick="toggleMute(this)">
-                    <span class="material-symbols-rounded">volume_off</span>
-                </button>
-            </div>
-        `
-          )
-          .join("");
-
-        attachEventHandlers();
         initObserver();
-      }
+      };
 
-      // 2. Interaction Logic
-      function attachEventHandlers() {
-        const slides = document.querySelectorAll(".video-slide");
-
-        slides.forEach((slide) => {
-          const video = slide.querySelector("video");
-          const heartAnim = slide.querySelector(".big-heart");
-          const likeBtn = slide.querySelector(".like-btn");
-
-          // Play/Pause on click
-          slide.addEventListener("click", (e) => {
-            // Ignore clicks on buttons
-            if (e.target.closest("button") || e.target.closest("a")) return;
-
-            if (video.paused) {
-              video.play();
-              slide.classList.remove("paused");
+      // --- 3. VIDEO OBSERVER & LOGIC ---
+      const initObserver = () => {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            const video = entry.target.querySelector('video');
+            if (entry.isIntersecting) {
+              video.currentTime = 0;
+              video.play().catch(e => console.log("Autoplay blocked"));
             } else {
               video.pause();
-              slide.classList.add("paused");
             }
           });
+        }, { threshold: 0.6 });
 
-          // Double Tap to Like
-          let lastTap = 0;
-          slide.addEventListener("touchend", (e) => {
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTap;
-
-            if (
-              tapLength < 300 &&
-              tapLength > 0 &&
-              !e.target.closest("button")
-            ) {
-              // Double Tap Detected
-              e.preventDefault();
-
-              // Animate Heart
-              heartAnim.classList.remove("animate-heart");
-              void heartAnim.offsetWidth; // trigger reflow
-              heartAnim.classList.add("animate-heart");
-
-              // Trigger button logic
-              if (!likeBtn.classList.contains("liked")) {
-                likeBtn.click();
-              }
-            }
-            lastTap = currentTime;
-          });
-
-          // Update Progress Bar
-          const bar = slide.querySelector(".progress-fill");
-          video.addEventListener("timeupdate", () => {
-            const percent = (video.currentTime / video.duration) * 100;
-            bar.style.width = `${percent}%`;
+        document.querySelectorAll('.video-slide').forEach(slide => {
+          observer.observe(slide);
+          // Click to Play/Pause
+          slide.addEventListener('click', (e) => {
+            if (e.target.closest('button')) return;
+            const v = slide.querySelector('video');
+            v.paused ? v.play() : v.pause();
           });
         });
-      }
+      };
 
-      // 3. Logic Functions
-      function toggleLike(btn, baseCount) {
-        btn.classList.toggle("liked");
-        const label = btn.nextElementSibling;
-        const icon = btn.querySelector("span");
+      window.toggleLike = (btn, count) => {
+        btn.classList.toggle('liked');
+        // Just visual in this demo
+        showToast(btn.classList.contains('liked') ? "Liked" : "Unliked");
+      };
 
-        if (btn.classList.contains("liked")) {
-          label.innerText = formatCount(baseCount + 1);
-          // Small pop animation for button
-          btn.style.transform = "scale(1.2)";
-          setTimeout(() => (btn.style.transform = "scale(1)"), 200);
-          showToast("Added to Liked Videos");
-        } else {
-          label.innerText = formatCount(baseCount);
-        }
-      }
-
-      async function shareVideo(title, text) {
+      window.shareVideo = (title) => {
         if (navigator.share) {
-          try {
-            await navigator.share({
-              title: title,
-              text: text,
-              url: window.location.href,
-            });
-          } catch (err) {
-            console.log("Share canceled");
-          }
+          navigator.share({ title: title, url: window.location.href });
         } else {
-          // Fallback
           navigator.clipboard.writeText(window.location.href);
-          showToast("Link copied to clipboard");
+          showToast("Link copied!");
         }
-      }
-
-      function toggleMute(btn) {
-        isMuted = !isMuted;
-        const allVideos = document.querySelectorAll("video");
-        const allBtns = document.querySelectorAll(".mute-toggle span");
-
-        allVideos.forEach((v) => (v.muted = isMuted));
-        allBtns.forEach((span) => {
-          span.innerText = isMuted ? "volume_off" : "volume_up";
-        });
-
-        showToast(isMuted ? "Muted" : "Sound On");
-      }
+      };
 
       function showToast(msg) {
-        toast.innerText = msg;
-        toast.style.opacity = "1";
-        setTimeout(() => (toast.style.opacity = "0"), 2000);
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.opacity = '1';
+        setTimeout(() => t.style.opacity = '0', 2000);
       }
 
-      function formatCount(num) {
-        if (num >= 1000) {
-          return (num / 1000).toFixed(1) + "k";
+      // --- 4. CAMERA & UPLOAD LOGIC ---
+      document.getElementById('open-camera-btn').addEventListener('click', async () => {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' },
+            audio: true
+          });
+          videoElement.srcObject = stream;
+          cameraUI.style.display = 'flex';
+        } catch (e) {
+          showToast("Camera access denied");
         }
-        return num;
+      });
+
+      document.getElementById('close-camera-btn').addEventListener('click', () => {
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        cameraUI.style.display = 'none';
+      });
+
+      recordBtn.addEventListener('click', () => {
+        if (!stream) return;
+        if (isRecording) {
+          mediaRecorder.stop();
+          isRecording = false;
+          recordBtn.classList.remove('recording');
+        } else {
+          const mime = MediaRecorder.isTypeSupported('video/webm; codecs=vp9') ? 'video/webm; codecs=vp9' : 'video/webm';
+          mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
+          chunks = [];
+          mediaRecorder.ondataavailable = e => chunks.push(e.data);
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            pendingFile = new File([blob], `rec_${Date.now()}.webm`, { type: 'video/webm' });
+            openDetailsModal();
+          };
+          mediaRecorder.start();
+          isRecording = true;
+          recordBtn.classList.add('recording');
+        }
+      });
+
+      document.getElementById('upload-btn').addEventListener('click', () => document.getElementById('file-input').click());
+      document.getElementById('file-input').addEventListener('change', (e) => {
+        if (e.target.files[0]) {
+          pendingFile = e.target.files[0];
+          openDetailsModal();
+        }
+      });
+
+      function openDetailsModal() {
+        document.getElementById('details-modal').classList.remove('hidden');
+        // Auto title
+        document.getElementById('video-title').value = `Site Observation ${new Date().toLocaleTimeString()}`;
       }
 
-      // 4. Scroll Observer (Auto Play/Pause)
-      function initObserver() {
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              const video = entry.target.querySelector("video");
-              if (entry.isIntersecting) {
-                video.currentTime = 0;
-                video.muted = isMuted; // Enforce current mute state
-                video.play().catch((e) => console.log("Autoplay prevented", e));
-                entry.target.classList.remove("paused");
-              } else {
-                video.pause();
-              }
-            });
-          },
-          { threshold: 0.6 }
-        ); // Play when 60% visible
+      document.getElementById('details-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!pendingFile) return;
 
-        document.querySelectorAll(".video-slide").forEach((slide) => {
-          observer.observe(slide);
-        });
-      }
+        document.getElementById('loading-overlay').classList.remove('hidden');
+        document.getElementById('details-modal').classList.add('hidden');
 
-      // Initialize
-      document.addEventListener("DOMContentLoaded", renderApp);
-    </script>
-  </body>
+        const formData = new FormData();
+        formData.append('file', pendingFile);
+        formData.append('title', document.getElementById('video-title').value);
+        formData.append('description', document.getElementById('video-desc').value);
+
+        try {
+          await workerVideoAPI.upload(formData);
+          showToast("Uploaded successfully!");
+          setTimeout(() => window.location.reload(), 1500);
+        } catch (err) {
+          console.error(err);
+          showToast("Upload failed");
+          document.getElementById('loading-overlay').classList.add('hidden');
+        }
+      });
+
+      // Init
+      fetchFeed();
+    });
+  </script>
+</body>
+
 </html>

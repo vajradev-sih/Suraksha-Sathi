@@ -7,30 +7,142 @@
  * 3. External AI moderation APIs (optional)
  */
 
-// List of inappropriate keywords/phrases
+// List of inappropriate keywords/phrases - VIOLENCE & SAFETY
+const VIOLENCE_KEYWORDS = [
+  'violence', 'violent', 'weapon', 'gun', 'knife', 'assault', 
+  'attack', 'kill', 'murder', 'death', 'suicide', 'bomb', 
+  'terrorism', 'torture', 'gore', 'blood', 'bleeding'
+];
+
+// HARASSMENT & ABUSE
+const HARASSMENT_KEYWORDS = [
+  'abuse', 'harassment', 'harass', 'bully', 'bullying', 
+  'threaten', 'threat', 'intimidate', 'stalk', 'stalking'
+];
+
+// HATE SPEECH & DISCRIMINATION
+const HATE_SPEECH_KEYWORDS = [
+  'hate', 'racist', 'racism', 'sexist', 'sexism', 
+  'discrimination', 'discriminate', 'slur', 'bigot', 'bigotry'
+];
+
+// EXPLICIT & ADULT CONTENT
+const EXPLICIT_KEYWORDS = [
+  'explicit', 'nsfw', 'nude', 'naked', 'pornography', 'porn',
+  'sexual', 'sex', 'xxx', 'adult content', 'lewd', 'obscene'
+];
+
+// SUBSTANCE ABUSE
+const SUBSTANCE_KEYWORDS = [
+  'drug', 'drugs', 'cocaine', 'heroin', 'meth', 'marijuana',
+  'alcohol', 'drunk', 'intoxicated', 'smoking', 'cigarette',
+  'gambling', 'gamble', 'bet', 'betting'
+];
+
+// PROFANITY & CUSS WORDS (Common English profanity)
+const PROFANITY_KEYWORDS = [
+  // Tier 1 - Strong profanity
+  'fuck', 'fucking', 'fucked', 'fucker', 'motherfucker', 'motherfucking',
+  'fucks', 'fuckin', 'fck', 'fuk', 'fk',
+  'shit', 'shitting', 'shitty', 'shits', 'bullshit',
+  'bitch', 'bitches', 'bitching', 'son of a bitch',
+  'bastard', 'asshole', 'assholes', 
+  'damn', 'damned', 'dammit', 'goddamn',
+  'hell', 'crap', 'piss', 'pissed', 'pissing',
+  'dick', 'dicks', 'dickhead', 
+  'cock', 'cocks', 'cocksucker',
+  'pussy', 'pussies', 'cunt', 'cunts',
+  
+  // Tier 2 - Moderate profanity
+  'ass', 'arse', 'bloody', 'bugger', 'bollocks', 'wanker',
+  'whore', 'slut', 'fag', 'faggot', 'retard', 'retarded',
+  
+  // Tier 3 - Mild profanity & insults
+  'idiot', 'stupid', 'moron', 'dumb', 'dumbass', 'jerk',
+  'loser', 'sucker', 'fool', 'freak'
+];
+
+// SPAM & SCAM INDICATORS
+const SPAM_KEYWORDS = [
+  'click here', 'buy now', 'limited offer', 'act now',
+  'free money', 'get rich', 'make money fast', 'viagra',
+  'casino', 'lottery', 'prize', 'winner', 'congratulations'
+];
+
+// Combine all keyword lists
 const INAPPROPRIATE_KEYWORDS = [
-  'violence', 'weapon', 'abuse', 'harassment', 'hate',
-  'explicit', 'nsfw', 'gore', 'blood', 'death',
-  'drug', 'alcohol', 'smoking', 'gambling',
-  // Add more based on your safety requirements
+  ...VIOLENCE_KEYWORDS,
+  ...HARASSMENT_KEYWORDS,
+  ...HATE_SPEECH_KEYWORDS,
+  ...EXPLICIT_KEYWORDS,
+  ...SUBSTANCE_KEYWORDS,
+  ...PROFANITY_KEYWORDS,
+  ...SPAM_KEYWORDS
 ];
 
 /**
- * Check text content for inappropriate keywords
+ * Check text content for inappropriate keywords with enhanced detection
  */
 const moderateText = (text) => {
   if (!text) return { isAppropriate: true };
 
   const lowerText = text.toLowerCase();
-  const foundKeywords = INAPPROPRIATE_KEYWORDS.filter(keyword => 
-    lowerText.includes(keyword)
-  );
+  
+  // Check for profanity and inappropriate content
+  const foundKeywords = INAPPROPRIATE_KEYWORDS.filter(keyword => {
+    // Use word boundary matching to avoid false positives
+    // e.g., "assessment" won't match "ass"
+    const regex = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+    return regex.test(lowerText);
+  });
 
   if (foundKeywords.length > 0) {
+    // Categorize the violations
+    const categories = [];
+    if (foundKeywords.some(k => PROFANITY_KEYWORDS.includes(k))) categories.push('profanity');
+    if (foundKeywords.some(k => VIOLENCE_KEYWORDS.includes(k))) categories.push('violence');
+    if (foundKeywords.some(k => EXPLICIT_KEYWORDS.includes(k))) categories.push('explicit content');
+    if (foundKeywords.some(k => HATE_SPEECH_KEYWORDS.includes(k))) categories.push('hate speech');
+    if (foundKeywords.some(k => HARASSMENT_KEYWORDS.includes(k))) categories.push('harassment');
+    if (foundKeywords.some(k => SUBSTANCE_KEYWORDS.includes(k))) categories.push('substance abuse');
+    
     return {
       isAppropriate: false,
-      reason: `Inappropriate content detected: ${foundKeywords.join(', ')}`,
-      confidence: 0.8
+      reason: `Inappropriate content detected (${categories.join(', ')}): ${foundKeywords.slice(0, 3).join(', ')}${foundKeywords.length > 3 ? '...' : ''}`,
+      foundKeywords: foundKeywords,
+      categories: categories,
+      confidence: 0.9 // High confidence for keyword matches
+    };
+  }
+
+  // Additional check for leetspeak/obfuscated profanity
+  const obfuscatedText = lowerText
+    .replace(/0/g, 'o')
+    .replace(/1/g, 'i')
+    .replace(/3/g, 'e')
+    .replace(/4/g, 'a')
+    .replace(/5/g, 's')
+    .replace(/7/g, 't')
+    .replace(/\*/g, '')      // Remove asterisks (f*ck → fuck)
+    .replace(/@/g, 'a')      // Replace @ with a
+    .replace(/\$/g, 's')     // Replace $ with s
+    .replace(/#/g, '')       // Remove hashes
+    .replace(/\+/g, 't')     // Replace + with t
+    .replace(/!/g, 'i')      // Replace ! with i
+    .replace(/\./g, '');     // Remove dots (f.u.c.k → fuck)
+  
+  const obfuscatedKeywords = PROFANITY_KEYWORDS.filter(keyword => {
+    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+    return regex.test(obfuscatedText) && !regex.test(lowerText);
+  });
+
+  if (obfuscatedKeywords.length > 0) {
+    return {
+      isAppropriate: false,
+      reason: `Obfuscated profanity detected: ${obfuscatedKeywords.join(', ')}`,
+      foundKeywords: obfuscatedKeywords,
+      categories: ['profanity'],
+      confidence: 0.7 // Lower confidence for obfuscated matches
     };
   }
 

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Videos for Review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+        }
+
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50 text-slate-800">
+
+    <div id="customAlert"
+        class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] hidden items-center p-4 text-sm text-white rounded-xl bg-success-green shadow-lg transition-all duration-300 transform -translate-y-full opacity-0"
+        role="alert">
+        <i data-lucide="check-circle-2" class="mr-2 w-5 h-5"></i>
+        <span class="font-medium" id="alertMessage">Success!</span>
+    </div>
+
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="admin-home.html" class="p-2 hover:bg-gray-100 rounded-full transition-colors text-slate-600">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                </a>
+                <h1 class="text-xl font-bold text-slate-800">Videos for Review</h1>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="hidden md:flex relative">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+                    <input type="text" id="searchInput" placeholder="Search videos..."
+                        class="pl-9 pr-4 py-2 bg-gray-100 border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg text-sm transition-all w-64">
+                </div>
+                <div class="relative group">
+                    <button
+                        class="p-2 text-slate-600 hover:bg-gray-100 rounded-lg border border-gray-200 flex items-center gap-2">
+                        <i data-lucide="filter" class="w-[18px] h-[18px]"></i>
+                        <span class="text-sm font-medium">Filter</span>
+                    </button>
+                    <div
+                        class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 hidden group-hover:block p-1">
+                        <button onclick="filterVideos('')"
+                            class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">All
+                            Videos</button>
+                        <button onclick="filterVideos('pending')"
+                            class="w-full text-left px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50 rounded-lg">Pending</button>
+                        <button onclick="filterVideos('approved')"
+                            class="w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-50 rounded-lg">Approved</button>
+                        <button onclick="filterVideos('rejected')"
+                            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg">Rejected</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="video-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="col-span-full text-center py-20 text-gray-500">Loading videos...</div>
+        </div>
+    </main>
+
+    <div id="videoModal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop opacity-0 transition-opacity duration-300">
+        <div class="bg-black p-1 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 relative">
+            <button onclick="closeVideoModal()" class="absolute -top-10 right-0 text-white hover:text-gray-300">
+                <i data-lucide="x" class="w-8 h-8"></i>
+            </button>
+            <video id="modalPlayer" controls class="w-full h-auto rounded-xl max-h-[80vh]"></video>
+        </div>
+    </div>
+
+    <script src="../api.client.js"></script>
+    <script>
+        // --- API Definition (Ensure it exists) ---
+        if (typeof workerVideoAPI === 'undefined') {
+            window.workerVideoAPI = {
+                getAll: (page = 1, limit = 100, status = "") => {
+                    let url = `/api/v1/worker-videos/all?page=${page}&limit=${limit}`;
+                    if (status) url += `&status=${status}`;
+                    return apiRequest(url, { method: "GET" });
+                },
+                approve: (id) => apiRequest(`/api/v1/worker-videos/${id}/approve`, { method: "POST" }),
+                reject: (id, reason) => apiRequest(`/api/v1/worker-videos/${id}/reject`, { method: "POST", body: JSON.stringify({ rejection_reason: reason }) })
+            };
+        }
+
+        // --- State ---
+        let allVideos = [];
+        let currentStatusFilter = '';
+
+        // --- UI Helpers ---
+        const showAlert = (message, type = 'success') => {
+            const alertEl = document.getElementById('customAlert');
+            const msgEl = document.getElementById('alertMessage');
+            msgEl.textContent = message;
+
+            const bgClass = type === 'error' ? 'bg-red-500' : 'bg-green-500';
+            alertEl.className = `fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex items-center p-4 text-sm text-white rounded-xl shadow-lg transition-all duration-300 transform translate-y-0 opacity-100 ${bgClass}`;
+            alertEl.classList.remove('hidden');
+
+            setTimeout(() => {
+                alertEl.classList.add('-translate-y-full', 'opacity-0');
+                setTimeout(() => alertEl.classList.add('hidden'), 300);
+            }, 3000);
+        };
+
+        const timeAgo = (dateString) => {
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " years ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " months ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " days ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " hours ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " minutes ago";
+            return Math.floor(seconds) + " seconds ago";
+        };
+
+        const getStatusColor = (status) => {
+            switch (status) {
+                case 'pending': return 'bg-amber-100 text-amber-700 border-amber-200';
+                case 'approved': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+                case 'rejected': return 'bg-red-100 text-red-700 border-red-200';
+                default: return 'bg-gray-100 text-gray-700 border-gray-200';
+            }
+        };
+
+        // --- Logic ---
+        const loadVideos = async (status = '') => {
+            const grid = document.getElementById('video-grid');
+            grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-400">Loading videos...</div>';
+
+            try {
+                const response = await workerVideoAPI.getAll(1, 100, status);
+                allVideos = response.data || []; // API returns array directly based on controller
+                renderVideos(allVideos);
+            } catch (error) {
+                console.error("Failed to load videos:", error);
+                grid.innerHTML = `<div class="col-span-full text-center py-20 text-red-400">Failed to load videos.<br><span class="text-xs text-gray-400">${error.message}</span></div>`;
+            }
+        };
+
+        const renderVideos = (videos) => {
+            const grid = document.getElementById('video-grid');
+            grid.innerHTML = '';
+
+            if (videos.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-400 flex flex-col items-center"><i data-lucide="video-off" class="w-12 h-12 mb-2"></i>No videos found</div>';
+                lucide.createIcons();
+                return;
+            }
+
+            videos.forEach(video => {
+                const uploaderName = video.uploaded_by?.fullName || "Unknown User";
+                const dateStr = timeAgo(video.createdAt);
+                // Handle different field names if necessary (e.g. video_url vs url)
+                const videoUrl = video.video_url || video.url;
+                const thumbnailUrl = video.thumbnail_url || video.thumbnail || "";
+                const status = video.approval_status || 'pending';
+
+                // Action Buttons based on status
+                let actionButtonsHtml = '';
+                if (status === 'pending') {
+                    actionButtonsHtml = `
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="handleApprove('${video._id}')" class="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-medium text-sm transition-colors border border-emerald-200">
+                                <i data-lucide="check-circle-2" class="w-4 h-4"></i> Approve
+                            </button>
+                            <button onclick="handleReject('${video._id}')" class="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 font-medium text-sm transition-colors border border-rose-200">
+                                <i data-lucide="x-circle" class="w-4 h-4"></i> Reject
+                            </button>
+                        </div>`;
+                } else if (status === 'approved') {
+                    actionButtonsHtml = `
+                        <div class="w-full py-2 px-4 rounded-lg bg-emerald-50/50 text-emerald-600 font-medium text-sm flex items-center justify-center gap-2 border border-emerald-100">
+                            <i data-lucide="check" class="w-4 h-4"></i> Approved by ${video.approved_by?.fullName || 'Admin'}
+                        </div>`;
+                } else {
+                    actionButtonsHtml = `
+                        <div class="w-full py-2 px-4 rounded-lg bg-red-50/50 text-red-600 font-medium text-sm flex flex-col items-center justify-center text-center border border-red-100">
+                            <div class="flex items-center gap-2"><i data-lucide="x" class="w-4 h-4"></i> Rejected</div>
+                            <span class="text-xs text-red-400 mt-1 italic line-clamp-1">"${video.rejection_reason || 'No reason'}"</span>
+                        </div>`;
+                }
+
+                // Card HTML
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col hover:shadow-md transition-all duration-200";
+                card.innerHTML = `
+                    <div class="relative aspect-video bg-gray-900 group cursor-pointer" onclick="openVideoModal('${videoUrl}')">
+                        ${thumbnailUrl
+                        ? `<img src="${thumbnailUrl}" class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity">`
+                        : `<div class="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900"></div>`
+                    }
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-12 h-12 rounded-full border-2 border-white/80 flex items-center justify-center text-white/90 group-hover:scale-110 transition-transform duration-200 bg-black/30 backdrop-blur-sm">
+                                <i data-lucide="play" class="w-5 h-5 ml-1 fill-current"></i>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-medium px-2 py-1 rounded">
+                            ${Math.floor(video.duration || 0)}s
+                        </div>
+                    </div>
+
+                    <div class="p-5 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2 gap-2">
+                            <h3 class="font-semibold text-slate-900 leading-tight line-clamp-2" title="${video.title}">
+                                ${video.title}
+                            </h3>
+                            <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full border ${getStatusColor(status)} whitespace-nowrap">
+                                ${status}
+                            </span>
+                        </div>
+                        
+                        <p class="text-sm text-slate-500 mb-4 flex items-center gap-1">
+                            <i data-lucide="user" class="w-3 h-3"></i> ${uploaderName} • ${dateStr}
+                        </p>
+                        
+                        ${video.description ? `<p class="text-xs text-gray-400 mb-4 line-clamp-2">${video.description}</p>` : ''}
+
+                        <div class="mt-auto pt-4 border-t border-gray-100">
+                            ${actionButtonsHtml}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            lucide.createIcons();
+        };
+
+        // --- Actions ---
+        window.handleApprove = async (id) => {
+            if (!confirm("Approve this video for public viewing?")) return;
+            try {
+                await workerVideoAPI.approve(id);
+                showAlert("Video Approved");
+                loadVideos(currentStatusFilter);
+            } catch (error) {
+                console.error(error);
+                showAlert("Failed to approve", "error");
+            }
+        };
+
+        window.handleReject = async (id) => {
+            const reason = prompt("Enter rejection reason:", "Content policy violation");
+            if (reason === null) return; // Cancelled
+
+            try {
+                await workerVideoAPI.reject(id, reason);
+                showAlert("Video Rejected");
+                loadVideos(currentStatusFilter);
+            } catch (error) {
+                console.error(error);
+                showAlert("Failed to reject", "error");
+            }
+        };
+
+        window.filterVideos = (status) => {
+            currentStatusFilter = status;
+            loadVideos(status);
+        };
+
+        // --- Search ---
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allVideos.filter(v =>
+                v.title.toLowerCase().includes(term) ||
+                (v.uploaded_by?.fullName || '').toLowerCase().includes(term)
+            );
+            renderVideos(filtered);
+        });
+
+        // --- Video Modal ---
+        const modal = document.getElementById('videoModal');
+        const player = document.getElementById('modalPlayer');
+
+        window.openVideoModal = (url) => {
+            if (!url) return alert("Video URL not available");
+            player.src = url;
+            modal.classList.remove('hidden');
+            // Small delay to allow display change before opacity transition
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                player.play();
+            });
+        };
+
+        window.closeVideoModal = () => {
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                player.pause();
+                player.src = "";
+            }, 300);
+        };
+
+        // Close modal on click outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeVideoModal();
+        });
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem("token");
+            if (!token) { window.location.href = "../index.html"; return; }
+            loadVideos();
+        });
+
+    </script>
+</body>
+
+</html>
