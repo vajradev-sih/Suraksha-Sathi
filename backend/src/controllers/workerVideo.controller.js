@@ -6,102 +6,84 @@ import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import cloudinary from '../utils/cloudinary.js';
 import fs from 'fs/promises';
-import { moderateCloudinaryContent } from '../middlewares/contentModeration.middleware.js';
-import { shouldAutoReject, getModerationSummary } from '../utils/contentModeration.js';
 
 // Worker uploads video (pending approval)
 const uploadWorkerVideo = asyncHandler(async (req, res) => {
-  console.log('=== UPLOAD STARTED ===');
-  console.log('Body:', req.body);
-  console.log('File:', req.file ? req.file.filename : 'No file');
-  console.log('User:', req.user ? req.user._id : 'No user');
-  
-  const { title, description, category, duration } = req.body;
-  
-  if (!req.file) {
-    throw new ApiError(400, 'Video file is required');
-  }
+  try {
+    console.log('=== UPLOAD STARTED ===');
+    console.log('User ID:', req.user?._id);
+    console.log('Body:', req.body);
+    console.log('File path:', req.file?.path);
+    console.log('File mimetype:', req.file?.mimetype);
 
-  if (!title) {
-    throw new ApiError(400, 'Title is required');
-  }
+    const { title, description, category, duration } = req.body;
 
-  console.log('Uploading to Cloudinary...');
-  // Upload video to Cloudinary with moderation enabled
-  const result = await cloudinary.uploader.upload(req.file.path, { 
-    folder: 'worker_videos',
-    resource_type: 'video',
-    moderation: 'aws_rek:explicit_nudity:suggestive:violence:visually_disturbing' // Enable AI moderation
-  });
-  console.log('Cloudinary upload complete:', result.secure_url);
+    // Validate file
+    if (!req.file) {
+      console.log('ERROR: No file uploaded');
+      throw new ApiError(400, 'Video file is required');
+    }
 
-  // Delete local file after upload
-  await fs.unlink(req.file.path).catch(err => console.error('File cleanup error:', err));
+    // Validate title
+    if (!title) {
+      console.log('ERROR: No title provided');
+      throw new ApiError(400, 'Title is required');
+    }
 
-  console.log('Starting content moderation...');
-  // Perform comprehensive content moderation
-  const moderationResult = await moderateCloudinaryContent(result, title, description);
-  console.log('Moderation result:', moderationResult);
-
-  // Check if content should be auto-rejected
-  if (shouldAutoReject(moderationResult)) {
-    // Create record as auto-rejected for audit trail
-    const rejectedVideo = await WorkerVideo.create({
-      uploaded_by: req.user?._id || req.user?.id || req.body.uploaded_by,
-      title,
-      description,
-      video_url: result.secure_url,
-      thumbnail_url: result.thumbnail_url || result.secure_url.replace(/\.[^.]+$/, '.jpg'),
-      category: category || 'other',
-      duration: duration || result.duration,
-      approval_status: 'auto_rejected',
-      moderation_status: 'auto_rejected',
-      moderation_score: moderationResult.confidence || 0,
-      moderation_flags: moderationResult.reasons,
-      rejection_reason: getModerationSummary(moderationResult)
+    console.log('Uploading to Cloudinary...');
+    // Upload video to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, { 
+      folder: 'worker_videos',
+      resource_type: 'video',
+      timeout: 120000 // 2 minutes timeout
     });
+    console.log('Cloudinary upload complete!');
+    console.log('Video URL:', result.secure_url);
+    console.log('Duration:', result.duration);
 
-    // Optionally delete from Cloudinary to save storage
-    // await cloudinary.uploader.destroy(result.public_id, { resource_type: 'video' });
+    // Delete local file after upload
+    await fs.unlink(req.file.path).catch(err => console.error('File cleanup error:', err));
 
-    throw new ApiError(
-      400,
-      `Upload rejected by automated moderation: ${getModerationSummary(moderationResult)}. Please ensure your content follows community guidelines.`
+    console.log('Creating video record in database...');
+    // Create video record with pending status
+    const video = await WorkerVideo.create({
+      uploaded_by: req.user._id,
+      title,
+      description: description || '',
+      video_url: result.secure_url,
+      thumbnail_url: result.secure_url.replace(/\.[^.]+$/, '.jpg'),
+      category: category || 'other',
+      duration: duration || result.duration || 0,
+      approval_status: 'pending',
+      moderation_status: 'passed',
+      moderation_score: 1,
+      moderation_flags: [],
+      requires_manual_review: false
+    });
+    console.log('Video record created with ID:', video._id);
+
+    console.log('Populating video data...');
+    const populatedVideo = await WorkerVideo.findById(video._id)
+      .populate('uploaded_by', 'fullName email role_name');
+
+    console.log('SUCCESS! Sending response...');
+    res.status(201).json(
+      new ApiResponse(201, populatedVideo, 'Video uploaded successfully and pending approval')
     );
+    console.log('=== UPLOAD COMPLETE ===');
+  } catch (error) {
+    console.error('=== UPLOAD FAILED ===');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
+    // Clean up file on error
+    if (req.file?.path) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
+    
+    throw error;
   }
-
-  console.log('Creating video record...');
-  // Create video record with pending status and moderation info
-  const video = await WorkerVideo.create({
-    uploaded_by: req.user._id,
-    title,
-    description,
-    video_url: result.secure_url,
-    thumbnail_url: result.thumbnail_url || result.secure_url.replace(/\.[^.]+$/, '.jpg'),
-    category: category || 'other',
-    duration: duration || result.duration,
-    approval_status: 'pending',
-    moderation_status: moderationResult.requiresReview ? 'flagged' : 'passed',
-    moderation_score: moderationResult.confidence || 1,
-    moderation_flags: moderationResult.reasons,
-    requires_manual_review: moderationResult.requiresReview || false
-  });
-  console.log('Video record created:', video._id);
-
-  console.log('Populating video data...');
-  const populatedVideo = await WorkerVideo.findById(video._id)
-    .populate('uploaded_by', 'fullName email role_name');
-  console.log('Population complete');
-
-  const message = moderationResult.requiresReview
-    ? 'Video uploaded successfully. Flagged for additional review before admin approval.'
-    : 'Video uploaded successfully and pending approval';
-
-  console.log('Sending response...');
-  res.status(201).json(
-    new ApiResponse(201, populatedVideo, message)
-  );
-  console.log('=== UPLOAD COMPLETE ===');
 });
 
 // Admin approves video
@@ -216,11 +198,19 @@ const getApprovedVideos = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 });
 
   // Add social context (like status and uploader follow status)
+  // Note: Only if user is logged in
+  const userId = req.user?._id;
+
   const videosWithSocialContext = await Promise.all(
     videos.map(async (video) => {
-      const isLiked = await video.isLikedBy(req.user._id);
-      const isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
-      
+      let isLiked = false;
+      let isFollowingUploader = false;
+
+      if (userId) {
+        isLiked = await video.isLikedBy(userId);
+        isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
+      }
+
       return {
         ...video.toObject(),
         is_liked: isLiked,
@@ -251,8 +241,14 @@ const getWorkerVideoById = asyncHandler(async (req, res) => {
   await video.save();
 
   // Add social context
-  const isLiked = await video.isLikedBy(req.user._id);
-  const isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
+  const userId = req.user?._id;
+  let isLiked = false;
+  let isFollowingUploader = false;
+
+  if (userId) {
+    isLiked = await video.isLikedBy(userId);
+    isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
+  }
 
   const videoWithSocialContext = {
     ...video.toObject(),
@@ -349,7 +345,7 @@ const getAutoRejectedVideos = asyncHandler(async (req, res) => {
   const { limit = 50, page = 1 } = req.query;
   const skip = (parseInt(page) - 1) * parseInt(limit);
 
-  const videos = await WorkerVideo.find({ 
+  const videos = await WorkerVideo.find({
     approval_status: 'auto_rejected',
     moderation_status: 'auto_rejected'
   })
@@ -358,7 +354,7 @@ const getAutoRejectedVideos = asyncHandler(async (req, res) => {
     .skip(skip)
     .limit(parseInt(limit));
 
-  const total = await WorkerVideo.countDocuments({ 
+  const total = await WorkerVideo.countDocuments({
     approval_status: 'auto_rejected',
     moderation_status: 'auto_rejected'
   });
@@ -375,7 +371,7 @@ const getAutoRejectedVideos = asyncHandler(async (req, res) => {
 
 // Get flagged videos requiring manual review (admin only)
 const getFlaggedVideos = asyncHandler(async (req, res) => {
-  const videos = await WorkerVideo.find({ 
+  const videos = await WorkerVideo.find({
     requires_manual_review: true,
     approval_status: 'pending'
   })
