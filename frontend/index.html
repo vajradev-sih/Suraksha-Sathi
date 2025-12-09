@@ -567,6 +567,10 @@
             if (roleName === 'Admin') {
               redirectUrl = "/admin/admin-home.html";
             }
+
+            if (roleName === 'TrainingOfficer') {
+              redirectUrl = "/training_officers/trainee_dashboard.html";
+            }
             
             window.location.href = redirectUrl;
           }, 1000);
