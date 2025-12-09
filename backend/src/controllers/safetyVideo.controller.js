@@ -20,13 +20,19 @@ const uploadSafetyVideo = asyncHandler(async (req, res) => {
     await fs.unlink(req.file.path);
 
     // Create safety video record
-    const video = await SafetyVideo.create({
-      external_integration_id: req.body.external_integration_id,
+    const videoData = {
       title: req.body.title || 'Untitled Safety Video',
       description: req.body.description,
       url: result.secure_url,
       thumbnail_url: result.thumbnail_url || result.secure_url.replace(/\.[^.]+$/, '.jpg')
-    });
+    };
+
+    // Only add external_integration_id if provided
+    if (req.body.external_integration_id) {
+      videoData.external_integration_id = req.body.external_integration_id;
+    }
+
+    const video = await SafetyVideo.create(videoData);
 
     res.status(201).json(
       new ApiResponse(201, video, 'Safety video uploaded successfully')
