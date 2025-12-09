@@ -430,6 +430,7 @@ const hazardMediaAPI = {
 const safetyVideoAPI = {
   upload: (formData) => apiRequest("/api/v1/safety-videos/upload", { method: "POST", body: formData }),
   getAll: () => apiRequest("/api/v1/safety-videos", { method: "GET" }),
+  delete: (id) => apiRequest(`/api/v1/safety-videos/${id}`, { method: "DELETE" }),
 };
 
 // --- ADDITIONAL MODULES ---

@@ -102,6 +102,42 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-8px); }
         }
+
+        /* Range Slider Fixes */
+        input[type=range] {
+            pointer-events: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            pointer-events: auto;
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            -webkit-appearance: none;
+            background: white;
+            border: 2px solid #0284c7;
+            border-radius: 50%;
+            margin-top: -6px; /* Adjust for track height */
+        }
+        input[type=range]::-moz-range-thumb {
+            pointer-events: auto;
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border: 2px solid #0284c7;
+            border-radius: 50%;
+        }
+        
+        /* Free Form Crop Overlay */
+        .crop-overlay-free {
+            resize: both;
+            overflow: hidden;
+            min-width: 50px;
+            min-height: 50px;
+            max-width: 100%;
+            max-height: 100%;
+            pointer-events: auto !important;
+        }
     </style>
 </head>
 <body class="bg-neutral-100 text-neutral-800 h-screen flex overflow-hidden font-sans">
@@ -524,9 +560,9 @@
                 <!-- Step 1: Video Info -->
                 <div id="step-1" class="space-y-4">
                     <div class="text-center mb-4">
-                        <p class="text-sm text-neutral-500">Step 1 of 2</p>
+                        <p class="text-sm text-neutral-500">Step 1 of 4</p>
                         <div class="w-full bg-neutral-200 h-2 rounded-full mt-2">
-                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 50%"></div>
+                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 25%"></div>
                         </div>
                     </div>
 
@@ -554,9 +590,9 @@
                 <!-- Step 2: Upload Video -->
                 <div id="step-2" class="hidden space-y-4">
                     <div class="text-center mb-4">
-                        <p class="text-sm text-neutral-500">Step 2 of 2</p>
+                        <p class="text-sm text-neutral-500">Step 2 of 4</p>
                         <div class="w-full bg-neutral-200 h-2 rounded-full mt-2">
-                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 100%"></div>
+                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 50%"></div>
                         </div>
                     </div>
 
@@ -626,8 +662,118 @@
                         <button type="button" onclick="goToStep1()" class="flex-1 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-semibold py-3 rounded-lg transition-colors">
                             Back
                         </button>
-                        <button type="button" onclick="submitUpload()" id="submit-upload-btn" disabled class="flex-1 bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            Upload Video
+                        <button type="button" onclick="goToStep3()" id="step-2-next-btn" disabled class="flex-1 bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            Next: Edit Video
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Trim & Crop -->
+                <div id="step-3" class="hidden space-y-4">
+                    <div class="text-center mb-4">
+                        <p class="text-sm text-neutral-500">Step 3 of 4</p>
+                        <div class="w-full bg-neutral-200 h-2 rounded-full mt-2">
+                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 75%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Video Editor Preview -->
+                    <div class="relative bg-black rounded-lg overflow-hidden aspect-video mb-4 group flex items-center justify-center">
+                        <video id="edit-preview-video" class="max-w-full max-h-full object-contain" controls></video>
+                        <div id="crop-overlay" class="absolute border-2 border-primary pointer-events-none hidden transition-all duration-300"></div>
+                    </div>
+
+                    <!-- Trimming Controls -->
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-neutral-700 flex justify-between">
+                            <span>Trim Video</span>
+                            <span id="trim-duration" class="text-primary text-xs font-mono">00:00 - 00:00</span>
+                        </label>
+                        <div class="relative h-10 flex items-center">
+                            <!-- Track -->
+                            <div class="absolute left-0 right-0 h-2 bg-neutral-200 rounded-full"></div>
+                            <!-- Active Range -->
+                            <div id="trim-active-track" class="absolute h-2 bg-primary rounded-full" style="left: 0%; right: 0%;"></div>
+                            
+                            <!-- Sliders -->
+                            <input type="range" id="trim-start" min="0" value="0" step="0.1" class="absolute w-full h-2 opacity-0 cursor-pointer z-20" oninput="updateTrimUI()">
+                            <input type="range" id="trim-end" min="0" value="100" step="0.1" class="absolute w-full h-2 opacity-0 cursor-pointer z-20" oninput="updateTrimUI()">
+                            
+                            <!-- Thumbs (Visual) -->
+                            <div id="trim-start-thumb" class="absolute w-4 h-4 bg-white border-2 border-primary rounded-full shadow pointer-events-none z-10" style="left: 0%"></div>
+                            <div id="trim-end-thumb" class="absolute w-4 h-4 bg-white border-2 border-primary rounded-full shadow pointer-events-none z-10" style="left: 100%; transform: translateX(-100%)"></div>
+                        </div>
+                    </div>
+
+                    <!-- Cropping Controls -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-sm font-bold text-neutral-700">Crop Ratio</label>
+                            <button type="button" onclick="togglePreview()" id="preview-btn" class="text-xs font-bold text-primary hover:text-primary-dark flex items-center gap-1">
+                                <span class="material-symbols-rounded text-sm">visibility</span> Preview Result
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-5 gap-2">
+                            <button type="button" onclick="setCrop('original', this)" class="crop-btn active px-2 py-2 border border-primary bg-primary/10 text-primary rounded-lg text-xs font-bold transition-colors">Original</button>
+                            <button type="button" onclick="setCrop('16:9', this)" class="crop-btn px-2 py-2 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-bold hover:bg-neutral-50 transition-colors">16:9</button>
+                            <button type="button" onclick="setCrop('9:16', this)" class="crop-btn px-2 py-2 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-bold hover:bg-neutral-50 transition-colors">9:16</button>
+                            <button type="button" onclick="setCrop('1:1', this)" class="crop-btn px-2 py-2 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-bold hover:bg-neutral-50 transition-colors">1:1</button>
+                            <button type="button" onclick="setCrop('free', this)" class="crop-btn px-2 py-2 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-bold hover:bg-neutral-50 transition-colors">Free</button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 mt-6">
+                        <button type="button" onclick="goToStep2()" class="flex-1 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-semibold py-3 rounded-lg transition-colors">
+                            Back
+                        </button>
+                        <button type="button" onclick="goToStep4()" class="flex-1 bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg shadow-md transition-colors">
+                            Next: Review
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Review & Submit -->
+                <div id="step-4" class="hidden space-y-4">
+                    <div class="text-center mb-4">
+                        <p class="text-sm text-neutral-500">Step 4 of 4</p>
+                        <div class="w-full bg-neutral-200 h-2 rounded-full mt-2">
+                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-200 space-y-4">
+                        <!-- Final Video Preview -->
+                        <div class="relative bg-black rounded-lg overflow-hidden aspect-video group flex items-center justify-center">
+                            <video id="final-preview-video" class="w-full h-full object-contain" controls></video>
+                        </div>
+
+                        <!-- Details -->
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-xs text-neutral-500 uppercase font-bold tracking-wider">Title</p>
+                                <p id="summary-title" class="font-bold text-neutral-800 text-lg">Video Title</p>
+                            </div>
+                            
+                            <div class="flex gap-4">
+                                <div class="flex-1">
+                                    <p class="text-xs text-neutral-500 uppercase font-bold tracking-wider">Category</p>
+                                    <span id="summary-category" class="inline-block bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded mt-1">Category</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-xs text-neutral-500 uppercase font-bold tracking-wider">Duration</p>
+                                    <p id="summary-duration" class="font-medium text-neutral-700 mt-1">00:00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 mt-6">
+                        <button type="button" onclick="goToStep3()" class="flex-1 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-semibold py-3 rounded-lg transition-colors">
+                            Back
+                        </button>
+                        <button type="button" onclick="submitUpload()" class="flex-1 bg-success-green hover:bg-green-600 text-white font-bold py-3 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2">
+                            <span class="material-symbols-rounded">check_circle</span>
+                            Confirm & Upload
                         </button>
                     </div>
                 </div>
@@ -658,6 +804,24 @@
 
         let isSidebarOpen = true;
         let currentFilter = 'All';
+
+        // Helper: Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white slide-in-up ${
+                type === 'success' ? 'bg-success-green' : 
+                type === 'error' ? 'bg-alert-red' : 
+                'bg-primary'
+            }`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
@@ -966,6 +1130,8 @@
             // Reset to step 1
             document.getElementById('step-1').classList.remove('hidden');
             document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-3').classList.add('hidden');
+            document.getElementById('step-4').classList.add('hidden');
             document.getElementById('upload-loading').classList.add('hidden');
             
             // Reset form
@@ -974,10 +1140,12 @@
             // Reset state
             uploadedVideoFile = null;
             recordedVideoBlob = null;
+            cropRatio = 'original';
             
             // Reset file preview
             document.getElementById('file-preview').classList.add('hidden');
-            document.getElementById('submit-upload-btn').disabled = true;
+            const nextBtn = document.getElementById('step-2-next-btn');
+            if(nextBtn) nextBtn.disabled = true;
             
             // Reset camera
             document.getElementById('camera-preview').classList.add('hidden');
@@ -992,11 +1160,15 @@
             }
             
             document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-3').classList.add('hidden');
+            document.getElementById('step-4').classList.add('hidden');
             document.getElementById('step-2').classList.remove('hidden');
         }
 
         function goToStep1() {
             document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-3').classList.add('hidden');
+            document.getElementById('step-4').classList.add('hidden');
             document.getElementById('step-1').classList.remove('hidden');
             
             // Clean up camera/file if user goes back
@@ -1031,7 +1203,7 @@
                 document.getElementById('file-name').textContent = file.name;
                 document.getElementById('file-duration').textContent = `Duration: ${durationStr}`;
                 document.getElementById('file-preview').classList.remove('hidden');
-                document.getElementById('submit-upload-btn').disabled = false;
+                document.getElementById('step-2-next-btn').disabled = false;
             };
             
             video.src = URL.createObjectURL(file);
@@ -1042,7 +1214,7 @@
             recordedVideoBlob = null;
             document.getElementById('video-file-input').value = '';
             document.getElementById('file-preview').classList.add('hidden');
-            document.getElementById('submit-upload-btn').disabled = true;
+            document.getElementById('step-2-next-btn').disabled = true;
         }
 
         // Camera Recording Functions
@@ -1090,7 +1262,7 @@
                 document.getElementById('file-name').textContent = fileName;
                 document.getElementById('file-duration').textContent = `Duration: ${durationStr}`;
                 document.getElementById('file-preview').classList.remove('hidden');
-                document.getElementById('submit-upload-btn').disabled = false;
+                document.getElementById('step-2-next-btn').disabled = false;
                 
                 // Hide camera UI
                 document.getElementById('camera-preview').classList.add('hidden');
@@ -1134,6 +1306,309 @@
             }
         }
 
+        // Step 3 Logic
+        let videoDuration = 0;
+        let cropRatio = 'original';
+        let isPreviewMode = false;
+
+        function goToStep3() {
+            if (!uploadedVideoFile && !recordedVideoBlob) {
+                alert('Please upload or record a video');
+                return;
+            }
+
+            // Check if coming from Step 4 (don't reset if so)
+            const isBackFromStep4 = !document.getElementById('step-4').classList.contains('hidden');
+
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-4').classList.add('hidden');
+            document.getElementById('step-3').classList.remove('hidden');
+
+            if (isBackFromStep4) return;
+
+            // Setup Preview
+            const video = document.getElementById('edit-preview-video');
+            let src = '';
+            if (uploadedVideoFile) {
+                src = URL.createObjectURL(uploadedVideoFile);
+            } else if (recordedVideoBlob) {
+                src = URL.createObjectURL(recordedVideoBlob);
+            }
+            video.src = src;
+            
+            video.onloadedmetadata = function() {
+                videoDuration = video.duration;
+                
+                // Reset Trim Controls
+                const startInput = document.getElementById('trim-start');
+                const endInput = document.getElementById('trim-end');
+                
+                startInput.max = videoDuration;
+                endInput.max = videoDuration;
+                
+                startInput.value = 0;
+                endInput.value = videoDuration;
+                
+                updateTrimUI();
+            };
+
+            // Realtime Trim Loop
+            video.ontimeupdate = function() {
+                const start = parseFloat(document.getElementById('trim-start').value);
+                const end = parseFloat(document.getElementById('trim-end').value);
+                
+                if (video.currentTime < start) {
+                    video.currentTime = start;
+                }
+                if (video.currentTime > end) {
+                    video.currentTime = start;
+                    // If in preview mode, loop. If editing, maybe pause?
+                    // Let's loop to show the trimmed result
+                    if (!video.paused) {
+                        video.play();
+                    }
+                }
+            };
+        }
+
+        function updateTrimUI() {
+            const startInput = document.getElementById('trim-start');
+            const endInput = document.getElementById('trim-end');
+            const startThumb = document.getElementById('trim-start-thumb');
+            const endThumb = document.getElementById('trim-end-thumb');
+            const activeTrack = document.getElementById('trim-active-track');
+            const durationLabel = document.getElementById('trim-duration');
+            const video = document.getElementById('edit-preview-video');
+
+            let start = parseFloat(startInput.value);
+            let end = parseFloat(endInput.value);
+
+            // Enforce min duration and order
+            if (start > end - 1) {
+                if (document.activeElement === startInput) {
+                    start = end - 1;
+                    startInput.value = start;
+                } else {
+                    end = start + 1;
+                    endInput.value = end;
+                }
+            }
+
+            // Update Visuals
+            const percentStart = (start / videoDuration) * 100;
+            const percentEnd = (end / videoDuration) * 100;
+
+            startThumb.style.left = `${percentStart}%`;
+            endThumb.style.left = `${percentEnd}%`;
+            
+            activeTrack.style.left = `${percentStart}%`;
+            activeTrack.style.right = `${100 - percentEnd}%`;
+
+            // Update Label with Duration
+            const formatTime = (t) => {
+                const m = Math.floor(t / 60).toString().padStart(2, '0');
+                const s = Math.floor(t % 60).toString().padStart(2, '0');
+                return `${m}:${s}`;
+            };
+            const duration = end - start;
+            durationLabel.textContent = `Duration: ${formatTime(duration)} (${formatTime(start)} - ${formatTime(end)})`;
+            
+            // Update Video Playback Range (Seek when dragging)
+            if (document.activeElement === startInput) {
+                 video.currentTime = start;
+            } else if (document.activeElement === endInput) {
+                 video.currentTime = end;
+            }
+        }
+
+        function togglePreview() {
+            isPreviewMode = !isPreviewMode;
+            const btn = document.getElementById('preview-btn');
+            const overlay = document.getElementById('crop-overlay');
+            const video = document.getElementById('edit-preview-video');
+            
+            if (isPreviewMode) {
+                btn.classList.add('text-success-green');
+                btn.innerHTML = '<span class="material-symbols-rounded text-sm">visibility_off</span> Stop Preview';
+                
+                // Hide overlay
+                overlay.classList.add('opacity-0');
+                
+                // Apply Clip Path to Video
+                if (cropRatio !== 'original') {
+                    // Calculate clip path based on overlay position relative to video container
+                    // Note: This assumes video fills container or is centered. 
+                    // Since video is object-contain, this is tricky. 
+                    // For this demo, we'll assume the overlay represents the crop area relative to the container.
+                    
+                    const container = video.parentElement;
+                    const overlayRect = overlay.getBoundingClientRect();
+                    const containerRect = container.getBoundingClientRect();
+                    
+                    const top = ((overlayRect.top - containerRect.top) / containerRect.height) * 100;
+                    const left = ((overlayRect.left - containerRect.left) / containerRect.width) * 100;
+                    const right = 100 - (((overlayRect.left - containerRect.left) + overlayRect.width) / containerRect.width) * 100;
+                    const bottom = 100 - (((overlayRect.top - containerRect.top) + overlayRect.height) / containerRect.height) * 100;
+                    
+                    video.style.clipPath = `inset(${top}% ${right}% ${bottom}% ${left}%)`;
+                }
+                
+                // Play from start
+                const start = parseFloat(document.getElementById('trim-start').value);
+                video.currentTime = start;
+                video.play();
+                
+            } else {
+                btn.classList.remove('text-success-green');
+                btn.innerHTML = '<span class="material-symbols-rounded text-sm">visibility</span> Preview Result';
+                
+                // Show overlay
+                overlay.classList.remove('opacity-0');
+                
+                // Remove Clip Path
+                video.style.clipPath = '';
+                
+                video.pause();
+            }
+        }
+
+        function setCrop(ratio, btn) {
+            cropRatio = ratio;
+            
+            // Update Buttons
+            document.querySelectorAll('.crop-btn').forEach(b => {
+                b.classList.remove('active', 'border-primary', 'bg-primary/10', 'text-primary');
+                b.classList.add('border-neutral-200', 'text-neutral-600');
+            });
+            btn.classList.add('active', 'border-primary', 'bg-primary/10', 'text-primary');
+            btn.classList.remove('border-neutral-200', 'text-neutral-600');
+
+            // Update Overlay
+            const overlay = document.getElementById('crop-overlay');
+            const video = document.getElementById('edit-preview-video');
+            
+            // Reset classes
+            overlay.className = 'absolute border-2 border-primary pointer-events-none hidden transition-all duration-300';
+            overlay.style = ''; // Clear inline styles
+            
+            if (ratio === 'original') {
+                overlay.classList.add('hidden');
+                return;
+            }
+            
+            overlay.classList.remove('hidden');
+            
+            if (ratio === 'free') {
+                overlay.classList.remove('pointer-events-none');
+                overlay.classList.add('crop-overlay-free');
+                // Initial size for free form
+                overlay.style.width = '50%';
+                overlay.style.height = '50%';
+                overlay.style.left = '50%';
+                overlay.style.top = '50%';
+                overlay.style.transform = 'translate(-50%, -50%)';
+                return;
+            }
+            
+            // Calculate dimensions based on ratio
+            // This is a simplified visual representation
+            let width = '100%';
+            let height = '100%';
+            
+            // Assuming container is 16:9 (aspect-video)
+            if (ratio === '16:9') {
+                width = '100%';
+                height = '100%';
+            } else if (ratio === '9:16') {
+                width = '31.6%'; // (9/16) / (16/9) * 100 approx
+                height = '100%';
+            } else if (ratio === '1:1') {
+                width = '56.25%'; // (1/1) / (16/9) * 100
+                height = '100%';
+            }
+            
+            // Center the overlay
+            overlay.style.width = width;
+            overlay.style.height = height;
+            overlay.style.left = '50%';
+            overlay.style.top = '50%';
+            overlay.style.transform = 'translate(-50%, -50%)';
+        }
+
+        // Step 4 Logic
+        function goToStep4() {
+            document.getElementById('step-3').classList.add('hidden');
+            document.getElementById('step-4').classList.remove('hidden');
+
+            // Populate Summary
+            const title = document.getElementById('video-title').value;
+            const category = document.getElementById('video-category').value;
+            
+            document.getElementById('summary-title').textContent = title;
+            document.getElementById('summary-category').textContent = category;
+            
+            // Get Trimmed Duration
+            const start = parseFloat(document.getElementById('trim-start').value);
+            const end = parseFloat(document.getElementById('trim-end').value);
+            const duration = end - start;
+            
+            const formatTime = (t) => {
+                const m = Math.floor(t / 60).toString().padStart(2, '0');
+                const s = Math.floor(t % 60).toString().padStart(2, '0');
+                return `${m}:${s}`;
+            };
+            document.getElementById('summary-duration').textContent = formatTime(duration);
+
+            // Setup Final Preview
+            const video = document.getElementById('final-preview-video');
+            const editVideo = document.getElementById('edit-preview-video');
+            
+            video.src = editVideo.src;
+            video.currentTime = start;
+            
+            // Apply Crop (Visual Simulation)
+            // Note: In a real app, we'd process the video on server or using ffmpeg.wasm
+            if (cropRatio !== 'original') {
+                // Apply same clip path logic as preview
+                // For simplicity, we'll just copy the style if preview was active, 
+                // or re-calculate if not. 
+                // Since we want to show the result, let's apply a basic object-fit cover 
+                // or similar to simulate "cropped" view if it's a standard ratio
+                
+                if (cropRatio === '9:16') {
+                    video.style.objectFit = 'cover';
+                    video.parentElement.style.aspectRatio = '9/16';
+                    video.parentElement.classList.remove('aspect-video');
+                    video.parentElement.style.width = '300px'; // Constrain width for vertical video
+                    video.parentElement.style.margin = '0 auto';
+                } else if (cropRatio === '1:1') {
+                    video.style.objectFit = 'cover';
+                    video.parentElement.style.aspectRatio = '1/1';
+                    video.parentElement.classList.remove('aspect-video');
+                    video.parentElement.style.width = '400px';
+                    video.parentElement.style.margin = '0 auto';
+                } else {
+                    // Reset
+                    video.style.objectFit = 'contain';
+                    video.parentElement.style.aspectRatio = '';
+                    video.parentElement.classList.add('aspect-video');
+                    video.parentElement.style.width = '';
+                }
+            } else {
+                 // Reset
+                video.style.objectFit = 'contain';
+                video.parentElement.style.aspectRatio = '';
+                video.parentElement.classList.add('aspect-video');
+                video.parentElement.style.width = '';
+            }
+
+            // Play loop for trimmed section
+            video.ontimeupdate = function() {
+                if (video.currentTime < start) video.currentTime = start;
+                if (video.currentTime > end) video.currentTime = start;
+            };
+        }
+
         // Submit Upload
         async function submitUpload() {
             if (!uploadedVideoFile && !recordedVideoBlob) {
@@ -1142,16 +1617,44 @@
             }
             
             // Show loading
-            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-4').classList.add('hidden');
             document.getElementById('upload-loading').classList.remove('hidden');
             
             const title = document.getElementById('video-title').value;
             const category = document.getElementById('video-category').value;
             
-            // Get duration from preview
-            const durationText = document.getElementById('file-duration').textContent;
-            const duration = durationText.replace('Duration: ', '');
+            // Get duration from trim
+            const start = parseFloat(document.getElementById('trim-start').value);
+            const end = parseFloat(document.getElementById('trim-end').value);
+            const duration = end - start;
+            const formatTime = (t) => {
+                const m = Math.floor(t / 60).toString().padStart(2, '0');
+                const s = Math.floor(t % 60).toString().padStart(2, '0');
+                return `${m}:${s}`;
+            };
+            const durationStr = formatTime(duration);
             
+            // Helper for local fallback
+            const performLocalFallback = () => {
+                const newVideo = {
+                    id: videos.length + 1,
+                    title: title,
+                    category: category,
+                    duration: durationStr,
+                    thumbnail: `https://placehold.co/600x400/0284c7/ffffff?text=${encodeURIComponent(title.split(' ')[0])}`,
+                    uploadDate: new Date().toISOString().split('T')[0],
+                    views: 0,
+                    compliance: 0
+                };
+                
+                videos.unshift(newVideo);
+                renderVideos();
+                toggleModal(false);
+                switchTab('library');
+                
+                showSuccessMessage('Video added successfully!', 'Your training video has been added to the library (local storage only - API slow/offline).');
+            };
+
             try {
                 // Create FormData for upload
                 const formData = new FormData();
@@ -1168,52 +1671,54 @@
                 formData.append('title', title);
                 formData.append('name', title);
                 formData.append('category', category);
-                formData.append('duration', duration);
+                formData.append('duration', durationStr);
                 formData.append('description', `Training video: ${title}`);
+                
+                // Add Edit Metadata (for backend processing)
+                formData.append('trim_start', start);
+                formData.append('trim_end', end);
+                formData.append('crop_ratio', cropRatio);
                 
                 // Check if API is available
                 if (window.safetyVideoAPI && typeof window.safetyVideoAPI.upload === 'function') {
-                    // Upload via API
-                    const response = await window.safetyVideoAPI.upload(formData);
-                    
-                    if (response) {
-                        // Reload videos from API
-                        await loadVideos();
-                        renderVideos();
-                        toggleModal(false);
-                        switchTab('library');
+                    // Upload via API with 8s timeout
+                    try {
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('TIMEOUT')), 8000)
+                        );
                         
-                        // Show success message with better styling
-                        showSuccessMessage('Video uploaded successfully!', 'Your training video has been uploaded and is now available in the library.');
-                    } else {
-                        throw new Error('Upload failed');
+                        const response = await Promise.race([
+                            window.safetyVideoAPI.upload(formData),
+                            timeoutPromise
+                        ]);
+                        
+                        if (response) {
+                            // Reload videos from API
+                            await loadVideos();
+                            renderVideos();
+                            toggleModal(false);
+                            switchTab('library');
+                            
+                            // Show success message with better styling
+                            showSuccessMessage('Video uploaded successfully!', 'Your training video has been uploaded and is now available in the library.');
+                        } else {
+                            throw new Error('Upload failed');
+                        }
+                    } catch (apiError) {
+                        console.warn('API Upload failed or timed out:', apiError);
+                        // Fallback to local if API fails or times out
+                        performLocalFallback();
                     }
                 } else {
                     // Fallback: Add video locally without API
-                    const newVideo = {
-                        id: videos.length + 1,
-                        title: title,
-                        category: category,
-                        duration: duration,
-                        thumbnail: `https://placehold.co/600x400/0284c7/ffffff?text=${encodeURIComponent(title.split(' ')[0])}`,
-                        uploadDate: new Date().toISOString().split('T')[0],
-                        views: 0,
-                        compliance: 0
-                    };
-                    
-                    videos.unshift(newVideo);
-                    renderVideos();
-                    toggleModal(false);
-                    switchTab('library');
-                    
-                    showSuccessMessage('Video added successfully!', 'Your training video has been added to the library (local storage only - API not connected).');
+                    performLocalFallback();
                 }
             } catch (error) {
                 console.error('Error uploading video:', error);
                 
                 // Hide loading, show error
                 document.getElementById('upload-loading').classList.add('hidden');
-                document.getElementById('step-2').classList.remove('hidden');
+                document.getElementById('step-4').classList.remove('hidden');
                 
                 showErrorMessage('Failed to upload video', error.message || 'Please check your connection and try again.');
             }
@@ -1262,16 +1767,38 @@
             document.body.appendChild(modal);
         }
 
-        async function deleteVideo(id) {
+        async function deleteVideo(id, event) {
             if(confirm('Are you sure you want to delete this training module?')) {
                 try {
-                    // If API is available, delete from server
-                    // Note: Add delete endpoint to API if needed
+                    // Show loading state
+                    const deleteBtn = event?.target?.closest('button');
+                    if (deleteBtn) {
+                        deleteBtn.disabled = true;
+                        deleteBtn.innerHTML = '<span class="material-symbols-rounded text-sm spin">progress_activity</span> Deleting...';
+                    }
+
+                    // Call API to delete video from server
+                    if (window.safetyVideoAPI && typeof window.safetyVideoAPI.delete === 'function') {
+                        await window.safetyVideoAPI.delete(id);
+                        console.log('Video deleted from server:', id);
+                    }
+                    
+                    // Remove from local array
                     videos = videos.filter(v => v.id !== id);
                     renderVideos();
+                    
+                    // Show success message
+                    showNotification('Video deleted successfully!', 'success');
                 } catch (error) {
                     console.error('Error deleting video:', error);
-                    alert('Failed to delete video');
+                    alert('Failed to delete video: ' + (error.message || 'Unknown error'));
+                    
+                    // Re-enable button on error
+                    const deleteBtn = event?.target?.closest('button');
+                    if (deleteBtn) {
+                        deleteBtn.disabled = false;
+                        deleteBtn.innerHTML = '<span class="material-symbols-rounded text-sm">delete</span> Delete';
+                    }
                 }
             }
         }
@@ -1318,7 +1845,7 @@
                                     <span class="material-symbols-rounded">more_vert</span>
                                 </button>
                                 <div class="absolute right-0 top-6 w-32 bg-white shadow-lg rounded-lg border border-neutral-100 hidden group-hover/menu:block z-10">
-                                    <button onclick="deleteVideo(${video.id})" class="w-full text-left px-4 py-2 text-sm text-alert-red hover:bg-red-50 flex items-center gap-2">
+                                    <button onclick="deleteVideo(${video.id}, event)" class="w-full text-left px-4 py-2 text-sm text-alert-red hover:bg-red-50 flex items-center gap-2">
                                         <span class="material-symbols-rounded text-sm">delete</span> Delete
                                     </button>
                                 </div>
