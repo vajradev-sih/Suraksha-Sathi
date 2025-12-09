@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Videos - Suraksha Sathi</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0..200"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0284c7",
+                        "primary-dark": "#0369a1",
+                        "secondary": "#f97316",
+                        "surface-light": "#ffffff",
+                        "neutral-50": "#f8fafc",
+                        "neutral-900": "#0f172a",
+                        "success-green": "#22c55e",
+                        "alert-red": "#ef4444",
+                        "warning-yellow": "#facc15",
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"],
+                        "orbitron": ["Orbitron", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        .material-symbols-rounded {
+            font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+
+        .video-item {
+            transition: all 0.2s ease;
+        }
+
+        .video-item:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+
+<body class="bg-neutral-50 font-sans text-neutral-800 min-h-screen pb-24">
+
+    <!-- Header -->
+    <div
+        class="sticky top-0 z-50 flex items-center bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] px-4 py-3 justify-between shadow-lg">
+        <a href="updated-home-page.html" class="text-white">
+            <span class="material-symbols-rounded text-2xl">arrow_back</span>
+        </a>
+        <h1 class="text-xl font-[Orbitron] tracking-widest text-white">
+            My Videos
+        </h1>
+        <div class="w-8"></div>
+    </div>
+
+    <main class="p-4 space-y-4">
+
+        <!-- Stats Summary -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-neutral-100 grid grid-cols-3 gap-4">
+            <div class="text-center">
+                <p class="text-xs text-neutral-500 uppercase font-bold">Total</p>
+                <p class="text-2xl font-bold text-primary" id="total-count">0</p>
+            </div>
+            <div class="text-center">
+                <p class="text-xs text-neutral-500 uppercase font-bold">Accepted</p>
+                <p class="text-2xl font-bold text-success-green" id="accepted-count">0</p>
+            </div>
+            <div class="text-center">
+                <p class="text-xs text-neutral-500 uppercase font-bold">Pending</p>
+                <p class="text-2xl font-bold text-warning-yellow" id="pending-count">0</p>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+            <button onclick="filterVideos('all')" 
+                class="filter-btn active px-4 py-2 rounded-lg bg-primary text-white font-medium text-sm whitespace-nowrap transition-all">
+                All Videos
+            </button>
+            <button onclick="filterVideos('pending')" 
+                class="filter-btn px-4 py-2 rounded-lg bg-white border border-neutral-200 text-neutral-600 font-medium text-sm whitespace-nowrap transition-all">
+                Pending
+            </button>
+            <button onclick="filterVideos('accepted')" 
+                class="filter-btn px-4 py-2 rounded-lg bg-white border border-neutral-200 text-neutral-600 font-medium text-sm whitespace-nowrap transition-all">
+                Accepted
+            </button>
+            <button onclick="filterVideos('rejected')" 
+                class="filter-btn px-4 py-2 rounded-lg bg-white border border-neutral-200 text-neutral-600 font-medium text-sm whitespace-nowrap transition-all">
+                Rejected
+            </button>
+        </div>
+
+        <!-- Video List -->
+        <div id="video-list-container" class="space-y-3">
+            <div class="text-center py-10 text-neutral-400">
+                <span class="material-symbols-rounded text-4xl animate-spin">progress_activity</span>
+                <p class="mt-2">Loading your videos...</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- 1. Sample Data Simulation ---
+        const submissionsData = [
+            {
+                id: 1,
+                title: "Site B - Safety Hazard Report",
+                submittedBy: "Rahul Kumar",
+                date: "2024-01-15T10:30:00",
+                status: "pending"
+            },
+            {
+                id: 2,
+                title: "Morning Attendance Drill",
+                submittedBy: "Priya Sharma",
+                date: "2024-01-15T09:15:00",
+                status: "accepted"
+            },
+            {
+                id: 3,
+                title: "Equipment Check - Forklift 4",
+                submittedBy: "Amit Verma",
+                date: "2024-01-14T14:20:00",
+                status: "rejected"
+            },
+            {
+                id: 4,
+                title: "Zone C Construction Update",
+                submittedBy: "Vikram Singh",
+                date: "2024-01-14T11:45:00",
+                status: "accepted"
+            },
+            {
+                id: 5,
+                title: "Emergency Exit Blockage",
+                submittedBy: "Anjali Gupta",
+                date: "2024-01-13T16:10:00",
+                status: "pending"
+            }
+        ];
+
+        let currentFilter = 'all';
+
+        // --- 2. Helper Functions ---
+        function getStatusBadge(status) {
+            const badges = {
+                accepted: '<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full uppercase flex items-center gap-1"><span class="material-symbols-rounded text-xs">check_circle</span>Accepted</span>',
+                rejected: '<span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full uppercase flex items-center gap-1"><span class="material-symbols-rounded text-xs">cancel</span>Rejected</span>',
+                pending: '<span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded-full uppercase flex items-center gap-1"><span class="material-symbols-rounded text-xs">schedule</span>Pending</span>'
+            };
+            return badges[status] || badges.pending;
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                accepted: '<div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0"><span class="material-symbols-rounded">check_circle</span></div>',
+                rejected: '<div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0"><span class="material-symbols-rounded">cancel</span></div>',
+                pending: '<div class="w-10 h-10 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center flex-shrink-0"><span class="material-symbols-rounded">schedule</span></div>'
+            };
+            return icons[status] || icons.pending;
+        }
+
+        function getStatusColor(status) {
+            return status === 'accepted' ? 'bg-success-green' : 
+                   status === 'rejected' ? 'bg-alert-red' : 'bg-warning-yellow';
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) {
+                return `Today, ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+            } else if (diffDays === 1) {
+                return 'Yesterday';
+            } else if (diffDays < 7) {
+                return `${diffDays} days ago`;
+            } else {
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+        }
+
+        // --- 3. Render Functions ---
+        function updateStats() {
+            const total = submissionsData.length;
+            const accepted = submissionsData.filter(v => v.status === 'accepted').length;
+            const pending = submissionsData.filter(v => v.status === 'pending').length;
+
+            document.getElementById('total-count').textContent = total;
+            document.getElementById('accepted-count').textContent = accepted;
+            document.getElementById('pending-count').textContent = pending;
+        }
+
+        function renderVideoList(filter = 'all') {
+            const container = document.getElementById('video-list-container');
+            
+            const filteredData = filter === 'all' 
+                ? submissionsData 
+                : submissionsData.filter(v => v.status === filter);
+
+            if (filteredData.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 text-neutral-400">
+                        <span class="material-symbols-rounded text-4xl">video_library</span>
+                        <p class="mt-2">No videos found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredData.map(video => `
+                <div class="video-item bg-white p-4 rounded-2xl shadow-sm border border-neutral-100 cursor-pointer relative overflow-hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5 ${getStatusColor(video.status)}"></div>
+                    <div class="flex items-center gap-4 pl-3">
+                        <div class="w-14 h-14 bg-neutral-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-rounded text-primary text-2xl">chevron_right</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-neutral-800 text-base truncate">${video.title}</h3>
+                            <p class="text-xs text-neutral-500 mt-1">By: ${video.submittedBy}</p>
+                            <div class="flex items-center gap-2 mt-2">
+                                ${getStatusBadge(video.status)}
+                                <span class="text-xs text-neutral-400">${formatDate(video.date)}</span>
+                            </div>
+                        </div>
+                        ${getStatusIcon(video.status)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- 4. Filter Function ---
+        window.filterVideos = (filter) => {
+            currentFilter = filter;
+            
+            // Update button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white');
+                btn.classList.add('bg-white', 'border', 'border-neutral-200', 'text-neutral-600');
+            });
+            event.target.classList.remove('bg-white', 'border', 'border-neutral-200', 'text-neutral-600');
+            event.target.classList.add('bg-primary', 'text-white');
+            
+            renderVideoList(filter);
+        };
+
+        // --- 5. Initialize ---
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStats();
+            renderVideoList();
+        });
+    </script>
+
+    <!-- Hide scrollbar for horizontal filter scroll -->
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</body>
+
+</html>
