@@ -25,37 +25,53 @@ const router = Router();
 // Add logging middleware to trace all requests to this router
 router.use((req, res, next) => {
   console.log(`[WORKER-VIDEO ROUTE] ${req.method} ${req.originalUrl}`);
+  console.log('[WORKER-VIDEO ROUTE] Content-Type:', req.get('content-type'));
+  console.log('[WORKER-VIDEO ROUTE] Body keys:', Object.keys(req.body));
   next();
 });
 
-// Worker routes - any authenticated user can upload (with content moderation)
+// Worker routes - any authenticated user can upload
 router.post('/upload', 
-  verifyJWT, 
   (req, res, next) => {
-    console.log('[ROUTE] About to call multer - accepting ANY file field');
+    console.log('[UPLOAD ROUTE] Step 1: Before verifyJWT');
+    next();
+  },
+  verifyJWT,
+  (req, res, next) => {
+    console.log('[UPLOAD ROUTE] Step 2: After verifyJWT, before multer');
+    console.log('[UPLOAD ROUTE] User authenticated:', req.user?._id);
+    next();
+  },
+  (req, res, next) => {
+    console.log('[UPLOAD ROUTE] Step 3: About to call multer - accepting ANY file field');
     
     // Use upload.any() to accept any field name
     const multerMiddleware = upload.any();
     
     multerMiddleware(req, res, (err) => {
       if (err) {
-        console.error('[ROUTE] Multer error:', err);
+        console.error('[UPLOAD ROUTE] Multer error:', err);
         return next(err);
       }
       
-      console.log('[ROUTE] Files received:', req.files);
+      console.log('[UPLOAD ROUTE] Step 4: Multer complete');
+      console.log('[UPLOAD ROUTE] Files received:', req.files?.length || 0);
       
       // Get the first file from the files array
       if (req.files && req.files.length > 0) {
         req.file = req.files[0];
-        console.log('[ROUTE] File field name was:', req.file.fieldname);
-        console.log('[ROUTE] File normalized to req.file');
+        console.log('[UPLOAD ROUTE] File field name was:', req.file.fieldname);
+        console.log('[UPLOAD ROUTE] File normalized to req.file');
       } else {
-        console.log('[ROUTE] No files in request');
+        console.log('[UPLOAD ROUTE] WARNING: No files in request');
       }
       
       next();
     });
+  },
+  (req, res, next) => {
+    console.log('[UPLOAD ROUTE] Step 5: About to call controller');
+    next();
   },
   uploadWorkerVideo
 );
