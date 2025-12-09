@@ -12,7 +12,19 @@ app.use(cors({
 
 app.use(express.json({limit: "16kb"}))
 
-app.use(express.urlencoded({ extended: true, limit: "16kb" }))
+// IMPORTANT: urlencoded middleware should NOT process multipart/form-data
+// Only process application/x-www-form-urlencoded content type
+app.use((req, res, next) => {
+    const contentType = req.headers['content-type'] || '';
+    if (contentType.startsWith('multipart/form-data')) {
+        // Skip urlencoded parsing for multipart - let multer handle it
+        console.log('[APP] Skipping urlencoded for multipart/form-data');
+        return next();
+    }
+    // Apply urlencoded parsing for other content types
+    express.urlencoded({ extended: true, limit: "16kb" })(req, res, next);
+});
+
 app.use(express.static("public"));
 
 app.use(cookieParser())
@@ -84,6 +96,13 @@ app.use('/api/v1/recommendations', recommendationRouter);
 
 // ============ ERROR HANDLING SECTION ===========
 import { errorHandler } from './middlewares/error.middleware.js'
+
+// Log all errors before passing to error handler
+app.use((err, req, res, next) => {
+    console.error('[APP ERROR]', err.message);
+    console.error('[APP ERROR] Stack:', err.stack);
+    next(err);
+});
 
 // IMPORTANT: Error handler must be registered AFTER all routes
 // This catches any errors thrown by routes or other middleware
