@@ -30,11 +30,11 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
     reasons: []
   };
 
-  // Upload video to Cloudinary
+  // Upload video to Cloudinary (without Rekognition moderation - requires paid subscription)
   const result = await cloudinary.uploader.upload(req.file.path, { 
     folder: 'worker_videos',
-    resource_type: 'video',
-    moderation: 'aws_rek' // Enable Cloudinary's AI moderation
+    resource_type: 'video'
+    // moderation: 'aws_rek' // Disabled - requires Cloudinary subscription for Rekognition
   });
 
   // Delete local file after upload
