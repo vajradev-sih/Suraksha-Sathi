@@ -13,7 +13,17 @@ export const authorizeRoles = (...allowedRoles) => {
       return next(new ApiError(401, 'Unauthorized: No user role found'));
     }
 
-    if (!allowedRoles.includes(user.role.name)) {
+    // Map TrainingOfficer to SafetyOfficer for backward compatibility
+    // This allows both old (SafetyOfficer) and new (TrainingOfficer) role names to work
+    const expandedAllowedRoles = [...allowedRoles];
+    if (allowedRoles.includes('TrainingOfficer') && !allowedRoles.includes('SafetyOfficer')) {
+      expandedAllowedRoles.push('SafetyOfficer');
+    }
+    if (allowedRoles.includes('SafetyOfficer') && !allowedRoles.includes('TrainingOfficer')) {
+      expandedAllowedRoles.push('TrainingOfficer');
+    }
+
+    if (!expandedAllowedRoles.includes(user.role.name)) {
       return next(new ApiError(403, 'Forbidden: Insufficient role privileges'));
     }
 
