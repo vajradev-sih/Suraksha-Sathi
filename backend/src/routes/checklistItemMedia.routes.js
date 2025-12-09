@@ -21,8 +21,27 @@ router.use((req, res, next) => {
 
 // Upload media - workers upload completion proof, admins/managers upload equipment reference images
 router.post('/upload', 
-  verifyJWT, 
-  upload.single('media'), // Changed from 'file' to 'media' for clarity
+  verifyJWT,
+  (req, res, next) => {
+    console.log('[CHECKLIST-MEDIA] Before multer');
+    next();
+  },
+  upload.any(), // Accept any field name for flexibility
+  (req, res, next) => {
+    console.log('[CHECKLIST-MEDIA] After multer');
+    console.log('[CHECKLIST-MEDIA] Files received:', req.files?.length || 0);
+    console.log('[CHECKLIST-MEDIA] Field names:', req.files?.map(f => f.fieldname).join(', '));
+    
+    // Normalize to req.file regardless of field name
+    if (req.files && req.files.length > 0) {
+      req.file = req.files[0];
+      console.log('[CHECKLIST-MEDIA] File normalized from field:', req.file.fieldname);
+    } else {
+      console.log('[CHECKLIST-MEDIA] WARNING: No files received');
+    }
+    
+    next();
+  },
   uploadChecklistItemMedia
 );
 
