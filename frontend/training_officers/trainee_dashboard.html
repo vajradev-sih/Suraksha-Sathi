@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MineSafe - Training Officer Dashboard</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Material Symbols -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0..200" rel="stylesheet" />
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0..200"
+        rel="stylesheet" />
+
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
-    
+
     <!-- API Client -->
     <script src="../api.client.js"></script>
 
@@ -63,50 +66,110 @@
     </script>
 
     <style>
-        .material-symbols-rounded { 
-            font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24; 
+        .material-symbols-rounded {
+            font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
         }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        .sidebar-expanded { width: 16rem; }
-        .sidebar-collapsed { width: 5rem; }
-        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
         /* Animation classes */
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        .spin { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        
-        .slide-in-up { animation: slideInUp 0.4s ease-out; }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .slide-in-up {
+            animation: slideInUp 0.4s ease-out;
+        }
+
         @keyframes slideInUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
-        
-        .pulse-slow { animation: pulseSlow 2s ease-in-out infinite; }
+
+        .pulse-slow {
+            animation: pulseSlow 2s ease-in-out infinite;
+        }
+
         @keyframes pulseSlow {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
-        
+
         .upload-icon-animate {
             animation: uploadBounce 0.6s ease-in-out;
         }
+
         @keyframes uploadBounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
         }
 
         /* Range Slider Fixes */
         input[type=range] {
             pointer-events: none;
         }
+
         input[type=range]::-webkit-slider-thumb {
             pointer-events: auto;
             cursor: pointer;
@@ -116,8 +179,10 @@
             background: white;
             border: 2px solid #0284c7;
             border-radius: 50%;
-            margin-top: -6px; /* Adjust for track height */
+            margin-top: -6px;
+            /* Adjust for track height */
         }
+
         input[type=range]::-moz-range-thumb {
             pointer-events: auto;
             cursor: pointer;
@@ -127,7 +192,7 @@
             border: 2px solid #0284c7;
             border-radius: 50%;
         }
-        
+
         /* Free Form Crop Overlay */
         .crop-overlay-free {
             resize: both;
@@ -140,59 +205,23 @@
         }
     </style>
 </head>
-<body class="bg-neutral-100 text-neutral-800 h-screen flex overflow-hidden font-sans">
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="bg-gradient-to-b from-neutral-900 to-black text-white transition-all duration-300 sidebar-expanded flex flex-col shadow-xl z-20 border-r border-white/10">
-        <div class="p-4 flex items-center justify-between border-b border-white/10">
-            <div id="logo-container" class="flex items-center gap-3 w-full">
-                <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center text-white font-bold shrink-0 shadow-lg">
-                    <span class="material-symbols-rounded text-xl">shield</span>
-                </div>
-                <div id="logo-text">
-                    <h1 class="font-orbitron font-bold text-lg leading-none tracking-wider">Suraksha Sathi</h1>
-                    <span class="text-xs text-neutral-400">Training Portal</span>
-                </div>
-            </div>
-        </div>
-
-        <nav class="flex-1 py-6 px-3 space-y-2">
-            <button onclick="switchTab('dashboard')" class="nav-item w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200 bg-primary text-white font-semibold shadow-lg" data-tab="dashboard">
-                <span class="material-symbols-rounded">dashboard</span>
-                <span class="nav-label">Dashboard</span>
-            </button>
-            <button onclick="switchTab('library')" class="nav-item w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200 text-neutral-400 hover:bg-white/10 hover:text-white" data-tab="library">
-                <span class="material-symbols-rounded">video_library</span>
-                <span class="nav-label">Video Library</span>
-            </button>
-            
-            <!-- Upload Video Button -->
-            <div class="pt-4 mt-4 border-t border-white/10">
-                <button onclick="toggleModal(true)" class="nav-item w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200 bg-gradient-to-r from-secondary to-safety-orange text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 group">
-                    <span class="material-symbols-rounded group-hover:upload-icon-animate">cloud_upload</span>
-                    <span class="nav-label">Upload Video</span>
-                </button>
-            </div>
-        </nav>
-
-        <div class="p-4 border-t border-white/10">
-            <button onclick="toggleSidebar()" class="w-full flex items-center justify-center p-2 rounded hover:bg-white/10 text-neutral-400 transition-colors">
-                <span class="material-symbols-rounded">menu</span>
-            </button>
-        </div>
-    </aside>
+<body class="bg-neutral-100 text-neutral-800 h-screen flex flex-col overflow-hidden font-sans">
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col h-full overflow-hidden w-full">
-        
+    <div class="flex-1 flex flex-col overflow-hidden">
+
         <!-- Header -->
-        <header class="sticky top-0 z-30 h-16 bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] border-b border-blue-900/40 flex items-center justify-between px-6 shrink-0 shadow-lg shadow-blue-900/40">
-            <h2 id="page-title" class="text-xl font-bold text-neutral-800">Officer Dashboard</h2>
-            
+        <header
+            class="h-16 bg-white border-b border-neutral-200 flex items-center justify-between px-6 shrink-0 shadow-sm">
+            <h2 id="page-title" class="text-xl font-bold text-neutral-800">Training Modules</h2>
+
             <div class="flex items-center gap-4">
                 <div class="relative hidden md:block">
-                    <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xl">search</span>
-                    <input type="text" placeholder="Search modules..." class="pl-10 pr-4 py-2 border border-neutral-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary w-64 bg-neutral-50">
+                    <span
+                        class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xl">search</span>
+                    <input type="text" placeholder="Search modules..."
+                        class="pl-10 pr-4 py-2 border border-neutral-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary w-64 bg-neutral-50">
                 </div>
                 <button class="relative p-2 text-neutral-500 hover:bg-neutral-100 rounded-full transition-colors">
                     <span class="material-symbols-rounded pulse-slow">notifications</span>
@@ -204,326 +233,45 @@
                         <p class="text-sm font-bold text-neutral-800">Officer J. Doe</p>
                         <p class="text-xs text-neutral-500">Safety Director</p>
                     </div>
-                    <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-bold shadow">JD</div>
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-bold shadow">
+                        JD</div>
                 </div>
             </div>
         </header>
 
         <!-- Main Views -->
-        <main class="flex-1 overflow-y-auto p-6 relative bg-slate-100 pb-24">
-            
-            <!-- Dashboard View -->
-            <div id="view-dashboard" class="space-y-6 fade-in">
-                <!-- KPI Stats with Visual Progress -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Stat Card 1 - Compliance -->
-                    <div class="bg-gradient-to-br from-success-green to-green-600 p-6 rounded-xl shadow-lg slide-in-up relative overflow-hidden">
-                        <div class="absolute top-0 right-0 opacity-10">
-                            <span class="material-symbols-rounded" style="font-size: 120px;">verified</span>
-                        </div>
-                        <div class="relative z-10">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="material-symbols-rounded text-white text-xl">check_circle</span>
-                                <p class="text-white/90 text-sm font-semibold">Compliance Rate</p>
-                            </div>
-                            <h3 class="text-4xl font-bold text-white mb-3">94.2%</h3>
-                            <div class="w-full bg-white/20 rounded-full h-2 mb-2">
-                                <div class="bg-white rounded-full h-2" style="width: 94.2%"></div>
-                            </div>
-                            <div class="flex items-center justify-between text-xs text-white/80">
-                                <span class="flex items-center gap-1">
-                                    <span class="material-symbols-rounded text-sm">trending_up</span>
-                                    +2.4% this month
-                                </span>
-                                <span>Target: 90%</span>
-                            </div>
-                        </div>
-                    </div>
+        <main class="flex-1 overflow-y-auto p-6 relative bg-slate-100">
 
-                    <!-- Stat Card 2 - Trainees -->
-                    <div class="bg-gradient-to-br from-primary to-blue-700 p-6 rounded-xl shadow-lg slide-in-up relative overflow-hidden" style="animation-delay: 0.1s;">
-                        <div class="absolute top-0 right-0 opacity-10">
-                            <span class="material-symbols-rounded" style="font-size: 120px;">groups</span>
-                        </div>
-                        <div class="relative z-10">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="material-symbols-rounded text-white text-xl">group</span>
-                                <p class="text-white/90 text-sm font-semibold">Active Trainees</p>
-                            </div>
-                            <h3 class="text-4xl font-bold text-white mb-3">1,248</h3>
-                            <div class="grid grid-cols-3 gap-2 mb-2">
-                                <div class="bg-white/20 rounded p-1.5 text-center">
-                                    <p class="text-white font-bold text-lg">412</p>
-                                    <p class="text-white/70 text-xs">Shift A</p>
-                                </div>
-                                <div class="bg-white/20 rounded p-1.5 text-center">
-                                    <p class="text-white font-bold text-lg">418</p>
-                                    <p class="text-white/70 text-xs">Shift B</p>
-                                </div>
-                                <div class="bg-white/20 rounded p-1.5 text-center">
-                                    <p class="text-white font-bold text-lg">418</p>
-                                    <p class="text-white/70 text-xs">Shift C</p>
-                                </div>
-                            </div>
-                            <p class="text-xs text-white/80 flex items-center gap-1">
-                                <span class="material-symbols-rounded text-sm">trending_up</span>
-                                +12 new this month
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Stat Card 3 - Pending -->
-                    <div class="bg-gradient-to-br from-safety-yellow to-orange-500 p-6 rounded-xl shadow-lg slide-in-up relative overflow-hidden" style="animation-delay: 0.2s;">
-                        <div class="absolute top-0 right-0 opacity-10">
-                            <span class="material-symbols-rounded" style="font-size: 120px;">pending_actions</span>
-                        </div>
-                        <div class="relative z-10">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="material-symbols-rounded text-white text-xl">schedule</span>
-                                <p class="text-white/90 text-sm font-semibold">Pending Reviews</p>
-                            </div>
-                            <h3 class="text-4xl font-bold text-white mb-3">18</h3>
-                            <div class="space-y-1.5 mb-2">
-                                <div class="flex items-center justify-between bg-white/20 rounded px-2 py-1">
-                                    <span class="text-white/90 text-xs">Video Reviews</span>
-                                    <span class="text-white font-bold text-xs">12</span>
-                                </div>
-                                <div class="flex items-center justify-between bg-white/20 rounded px-2 py-1">
-                                    <span class="text-white/90 text-xs">Assessments</span>
-                                    <span class="text-white font-bold text-xs">6</span>
-                                </div>
-                            </div>
-                            <p class="text-xs text-white/80 flex items-center gap-1">
-                                <span class="material-symbols-rounded text-sm">trending_down</span>
-                                -5 from last month
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Stat Card 4 - Incidents -->
-                    <div class="bg-gradient-to-br from-alert-red to-red-700 p-6 rounded-xl shadow-lg slide-in-up relative overflow-hidden" style="animation-delay: 0.3s;">
-                        <div class="absolute top-0 right-0 opacity-10">
-                            <span class="material-symbols-rounded" style="font-size: 120px;">emergency</span>
-                        </div>
-                        <div class="relative z-10">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="material-symbols-rounded text-white text-xl">warning</span>
-                                <p class="text-white/90 text-sm font-semibold">Safety Incidents</p>
-                            </div>
-                            <h3 class="text-4xl font-bold text-white mb-3">2</h3>
-                            <div class="space-y-1.5 mb-2">
-                                <div class="flex items-center gap-2 bg-white/20 rounded px-2 py-1">
-                                    <div class="w-2 h-2 bg-white rounded-full"></div>
-                                    <span class="text-white/90 text-xs flex-1">Minor Equipment</span>
-                                    <span class="text-white font-bold text-xs">1</span>
-                                </div>
-                                <div class="flex items-center gap-2 bg-white/20 rounded px-2 py-1">
-                                    <div class="w-2 h-2 bg-white rounded-full"></div>
-                                    <span class="text-white/90 text-xs flex-1">PPE Violation</span>
-                                    <span class="text-white font-bold text-xs">1</span>
-                                </div>
-                            </div>
-                            <p class="text-xs text-white/80">Last 30 days</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Charts and Analytics Section -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Training Progress Chart -->
-                    <div class="lg:col-span-2 bg-white rounded-xl shadow-lg border border-neutral-200 p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <h3 class="font-bold text-xl text-neutral-800">Training Completion Overview</h3>
-                                <p class="text-sm text-neutral-500">Weekly completion rates across all categories</p>
-                            </div>
-                            <select class="text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none">
-                                <option>Last 7 Days</option>
-                                <option>Last 30 Days</option>
-                                <option>Last Quarter</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Visual Bar Chart -->
-                        <div class="space-y-4">
-                            <div>
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="flex items-center gap-2">
-                                        <span class="material-symbols-rounded text-primary">construction</span>
-                                        <span class="text-sm font-semibold text-neutral-700">Heavy Machinery</span>
-                                    </div>
-                                    <span class="text-sm font-bold text-neutral-800">89%</span>
-                                </div>
-                                <div class="w-full bg-neutral-100 rounded-full h-4 overflow-hidden">
-                                    <div class="bg-gradient-to-r from-primary to-blue-600 h-4 rounded-full flex items-center justify-end pr-2" style="width: 89%">
-                                        <span class="text-xs text-white font-bold">425/478</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="flex items-center gap-2">
-                                        <span class="material-symbols-rounded text-alert-red">emergency</span>
-                                        <span class="text-sm font-semibold text-neutral-700">Emergency Procedures</span>
-                                    </div>
-                                    <span class="text-sm font-bold text-neutral-800">96%</span>
-                                </div>
-                                <div class="w-full bg-neutral-100 rounded-full h-4 overflow-hidden">
-                                    <div class="bg-gradient-to-r from-alert-red to-red-600 h-4 rounded-full flex items-center justify-end pr-2" style="width: 96%">
-                                        <span class="text-xs text-white font-bold">1,198/1,248</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="flex items-center gap-2">
-                                        <span class="material-symbols-rounded text-success-green">health_and_safety</span>
-                                        <span class="text-sm font-semibold text-neutral-700">PPE & Health Safety</span>
-                                    </div>
-                                    <span class="text-sm font-bold text-neutral-800">92%</span>
-                                </div>
-                                <div class="w-full bg-neutral-100 rounded-full h-4 overflow-hidden">
-                                    <div class="bg-gradient-to-r from-success-green to-green-600 h-4 rounded-full flex items-center justify-end pr-2" style="width: 92%">
-                                        <span class="text-xs text-white font-bold">1,148/1,248</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="flex items-center gap-2">
-                                        <span class="material-symbols-rounded text-safety-yellow">explosion</span>
-                                        <span class="text-sm font-semibold text-neutral-700">Explosives Handling</span>
-                                    </div>
-                                    <span class="text-sm font-bold text-neutral-800">78%</span>
-                                </div>
-                                <div class="w-full bg-neutral-100 rounded-full h-4 overflow-hidden">
-                                    <div class="bg-gradient-to-r from-safety-yellow to-orange-500 h-4 rounded-full flex items-center justify-end pr-2" style="width: 78%">
-                                        <span class="text-xs text-neutral-800 font-bold">243/312</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Trend Indicators -->
-                        <div class="grid grid-cols-4 gap-3 mt-6 pt-6 border-t border-neutral-200">
-                            <div class="text-center">
-                                <p class="text-xs text-neutral-500 mb-1">Avg. Score</p>
-                                <p class="text-lg font-bold text-neutral-800">87.5%</p>
-                                <p class="text-xs text-success-green flex items-center justify-center gap-1">
-                                    <span class="material-symbols-rounded" style="font-size: 14px;">arrow_upward</span>
-                                    +3.2%
-                                </p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-xs text-neutral-500 mb-1">Videos Watched</p>
-                                <p class="text-lg font-bold text-neutral-800">3,421</p>
-                                <p class="text-xs text-success-green flex items-center justify-center gap-1">
-                                    <span class="material-symbols-rounded" style="font-size: 14px;">arrow_upward</span>
-                                    +18%
-                                </p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-xs text-neutral-500 mb-1">Avg. Time</p>
-                                <p class="text-lg font-bold text-neutral-800">12m</p>
-                                <p class="text-xs text-neutral-400 flex items-center justify-center gap-1">
-                                    <span class="material-symbols-rounded" style="font-size: 14px;">remove</span>
-                                    0%
-                                </p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-xs text-neutral-500 mb-1">Pass Rate</p>
-                                <p class="text-lg font-bold text-neutral-800">94.2%</p>
-                                <p class="text-xs text-success-green flex items-center justify-center gap-1">
-                                    <span class="material-symbols-rounded" style="font-size: 14px;">arrow_upward</span>
-                                    +2.1%
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Recent Activity -->
-                    <div class="bg-white rounded-xl shadow-lg border border-neutral-200 p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-lg text-neutral-800">Recent Activity</h3>
-                            <span class="material-symbols-rounded text-neutral-400 cursor-pointer hover:text-primary">refresh</span>
-                        </div>
-                        <div class="space-y-3">
-                            <div class="flex items-start gap-3 p-3 bg-gradient-to-r from-success-green/10 to-transparent rounded-lg border-l-4 border-success-green">
-                                <div class="w-10 h-10 bg-success-green rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                                    EW
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-bold text-neutral-800 truncate">Shift A - Crew 4</p>
-                                    <p class="text-xs text-neutral-600 mb-1">Fire Safety Protocol</p>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs font-semibold text-success-green bg-success-green/20 px-2 py-0.5 rounded-full">98% Passed</span>
-                                        <span class="text-xs text-neutral-400">2h ago</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start gap-3 p-3 bg-gradient-to-r from-primary/10 to-transparent rounded-lg border-l-4 border-primary">
-                                <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                                    TM
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-bold text-neutral-800 truncate">Shift B - Crew 2</p>
-                                    <p class="text-xs text-neutral-600 mb-1">Excavator Basics</p>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs font-semibold text-primary bg-primary/20 px-2 py-0.5 rounded-full">85% Passed</span>
-                                        <span class="text-xs text-neutral-400">4h ago</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start gap-3 p-3 bg-gradient-to-r from-success-green/10 to-transparent rounded-lg border-l-4 border-success-green">
-                                <div class="w-10 h-10 bg-success-green rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                                    JL
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-bold text-neutral-800 truncate">Shift C - Crew 1</p>
-                                    <p class="text-xs text-neutral-600 mb-1">PPE Standards</p>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs font-semibold text-success-green bg-success-green/20 px-2 py-0.5 rounded-full">92% Passed</span>
-                                        <span class="text-xs text-neutral-400">5h ago</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start gap-3 p-3 bg-gradient-to-r from-safety-yellow/10 to-transparent rounded-lg border-l-4 border-safety-yellow">
-                                <div class="w-10 h-10 bg-safety-yellow rounded-full flex items-center justify-center text-neutral-800 font-bold text-sm flex-shrink-0">
-                                    RP
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-bold text-neutral-800 truncate">Shift A - Crew 1</p>
-                                    <p class="text-xs text-neutral-600 mb-1">Explosives Safety</p>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs font-semibold text-safety-yellow bg-safety-yellow/20 px-2 py-0.5 rounded-full">In Progress</span>
-                                        <span class="text-xs text-neutral-400">Now</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <button class="w-full mt-4 text-center text-sm font-semibold text-primary hover:text-primary-dark py-2 hover:bg-primary/5 rounded-lg transition-colors">
-                            View All Activity →
-                        </button>
-                    </div>
-                </div>
-            </div>
 
             <!-- Library View -->
-            <div id="view-library" class="hidden space-y-6 fade-in">
-                <!-- Video Grid Container (Filter buttons removed) -->
+            <div id="view-library" class="space-y-6 fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex gap-2">
+                        <button onclick="filterVideos('All')"
+                            class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-neutral-800 text-white"
+                            data-category="All">All</button>
+                        <button onclick="filterVideos('Heavy Machinery')"
+                            class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-white text-neutral-600 border border-neutral-200"
+                            data-category="Heavy Machinery">Heavy Machinery</button>
+                        <button onclick="filterVideos('Emergency')"
+                            class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-white text-neutral-600 border border-neutral-200"
+                            data-category="Emergency">Emergency</button>
+                        <button onclick="filterVideos('Health & Safety')"
+                            class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-white text-neutral-600 border border-neutral-200"
+                            data-category="Health & Safety">PPE</button>
+                    </div>
+                </div>
+
+                <!-- Video Grid Container -->
                 <div id="video-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     <!-- Javascript will populate this -->
                 </div>
             </div>
 
             <!-- Placeholder Views -->
-            <div id="view-placeholder" class="hidden flex flex-col items-center justify-center h-96 text-neutral-400 fade-in">
+            <div id="view-placeholder"
+                class="hidden flex flex-col items-center justify-center h-96 text-neutral-400 fade-in">
                 <div class="bg-neutral-100 p-6 rounded-full mb-4">
                     <span class="material-symbols-rounded text-5xl">warning</span>
                 </div>
@@ -532,57 +280,83 @@
             </div>
 
         </main>
+    </div>
 
-        <!-- Bottom Navigation Bar - Simplified to 3 Items -->
-        <nav class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] border-t border-white/10 shadow-lg z-40">
-            <div class="flex justify-around py-3">
-                <button onclick="switchTab('dashboard')" class="nav-bottom-item flex flex-col items-center text-sm font-medium transition-colors">
-                    <span class="material-symbols-rounded text-xl">dashboard</span>
-                    <span class="text-xs">Dashboard</span>
-                </button>
-                <button onclick="switchTab('library')" class="nav-bottom-item flex flex-col items-center text-sm font-medium transition-colors">
-                    <span class="material-symbols-rounded text-xl">video_library</span>
-                    <span class="text-xs">My Videos</span>
-                </button>
-                <button onclick="toggleModal(true)" class="nav-bottom-item flex flex-col items-center text-sm font-medium transition-colors">
-                    <span class="material-symbols-rounded text-xl">cloud_upload</span>
-                    <span class="text-xs">Upload</span>
-                </button>
+    <!-- Bottom Navigation -->
+    <nav id="bottom-nav" class="bg-neutral-900 border-t border-white/10 text-white shadow-inner">
+        <div class="max-w-5xl mx-auto flex items-center gap-3 px-4 py-2">
+            <button onclick="switchTab('library')"
+                class="nav-item flex-1 flex flex-col items-center gap-1 px-3 py-2 rounded-lg bg-primary/20 text-white font-semibold transition-colors"
+                data-tab="library">
+                <span class="material-symbols-rounded text-lg">video_library</span>
+                <span class="nav-label text-xs uppercase tracking-wide">Library</span>
+            </button>
+            <button onclick="toggleModal(true)"
+                class="flex-1 flex flex-col items-center gap-1 px-3 py-2 rounded-lg bg-gradient-to-r from-secondary to-safety-orange text-white font-semibold shadow-md transition-transform hover:scale-105">
+                <span class="material-symbols-rounded text-lg">cloud_upload</span>
+                <span class="text-xs uppercase tracking-wide">Upload</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Video Player Modal -->
+    <div id="video-player-modal"
+        class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        role="dialog" aria-modal="true" aria-hidden="true" tabindex="-1">
+        <div
+            class="relative w-full max-w-4xl bg-neutral-900 rounded-3xl shadow-2xl overflow-hidden border border-white/10">
+            <button type="button" onclick="closeVideoPlayer()"
+                class="absolute top-4 right-4 text-neutral-300 hover:text-white bg-neutral-800/60 hover:bg-neutral-700 rounded-full p-2 transition-colors"
+                aria-label="Close video player">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+            <div
+                class="bg-neutral-900 text-white px-6 py-4 flex items-center justify-between gap-3 border-b border-white/10">
+                <h3 class="text-lg font-semibold truncate" data-player-title>Training Video</h3>
+                <span class="text-sm text-neutral-400" data-player-duration></span>
             </div>
-        </nav>
+            <video id="video-player-element" controls class="w-full bg-black" preload="metadata"></video>
+        </div>
     </div>
 
     <!-- Upload Modal -->
-    <div id="upload-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity duration-300">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all duration-300 scale-100">
+    <div id="upload-modal"
+        class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity duration-300">
+        <div
+            class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all duration-300 scale-100">
             <div class="flex justify-between items-center p-4 border-b border-neutral-100 bg-neutral-50">
                 <h3 class="font-bold text-lg flex items-center gap-2">
                     <span class="material-symbols-rounded text-primary">cloud_upload</span>
                     <span id="modal-title">Upload Training Video</span>
                 </h3>
-                <button onclick="closeUploadModal()" class="text-neutral-400 hover:text-neutral-600 hover:bg-neutral-200 rounded p-1 transition-colors">
+                <button onclick="closeUploadModal()"
+                    class="text-neutral-400 hover:text-neutral-600 hover:bg-neutral-200 rounded p-1 transition-colors">
                     <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
-            
+
             <form id="upload-form" class="p-6">
                 <!-- Step 1: Video Info -->
                 <div id="step-1" class="space-y-4">
                     <div class="text-center mb-4">
                         <p class="text-sm text-neutral-500">Step 1 of 4</p>
                         <div class="w-full bg-neutral-200 h-2 rounded-full mt-2">
-                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 25%"></div>
+                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 25%">
+                            </div>
                         </div>
                     </div>
 
                     <div class="space-y-1">
                         <label class="text-sm font-bold text-neutral-700">Video Title</label>
-                        <input type="text" id="video-title" required class="w-full border border-neutral-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none" placeholder="e.g. Hazardous Material Handling">
+                        <input type="text" id="video-title" required
+                            class="w-full border border-neutral-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none"
+                            placeholder="e.g. Hazardous Material Handling">
                     </div>
 
                     <div class="space-y-1">
                         <label class="text-sm font-bold text-neutral-700">Category</label>
-                        <select id="video-category" class="w-full border border-neutral-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none bg-white">
+                        <select id="video-category"
+                            class="w-full border border-neutral-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none bg-white">
                             <option>General Safety</option>
                             <option>Heavy Machinery</option>
                             <option>Emergency</option>
@@ -591,7 +365,8 @@
                         </select>
                     </div>
 
-                    <button type="button" onclick="goToStep2()" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg shadow-md transition-colors mt-4">
+                    <button type="button" onclick="goToStep2()"
+                        class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg shadow-md transition-colors mt-4">
                         Next Step
                     </button>
                 </div>
@@ -601,14 +376,16 @@
                     <div class="text-center mb-4">
                         <p class="text-sm text-neutral-500">Step 2 of 4</p>
                         <div class="w-full bg-neutral-200 h-2 rounded-full mt-2">
-                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 50%"></div>
+                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 50%">
+                            </div>
                         </div>
                     </div>
 
                     <!-- Upload Options -->
                     <div class="space-y-3">
                         <!-- Camera Upload -->
-                        <a href="../admin/camera.html" class="block border-2 border-dashed border-primary rounded-lg p-4 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer">
+                        <a href="../admin/camera.html"
+                            class="block border-2 border-dashed border-primary rounded-lg p-4 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer">
                             <div class="flex items-center gap-3">
                                 <div class="bg-primary text-white p-3 rounded-lg">
                                     <span class="material-symbols-rounded text-2xl">videocam</span>
@@ -622,7 +399,8 @@
                         </a>
 
                         <!-- File Upload -->
-                        <label for="video-file-input" class="block border-2 border-dashed border-neutral-300 rounded-lg p-4 hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer">
+                        <label for="video-file-input"
+                            class="block border-2 border-dashed border-neutral-300 rounded-lg p-4 hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer">
                             <div class="flex items-center gap-3">
                                 <div class="bg-secondary text-white p-3 rounded-lg">
                                     <span class="material-symbols-rounded text-2xl">upload_file</span>
@@ -633,7 +411,8 @@
                                 </div>
                                 <span class="material-symbols-rounded text-neutral-400">chevron_right</span>
                             </div>
-                            <input type="file" id="video-file-input" accept="video/mp4,video/quicktime" class="hidden" onchange="handleFileSelect(event)">
+                            <input type="file" id="video-file-input" accept="video/mp4,video/quicktime" class="hidden"
+                                onchange="handleFileSelect(event)">
                         </label>
                     </div>
 
@@ -644,7 +423,8 @@
                                 <span class="material-symbols-rounded text-success-green">check_circle</span>
                                 <span class="font-semibold text-sm">Video Ready</span>
                             </div>
-                            <button type="button" onclick="clearFile()" class="text-alert-red hover:bg-red-50 p-1 rounded">
+                            <button type="button" onclick="clearFile()"
+                                class="text-alert-red hover:bg-red-50 p-1 rounded">
                                 <span class="material-symbols-rounded text-sm">close</span>
                             </button>
                         </div>
@@ -656,11 +436,13 @@
                     <div id="camera-preview" class="hidden">
                         <video id="camera-video" class="w-full rounded-lg bg-black mb-3" autoplay muted></video>
                         <div class="flex gap-2">
-                            <button type="button" id="start-recording" onclick="startRecording()" class="flex-1 bg-alert-red text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2">
+                            <button type="button" id="start-recording" onclick="startRecording()"
+                                class="flex-1 bg-alert-red text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2">
                                 <span class="material-symbols-rounded">fiber_manual_record</span>
                                 <span>Start Recording</span>
                             </button>
-                            <button type="button" id="stop-recording" onclick="stopRecording()" class="hidden flex-1 bg-neutral-800 text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2 animate-pulse">
+                            <button type="button" id="stop-recording" onclick="stopRecording()"
+                                class="hidden flex-1 bg-neutral-800 text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2 animate-pulse">
                                 <span class="material-symbols-rounded">stop</span>
                                 <span id="recording-time">00:00</span>
                             </button>
@@ -668,10 +450,12 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <button type="button" onclick="goToStep1()" class="flex-1 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-semibold py-3 rounded-lg transition-colors">
+                        <button type="button" onclick="goToStep1()"
+                            class="flex-1 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-semibold py-3 rounded-lg transition-colors">
                             Back
                         </button>
-                        <button type="button" onclick="goToStep3()" id="step-2-next-btn" disabled class="flex-1 bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <button type="button" onclick="goToStep3()" id="step-2-next-btn" disabled
+                            class="flex-1 bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                             Next: Edit Video
                         </button>
                     </div>
@@ -682,14 +466,18 @@
                     <div class="text-center mb-4">
                         <p class="text-sm text-neutral-500">Step 3 of 4</p>
                         <div class="w-full bg-neutral-200 h-2 rounded-full mt-2">
-                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 75%"></div>
+                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 75%">
+                            </div>
                         </div>
                     </div>
 
                     <!-- Video Editor Preview -->
-                    <div class="relative bg-black rounded-lg overflow-hidden aspect-video mb-4 group flex items-center justify-center">
+                    <div
+                        class="relative bg-black rounded-lg overflow-hidden aspect-video mb-4 group flex items-center justify-center">
                         <video id="edit-preview-video" class="max-w-full max-h-full object-contain" controls></video>
-                        <div id="crop-overlay" class="absolute border-2 border-primary pointer-events-none hidden transition-all duration-300"></div>
+                        <div id="crop-overlay"
+                            class="absolute border-2 border-primary pointer-events-none hidden transition-all duration-300">
+                        </div>
                     </div>
 
                     <!-- Trimming Controls -->
@@ -702,15 +490,22 @@
                             <!-- Track -->
                             <div class="absolute left-0 right-0 h-2 bg-neutral-200 rounded-full"></div>
                             <!-- Active Range -->
-                            <div id="trim-active-track" class="absolute h-2 bg-primary rounded-full" style="left: 0%; right: 0%;"></div>
-                            
+                            <div id="trim-active-track" class="absolute h-2 bg-primary rounded-full"
+                                style="left: 0%; right: 0%;"></div>
+
                             <!-- Sliders -->
-                            <input type="range" id="trim-start" min="0" value="0" step="0.1" class="absolute w-full h-2 opacity-0 cursor-pointer z-20" oninput="updateTrimUI()">
-                            <input type="range" id="trim-end" min="0" value="100" step="0.1" class="absolute w-full h-2 opacity-0 cursor-pointer z-20" oninput="updateTrimUI()">
-                            
+                            <input type="range" id="trim-start" min="0" value="0" step="0.1"
+                                class="absolute w-full h-2 opacity-0 cursor-pointer z-20" oninput="updateTrimUI()">
+                            <input type="range" id="trim-end" min="0" value="100" step="0.1"
+                                class="absolute w-full h-2 opacity-0 cursor-pointer z-20" oninput="updateTrimUI()">
+
                             <!-- Thumbs (Visual) -->
-                            <div id="trim-start-thumb" class="absolute w-4 h-4 bg-white border-2 border-primary rounded-full shadow pointer-events-none z-10" style="left: 0%"></div>
-                            <div id="trim-end-thumb" class="absolute w-4 h-4 bg-white border-2 border-primary rounded-full shadow pointer-events-none z-10" style="left: 100%; transform: translateX(-100%)"></div>
+                            <div id="trim-start-thumb"
+                                class="absolute w-4 h-4 bg-white border-2 border-primary rounded-full shadow pointer-events-none z-10"
+                                style="left: 0%"></div>
+                            <div id="trim-end-thumb"
+                                class="absolute w-4 h-4 bg-white border-2 border-primary rounded-full shadow pointer-events-none z-10"
+                                style="left: 100%; transform: translateX(-100%)"></div>
                         </div>
                     </div>
 
@@ -718,24 +513,32 @@
                     <div class="space-y-2">
                         <div class="flex justify-between items-center">
                             <label class="text-sm font-bold text-neutral-700">Crop Ratio</label>
-                            <button type="button" onclick="togglePreview()" id="preview-btn" class="text-xs font-bold text-primary hover:text-primary-dark flex items-center gap-1">
+                            <button type="button" onclick="togglePreview()" id="preview-btn"
+                                class="text-xs font-bold text-primary hover:text-primary-dark flex items-center gap-1">
                                 <span class="material-symbols-rounded text-sm">visibility</span> Preview Result
                             </button>
                         </div>
                         <div class="grid grid-cols-5 gap-2">
-                            <button type="button" onclick="setCrop('original', this)" class="crop-btn active px-2 py-2 border border-primary bg-primary/10 text-primary rounded-lg text-xs font-bold transition-colors">Original</button>
-                            <button type="button" onclick="setCrop('16:9', this)" class="crop-btn px-2 py-2 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-bold hover:bg-neutral-50 transition-colors">16:9</button>
-                            <button type="button" onclick="setCrop('9:16', this)" class="crop-btn px-2 py-2 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-bold hover:bg-neutral-50 transition-colors">9:16</button>
-                            <button type="button" onclick="setCrop('1:1', this)" class="crop-btn px-2 py-2 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-bold hover:bg-neutral-50 transition-colors">1:1</button>
-                            <button type="button" onclick="setCrop('free', this)" class="crop-btn px-2 py-2 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-bold hover:bg-neutral-50 transition-colors">Free</button>
+                            <button type="button" onclick="setCrop('original', this)"
+                                class="crop-btn active px-2 py-2 border border-primary bg-primary/10 text-primary rounded-lg text-xs font-bold transition-colors">Original</button>
+                            <button type="button" onclick="setCrop('16:9', this)"
+                                class="crop-btn px-2 py-2 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-bold hover:bg-neutral-50 transition-colors">16:9</button>
+                            <button type="button" onclick="setCrop('9:16', this)"
+                                class="crop-btn px-2 py-2 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-bold hover:bg-neutral-50 transition-colors">9:16</button>
+                            <button type="button" onclick="setCrop('1:1', this)"
+                                class="crop-btn px-2 py-2 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-bold hover:bg-neutral-50 transition-colors">1:1</button>
+                            <button type="button" onclick="setCrop('free', this)"
+                                class="crop-btn px-2 py-2 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-bold hover:bg-neutral-50 transition-colors">Free</button>
                         </div>
                     </div>
 
                     <div class="flex gap-2 mt-6">
-                        <button type="button" onclick="goToStep2()" class="flex-1 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-semibold py-3 rounded-lg transition-colors">
+                        <button type="button" onclick="goToStep2()"
+                            class="flex-1 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-semibold py-3 rounded-lg transition-colors">
                             Back
                         </button>
-                        <button type="button" onclick="goToStep4()" class="flex-1 bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg shadow-md transition-colors">
+                        <button type="button" onclick="goToStep4()"
+                            class="flex-1 bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg shadow-md transition-colors">
                             Next: Review
                         </button>
                     </div>
@@ -746,13 +549,15 @@
                     <div class="text-center mb-4">
                         <p class="text-sm text-neutral-500">Step 4 of 4</p>
                         <div class="w-full bg-neutral-200 h-2 rounded-full mt-2">
-                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 100%"></div>
+                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 100%">
+                            </div>
                         </div>
                     </div>
 
                     <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-200 space-y-4">
                         <!-- Final Video Preview -->
-                        <div class="relative bg-black rounded-lg overflow-hidden aspect-video group flex items-center justify-center">
+                        <div
+                            class="relative bg-black rounded-lg overflow-hidden aspect-video group flex items-center justify-center">
                             <video id="final-preview-video" class="w-full h-full object-contain" controls></video>
                         </div>
 
@@ -762,11 +567,12 @@
                                 <p class="text-xs text-neutral-500 uppercase font-bold tracking-wider">Title</p>
                                 <p id="summary-title" class="font-bold text-neutral-800 text-lg">Video Title</p>
                             </div>
-                            
+
                             <div class="flex gap-4">
                                 <div class="flex-1">
                                     <p class="text-xs text-neutral-500 uppercase font-bold tracking-wider">Category</p>
-                                    <span id="summary-category" class="inline-block bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded mt-1">Category</span>
+                                    <span id="summary-category"
+                                        class="inline-block bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded mt-1">Category</span>
                                 </div>
                                 <div class="flex-1">
                                     <p class="text-xs text-neutral-500 uppercase font-bold tracking-wider">Duration</p>
@@ -777,10 +583,12 @@
                     </div>
 
                     <div class="flex gap-2 mt-6">
-                        <button type="button" onclick="goToStep3()" class="flex-1 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-semibold py-3 rounded-lg transition-colors">
+                        <button type="button" onclick="goToStep3()"
+                            class="flex-1 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-semibold py-3 rounded-lg transition-colors">
                             Back
                         </button>
-                        <button type="button" onclick="submitUpload()" class="flex-1 bg-success-green hover:bg-green-600 text-white font-bold py-3 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2">
+                        <button type="button" onclick="submitUpload()"
+                            class="flex-1 bg-success-green hover:bg-green-600 text-white font-bold py-3 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2">
                             <span class="material-symbols-rounded">check_circle</span>
                             Confirm & Upload
                         </button>
@@ -810,18 +618,22 @@
             recentActivity: []
         };
         let currentUser = null;
+        let currentFilter = 'All';
+        let playerModalElement = null;
+        let playerVideoElement = null;
+        let playerTitleElement = null;
+        let playerDurationElement = null;
 
         // Helper: Show notification
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white slide-in-up ${
-                type === 'success' ? 'bg-success-green' : 
-                type === 'error' ? 'bg-alert-red' : 
-                'bg-primary'
-            }`;
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white slide-in-up ${type === 'success' ? 'bg-success-green' :
+                type === 'error' ? 'bg-alert-red' :
+                    'bg-primary'
+                }`;
             notification.textContent = message;
             document.body.appendChild(notification);
-            
+
             setTimeout(() => {
                 notification.style.opacity = '0';
                 notification.style.transition = 'opacity 0.3s';
@@ -837,19 +649,39 @@
                 window.location.href = '../index.html';
                 return;
             }
-            
+
             // Load user data
             await loadUserData();
-            
+
             // Load all data
             await Promise.all([
                 loadVideos(),
                 loadAnalytics(),
                 loadRecentActivity()
             ]);
-            
+
             renderVideos();
             updateDashboardStats();
+            switchTab('library');
+
+            playerModalElement = document.getElementById('video-player-modal');
+            playerVideoElement = document.getElementById('video-player-element');
+            playerTitleElement = document.querySelector('[data-player-title]');
+            playerDurationElement = document.querySelector('[data-player-duration]');
+
+            if (playerModalElement) {
+                playerModalElement.addEventListener('click', (event) => {
+                    if (event.target === playerModalElement) {
+                        closeVideoPlayer();
+                    }
+                });
+            }
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && playerModalElement && !playerModalElement.classList.contains('hidden')) {
+                    closeVideoPlayer();
+                }
+            });
         });
 
         // Load user data
@@ -858,11 +690,11 @@
                 const userData = localStorage.getItem('userData');
                 if (userData) {
                     currentUser = JSON.parse(userData);
-                    
+
                     // Update user info in header
                     const userInitials = currentUser.name ? currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'TO';
                     document.querySelector('.w-10.h-10.bg-gradient-to-br').textContent = userInitials;
-                    
+
                     const nameElement = document.querySelector('.text-sm.font-bold.text-neutral-800');
                     if (nameElement) nameElement.textContent = currentUser.name || 'Training Officer';
                 }
@@ -882,6 +714,7 @@
                         category: video.category || 'General Safety',
                         duration: video.duration || '00:00',
                         thumbnail: video.thumbnail_url || video.url || `https://placehold.co/600x400/0284c7/ffffff?text=${encodeURIComponent(video.title || 'Video')}`,
+                        source: video.stream_url || video.video_url || video.media_url || video.url || '',
                         uploadDate: video.created_at ? new Date(video.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
                         views: Math.floor(Math.random() * 300),
                         compliance: Math.floor(Math.random() * 40) + 60
@@ -895,6 +728,7 @@
                             category: 'Heavy Machinery',
                             duration: '14:20',
                             thumbnail: 'https://placehold.co/600x400/2d3748/f6e05e?text=Excavator+Safety',
+                            source: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
                             uploadDate: '2023-10-15',
                             views: 124,
                             compliance: 92
@@ -905,6 +739,7 @@
                             category: 'Emergency',
                             duration: '08:45',
                             thumbnail: 'https://placehold.co/600x400/c53030/ffffff?text=Confined+Space',
+                            source: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
                             uploadDate: '2023-11-02',
                             views: 89,
                             compliance: 78
@@ -915,7 +750,19 @@
             } catch (error) {
                 console.error('Error loading videos:', error);
                 // Use fallback data
-                videos = [];
+                videos = [
+                    {
+                        id: Date.now(),
+                        title: 'Mine Safety Overview',
+                        category: 'General Safety',
+                        duration: '05:00',
+                        thumbnail: 'https://placehold.co/600x400/0f172a/facc15?text=Safety+Overview',
+                        source: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+                        uploadDate: new Date().toISOString().split('T')[0],
+                        views: 0,
+                        compliance: 85
+                    }
+                ];
             }
         }
 
@@ -927,7 +774,7 @@
                 if (usersResponse && usersResponse.users) {
                     analyticsData.totalTrainees = usersResponse.users.filter(u => u.role === 'miner' || u.role === 'worker').length;
                 }
-                
+
                 // Calculate compliance from attendance
                 try {
                     const attendanceResponse = await window.attendanceAPI.getAll();
@@ -941,7 +788,7 @@
                 } catch (e) {
                     analyticsData.complianceRate = 94.2;
                 }
-                
+
                 // Get pending tasks
                 try {
                     const tasksResponse = await window.taskAPI.getAll();
@@ -953,14 +800,14 @@
                 } catch (e) {
                     analyticsData.pendingReviews = 18;
                 }
-                
+
                 // Get hazard reports as incidents
                 try {
                     const hazardsResponse = await window.hazardReportAPI.getAll();
                     if (hazardsResponse && hazardsResponse.reports) {
                         const thirtyDaysAgo = new Date();
                         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                        analyticsData.safetyIncidents = hazardsResponse.reports.filter(h => 
+                        analyticsData.safetyIncidents = hazardsResponse.reports.filter(h =>
                             new Date(h.created_at) >= thirtyDaysAgo
                         ).length;
                     } else {
@@ -969,7 +816,7 @@
                 } catch (e) {
                     analyticsData.safetyIncidents = 2;
                 }
-                
+
                 console.log('Analytics loaded:', analyticsData);
             } catch (error) {
                 console.error('Error loading analytics:', error);
@@ -1010,7 +857,7 @@
             const diffMs = now - date;
             const diffHrs = Math.floor(diffMs / 3600000);
             const diffDays = Math.floor(diffMs / 86400000);
-            
+
             if (diffHrs < 1) return 'Just now';
             if (diffHrs < 24) return `${diffHrs}h ago`;
             return `${diffDays}d ago`;
@@ -1023,7 +870,7 @@
             if (complianceElement) {
                 complianceElement.textContent = `${analyticsData.complianceRate}%`;
             }
-            
+
             // Update progress bar
             const progressBar = document.querySelector('.bg-white.rounded-full.h-2');
             if (progressBar) {
@@ -1031,60 +878,54 @@
             }
         }
 
-        // Navigation Functions - UPDATED
-        function switchTab(tabId) {
-            // Update Bottom Nav Styling
-            document.querySelectorAll('.nav-bottom-item').forEach(btn => {
-                if (btn.dataset.tab === tabId) {
-                    btn.classList.remove('text-neutral-400', 'hover:text-white');
-                    btn.classList.add('text-primary');
+        // Filter Videos
+        function filterVideos(category) {
+            currentFilter = category;
+
+            // Update button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.category === category) {
+                    btn.classList.remove('bg-white', 'text-neutral-600', 'border', 'border-neutral-200');
+                    btn.classList.add('bg-neutral-800', 'text-white');
                 } else {
-                    btn.classList.add('text-neutral-400', 'hover:text-white');
-                    btn.classList.remove('text-primary');
+                    btn.classList.remove('bg-neutral-800', 'text-white');
+                    btn.classList.add('bg-white', 'text-neutral-600', 'border', 'border-neutral-200');
                 }
             });
 
-            // Update Header Title
-            const titleMap = {
-                'dashboard': 'Officer Dashboard',
-                'library': 'My Videos'
-            };
-            document.getElementById('page-title').textContent = titleMap[tabId] || 'Dashboard';
-
-            // Toggle Views
-            document.getElementById('view-dashboard').classList.add('hidden');
-            document.getElementById('view-library').classList.add('hidden');
-            document.getElementById('view-placeholder').classList.add('hidden');
-
-            if (tabId === 'dashboard') {
-                document.getElementById('view-dashboard').classList.remove('hidden');
-            } else if (tabId === 'library') {
-                document.getElementById('view-library').classList.remove('hidden');
-            } else {
-                document.getElementById('view-placeholder').classList.remove('hidden');
-            }
+            renderVideos();
         }
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const logoText = document.getElementById('logo-text');
-            const logoContainer = document.getElementById('logo-container');
-            const labels = document.querySelectorAll('.nav-label');
-            
-            isSidebarOpen = !isSidebarOpen;
+        // Navigation Functions
+        function switchTab(tabId) {
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                const isActive = btn.dataset.tab === tabId;
+                btn.classList.toggle('bg-primary/20', isActive);
+                btn.classList.toggle('text-white', isActive);
+                btn.classList.toggle('font-semibold', isActive);
+                btn.classList.toggle('text-neutral-400', !isActive);
+                btn.classList.toggle('bg-transparent', !isActive);
+            });
 
-            if (isSidebarOpen) {
-                sidebar.classList.remove('sidebar-collapsed');
-                sidebar.classList.add('sidebar-expanded');
-                logoText.classList.remove('hidden');
-                logoContainer.classList.remove('justify-center');
-                labels.forEach(l => l.classList.remove('hidden'));
-            } else {
-                sidebar.classList.remove('sidebar-expanded');
-                sidebar.classList.add('sidebar-collapsed');
-                logoText.classList.add('hidden');
-                logoContainer.classList.add('justify-center');
-                labels.forEach(l => l.classList.add('hidden'));
+            const titleMap = {
+                'library': 'Training Modules',
+                'trainees': 'Trainees',
+                'incidents': 'Incidents'
+            };
+            const pageTitle = document.getElementById('page-title');
+            if (pageTitle && titleMap[tabId]) {
+                pageTitle.textContent = titleMap[tabId];
+            }
+
+            const libraryView = document.getElementById('view-library');
+            const placeholderView = document.getElementById('view-placeholder');
+
+            if (libraryView) {
+                libraryView.classList.toggle('hidden', tabId !== 'library');
+            }
+
+            if (placeholderView) {
+                placeholderView.classList.toggle('hidden', tabId === 'library');
             }
         }
 
@@ -1119,20 +960,20 @@
             document.getElementById('step-3').classList.add('hidden');
             document.getElementById('step-4').classList.add('hidden');
             document.getElementById('upload-loading').classList.add('hidden');
-            
+
             // Reset form
             document.getElementById('upload-form').reset();
-            
+
             // Reset state
             uploadedVideoFile = null;
             recordedVideoBlob = null;
             cropRatio = 'original';
-            
+
             // Reset file preview
             document.getElementById('file-preview').classList.add('hidden');
             const nextBtn = document.getElementById('step-2-next-btn');
-            if(nextBtn) nextBtn.disabled = true;
-            
+            if (nextBtn) nextBtn.disabled = true;
+
             // Reset camera
             document.getElementById('camera-preview').classList.add('hidden');
             stopCamera();
@@ -1144,7 +985,7 @@
                 alert('Please enter a video title');
                 return;
             }
-            
+
             document.getElementById('step-1').classList.add('hidden');
             document.getElementById('step-3').classList.add('hidden');
             document.getElementById('step-4').classList.add('hidden');
@@ -1156,7 +997,7 @@
             document.getElementById('step-3').classList.add('hidden');
             document.getElementById('step-4').classList.add('hidden');
             document.getElementById('step-1').classList.remove('hidden');
-            
+
             // Clean up camera/file if user goes back
             stopCamera();
             clearFile();
@@ -1166,32 +1007,32 @@
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
+
             if (!file.type.match('video.*')) {
                 alert('Please select a video file');
                 return;
             }
-            
+
             uploadedVideoFile = file;
-            
+
             // Create video element to get duration
             const video = document.createElement('video');
             video.preload = 'metadata';
-            
-            video.onloadedmetadata = function() {
+
+            video.onloadedmetadata = function () {
                 window.URL.revokeObjectURL(video.src);
                 const duration = Math.floor(video.duration);
                 const minutes = Math.floor(duration / 60);
                 const seconds = duration % 60;
                 const durationStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
+
                 // Show file preview
                 document.getElementById('file-name').textContent = file.name;
                 document.getElementById('file-duration').textContent = `Duration: ${durationStr}`;
                 document.getElementById('file-preview').classList.remove('hidden');
                 document.getElementById('step-2-next-btn').disabled = false;
             };
-            
+
             video.src = URL.createObjectURL(file);
         }
 
@@ -1206,16 +1047,16 @@
         // Camera Recording Functions
         async function openCameraUpload() {
             try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' }, 
-                    audio: true 
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' },
+                    audio: true
                 });
-                
+
                 const videoElement = document.getElementById('camera-video');
                 videoElement.srcObject = cameraStream;
-                
+
                 document.getElementById('camera-preview').classList.remove('hidden');
-                
+
             } catch (error) {
                 alert('Camera access denied or unavailable: ' + error.message);
             }
@@ -1223,52 +1064,52 @@
 
         function startRecording() {
             if (!cameraStream) return;
-            
+
             const options = { mimeType: 'video/webm;codecs=vp8,opus' };
             mediaRecorder = new MediaRecorder(cameraStream, options);
-            
+
             const chunks = [];
             mediaRecorder.ondataavailable = (e) => {
                 if (e.data.size > 0) {
                     chunks.push(e.data);
                 }
             };
-            
+
             mediaRecorder.onstop = () => {
                 recordedVideoBlob = new Blob(chunks, { type: 'video/webm' });
-                
+
                 // Get duration
                 const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
                 const minutes = Math.floor(duration / 60);
                 const seconds = duration % 60;
                 const durationStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
+
                 // Show in preview
                 const fileName = `recorded_${new Date().getTime()}.webm`;
                 document.getElementById('file-name').textContent = fileName;
                 document.getElementById('file-duration').textContent = `Duration: ${durationStr}`;
                 document.getElementById('file-preview').classList.remove('hidden');
                 document.getElementById('step-2-next-btn').disabled = false;
-                
+
                 // Hide camera UI
                 document.getElementById('camera-preview').classList.add('hidden');
                 stopCamera();
             };
-            
+
             // Start recording
             mediaRecorder.start();
             recordingStartTime = Date.now();
-            
+
             // Update UI
             document.getElementById('start-recording').classList.add('hidden');
             document.getElementById('stop-recording').classList.remove('hidden');
-            
+
             // Start timer display
             recordingInterval = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
                 const minutes = Math.floor(elapsed / 60);
                 const seconds = elapsed % 60;
-                document.getElementById('recording-time').textContent = 
+                document.getElementById('recording-time').textContent =
                     `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             }, 1000);
         }
@@ -1277,7 +1118,7 @@
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                 mediaRecorder.stop();
                 clearInterval(recordingInterval);
-                
+
                 // Reset UI
                 document.getElementById('start-recording').classList.remove('hidden');
                 document.getElementById('stop-recording').classList.add('hidden');
@@ -1321,28 +1162,28 @@
                 src = URL.createObjectURL(recordedVideoBlob);
             }
             video.src = src;
-            
-            video.onloadedmetadata = function() {
+
+            video.onloadedmetadata = function () {
                 videoDuration = video.duration;
-                
+
                 // Reset Trim Controls
                 const startInput = document.getElementById('trim-start');
                 const endInput = document.getElementById('trim-end');
-                
+
                 startInput.max = videoDuration;
                 endInput.max = videoDuration;
-                
+
                 startInput.value = 0;
                 endInput.value = videoDuration;
-                
+
                 updateTrimUI();
             };
 
             // Realtime Trim Loop
-            video.ontimeupdate = function() {
+            video.ontimeupdate = function () {
                 const start = parseFloat(document.getElementById('trim-start').value);
                 const end = parseFloat(document.getElementById('trim-end').value);
-                
+
                 if (video.currentTime < start) {
                     video.currentTime = start;
                 }
@@ -1386,7 +1227,7 @@
 
             startThumb.style.left = `${percentStart}%`;
             endThumb.style.left = `${percentEnd}%`;
-            
+
             activeTrack.style.left = `${percentStart}%`;
             activeTrack.style.right = `${100 - percentEnd}%`;
 
@@ -1398,12 +1239,12 @@
             };
             const duration = end - start;
             durationLabel.textContent = `Duration: ${formatTime(duration)} (${formatTime(start)} - ${formatTime(end)})`;
-            
+
             // Update Video Playback Range (Seek when dragging)
             if (document.activeElement === startInput) {
-                 video.currentTime = start;
+                video.currentTime = start;
             } else if (document.activeElement === endInput) {
-                 video.currentTime = end;
+                video.currentTime = end;
             }
         }
 
@@ -1412,55 +1253,55 @@
             const btn = document.getElementById('preview-btn');
             const overlay = document.getElementById('crop-overlay');
             const video = document.getElementById('edit-preview-video');
-            
+
             if (isPreviewMode) {
                 btn.classList.add('text-success-green');
                 btn.innerHTML = '<span class="material-symbols-rounded text-sm">visibility_off</span> Stop Preview';
-                
+
                 // Hide overlay
                 overlay.classList.add('opacity-0');
-                
+
                 // Apply Clip Path to Video
                 if (cropRatio !== 'original') {
                     // Calculate clip path based on overlay position relative to video container
                     // Note: This assumes video fills container or is centered. 
                     // Since video is object-contain, this is tricky. 
                     // For this demo, we'll assume the overlay represents the crop area relative to the container.
-                    
+
                     const container = video.parentElement;
                     const overlayRect = overlay.getBoundingClientRect();
                     const containerRect = container.getBoundingClientRect();
-                    
+
                     const top = ((overlayRect.top - containerRect.top) / containerRect.height) * 100;
                     const left = ((overlayRect.left - containerRect.left) / containerRect.width) * 100;
                     const right = 100 - (((overlayRect.left - containerRect.left) + overlayRect.width) / containerRect.width) * 100;
                     const bottom = 100 - (((overlayRect.top - containerRect.top) + overlayRect.height) / containerRect.height) * 100;
-                    
+
                     video.style.clipPath = `inset(${top}% ${right}% ${bottom}% ${left}%)`;
                 }
-                
+
                 // Play from start
                 const start = parseFloat(document.getElementById('trim-start').value);
                 video.currentTime = start;
                 video.play();
-                
+
             } else {
                 btn.classList.remove('text-success-green');
                 btn.innerHTML = '<span class="material-symbols-rounded text-sm">visibility</span> Preview Result';
-                
+
                 // Show overlay
                 overlay.classList.remove('opacity-0');
-                
+
                 // Remove Clip Path
                 video.style.clipPath = '';
-                
+
                 video.pause();
             }
         }
 
         function setCrop(ratio, btn) {
             cropRatio = ratio;
-            
+
             // Update Buttons
             document.querySelectorAll('.crop-btn').forEach(b => {
                 b.classList.remove('active', 'border-primary', 'bg-primary/10', 'text-primary');
@@ -1472,18 +1313,18 @@
             // Update Overlay
             const overlay = document.getElementById('crop-overlay');
             const video = document.getElementById('edit-preview-video');
-            
+
             // Reset classes
             overlay.className = 'absolute border-2 border-primary pointer-events-none hidden transition-all duration-300';
             overlay.style = ''; // Clear inline styles
-            
+
             if (ratio === 'original') {
                 overlay.classList.add('hidden');
                 return;
             }
-            
+
             overlay.classList.remove('hidden');
-            
+
             if (ratio === 'free') {
                 overlay.classList.remove('pointer-events-none');
                 overlay.classList.add('crop-overlay-free');
@@ -1495,12 +1336,12 @@
                 overlay.style.transform = 'translate(-50%, -50%)';
                 return;
             }
-            
+
             // Calculate dimensions based on ratio
             // This is a simplified visual representation
             let width = '100%';
             let height = '100%';
-            
+
             // Assuming container is 16:9 (aspect-video)
             if (ratio === '16:9') {
                 width = '100%';
@@ -1512,7 +1353,7 @@
                 width = '56.25%'; // (1/1) / (16/9) * 100
                 height = '100%';
             }
-            
+
             // Center the overlay
             overlay.style.width = width;
             overlay.style.height = height;
@@ -1529,15 +1370,15 @@
             // Populate Summary
             const title = document.getElementById('video-title').value;
             const category = document.getElementById('video-category').value;
-            
+
             document.getElementById('summary-title').textContent = title;
             document.getElementById('summary-category').textContent = category;
-            
+
             // Get Trimmed Duration
             const start = parseFloat(document.getElementById('trim-start').value);
             const end = parseFloat(document.getElementById('trim-end').value);
             const duration = end - start;
-            
+
             const formatTime = (t) => {
                 const m = Math.floor(t / 60).toString().padStart(2, '0');
                 const s = Math.floor(t % 60).toString().padStart(2, '0');
@@ -1548,10 +1389,10 @@
             // Setup Final Preview
             const video = document.getElementById('final-preview-video');
             const editVideo = document.getElementById('edit-preview-video');
-            
+
             video.src = editVideo.src;
             video.currentTime = start;
-            
+
             // Apply Crop (Visual Simulation)
             // Note: In a real app, we'd process the video on server or using ffmpeg.wasm
             if (cropRatio !== 'original') {
@@ -1560,7 +1401,7 @@
                 // or re-calculate if not. 
                 // Since we want to show the result, let's apply a basic object-fit cover 
                 // or similar to simulate "cropped" view if it's a standard ratio
-                
+
                 if (cropRatio === '9:16') {
                     video.style.objectFit = 'cover';
                     video.parentElement.style.aspectRatio = '9/16';
@@ -1581,7 +1422,7 @@
                     video.parentElement.style.width = '';
                 }
             } else {
-                 // Reset
+                // Reset
                 video.style.objectFit = 'contain';
                 video.parentElement.style.aspectRatio = '';
                 video.parentElement.classList.add('aspect-video');
@@ -1589,7 +1430,7 @@
             }
 
             // Play loop for trimmed section
-            video.ontimeupdate = function() {
+            video.ontimeupdate = function () {
                 if (video.currentTime < start) video.currentTime = start;
                 if (video.currentTime > end) video.currentTime = start;
             };
@@ -1601,14 +1442,14 @@
                 alert('Please upload or record a video');
                 return;
             }
-            
+
             // Show loading
             document.getElementById('step-4').classList.add('hidden');
             document.getElementById('upload-loading').classList.remove('hidden');
-            
+
             const title = document.getElementById('video-title').value;
             const category = document.getElementById('video-category').value;
-            
+
             // Get duration from trim
             const start = parseFloat(document.getElementById('trim-start').value);
             const end = parseFloat(document.getElementById('trim-end').value);
@@ -1619,32 +1460,40 @@
                 return `${m}:${s}`;
             };
             const durationStr = formatTime(duration);
-            
+
             // Helper for local fallback
             const performLocalFallback = () => {
+                let sourceUrl = '';
+                if (uploadedVideoFile) {
+                    sourceUrl = URL.createObjectURL(uploadedVideoFile);
+                } else if (recordedVideoBlob) {
+                    sourceUrl = URL.createObjectURL(recordedVideoBlob);
+                }
+
                 const newVideo = {
                     id: videos.length + 1,
                     title: title,
                     category: category,
                     duration: durationStr,
                     thumbnail: `https://placehold.co/600x400/0284c7/ffffff?text=${encodeURIComponent(title.split(' ')[0])}`,
+                    source: sourceUrl,
                     uploadDate: new Date().toISOString().split('T')[0],
                     views: 0,
                     compliance: 0
                 };
-                
+
                 videos.unshift(newVideo);
                 renderVideos();
                 toggleModal(false);
                 switchTab('library');
-                
+
                 showSuccessMessage('Video added successfully!', 'Your training video has been added to the library (local storage only - API slow/offline).');
             };
 
             try {
                 // Create FormData for upload
                 const formData = new FormData();
-                
+
                 // Add the video file
                 if (uploadedVideoFile) {
                     formData.append('video', uploadedVideoFile);
@@ -1652,39 +1501,39 @@
                     const videoFile = new File([recordedVideoBlob], `recorded_${Date.now()}.webm`, { type: 'video/webm' });
                     formData.append('video', videoFile);
                 }
-                
+
                 // Add metadata
                 formData.append('title', title);
                 formData.append('name', title);
                 formData.append('category', category);
                 formData.append('duration', durationStr);
                 formData.append('description', `Training video: ${title}`);
-                
+
                 // Add Edit Metadata (for backend processing)
                 formData.append('trim_start', start);
                 formData.append('trim_end', end);
                 formData.append('crop_ratio', cropRatio);
-                
+
                 // Check if API is available
                 if (window.safetyVideoAPI && typeof window.safetyVideoAPI.upload === 'function') {
                     // Upload via API with 8s timeout
                     try {
-                        const timeoutPromise = new Promise((_, reject) => 
+                        const timeoutPromise = new Promise((_, reject) =>
                             setTimeout(() => reject(new Error('TIMEOUT')), 8000)
                         );
-                        
+
                         const response = await Promise.race([
                             window.safetyVideoAPI.upload(formData),
                             timeoutPromise
                         ]);
-                        
+
                         if (response) {
                             // Reload videos from API
                             await loadVideos();
                             renderVideos();
                             toggleModal(false);
                             switchTab('library');
-                            
+
                             // Show success message with better styling
                             showSuccessMessage('Video uploaded successfully!', 'Your training video has been uploaded and is now available in the library.');
                         } else {
@@ -1701,11 +1550,11 @@
                 }
             } catch (error) {
                 console.error('Error uploading video:', error);
-                
+
                 // Hide loading, show error
                 document.getElementById('upload-loading').classList.add('hidden');
                 document.getElementById('step-4').classList.remove('hidden');
-                
+
                 showErrorMessage('Failed to upload video', error.message || 'Please check your connection and try again.');
             }
         }
@@ -1753,8 +1602,52 @@
             document.body.appendChild(modal);
         }
 
+        function openVideoPlayer(video) {
+            if (!video || !video.source) {
+                showNotification('Video source not available for this module yet.', 'error');
+                return;
+            }
+
+            if (!playerModalElement || !playerVideoElement) {
+                return;
+            }
+
+            if (playerTitleElement) {
+                playerTitleElement.textContent = video.title || 'Training Video';
+            }
+            if (playerDurationElement) {
+                playerDurationElement.textContent = video.duration || '';
+            }
+
+            playerModalElement.classList.remove('hidden');
+            playerModalElement.setAttribute('aria-hidden', 'false');
+            if (typeof playerModalElement.focus === 'function') {
+                playerModalElement.focus();
+            }
+
+            playerVideoElement.src = video.source;
+            playerVideoElement.load();
+            playerVideoElement.play().catch(() => {
+                showNotification('Unable to auto-play the video. Press play to start.', 'info');
+            });
+        }
+
+        function closeVideoPlayer() {
+            if (!playerModalElement || !playerVideoElement || playerModalElement.classList.contains('hidden')) {
+                return;
+            }
+
+            playerVideoElement.pause();
+            playerVideoElement.removeAttribute('src');
+            playerVideoElement.load();
+
+            playerModalElement.classList.add('hidden');
+            playerModalElement.setAttribute('aria-hidden', 'true');
+        }
+
         async function deleteVideo(id, event) {
-            if(confirm('Are you sure you want to delete this training module?')) {
+            event?.stopPropagation();
+            if (confirm('Are you sure you want to delete this training module?')) {
                 try {
                     // Show loading state
                     const deleteBtn = event?.target?.closest('button');
@@ -1768,17 +1661,17 @@
                         await window.safetyVideoAPI.delete(id);
                         console.log('Video deleted from server:', id);
                     }
-                    
+
                     // Remove from local array
                     videos = videos.filter(v => v.id !== id);
                     renderVideos();
-                    
+
                     // Show success message
                     showNotification('Video deleted successfully!', 'success');
                 } catch (error) {
                     console.error('Error deleting video:', error);
                     alert('Failed to delete video: ' + (error.message || 'Unknown error'));
-                    
+
                     // Re-enable button on error
                     const deleteBtn = event?.target?.closest('button');
                     if (deleteBtn) {
@@ -1789,34 +1682,40 @@
             }
         }
 
-        // Rendering - UPDATED (removed filter parameter and logic)
+        // Rendering
         function renderVideos() {
             const grid = document.getElementById('video-grid');
             grid.innerHTML = '';
 
-            // Show all videos (no filtering)
-            const filteredVideos = videos;
+            // Filter videos based on current filter
+            const filteredVideos = currentFilter === 'All'
+                ? videos
+                : videos.filter(v => v.category === currentFilter);
 
             if (filteredVideos.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-neutral-400">No videos found.</p></div>';
+                grid.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-neutral-400">No videos found in this category.</p></div>';
                 return;
             }
 
             filteredVideos.forEach(video => {
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-xl shadow-card border border-neutral-200 overflow-hidden group fade-in';
-                
+
                 const complianceColor = video.compliance >= 90 ? 'bg-success-green' : 'bg-safety-yellow';
                 const complianceTextColor = video.compliance >= 90 ? 'text-success-green' : 'text-safety-yellow';
 
                 card.innerHTML = `
-                    <div class="relative aspect-video bg-neutral-100 group">
+                    <div class="relative aspect-video bg-neutral-100 group video-click ${video.source ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'}" ${video.source ? 'tabindex="0" role="button" aria-label="Play video"' : ''}>
                         <img src="${video.thumbnail}" alt="${video.title}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                            <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white hover:text-neutral-900 transition-all">
+                        ${video.source ? `
+                        <button type="button" class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity play-trigger" aria-label="Play ${video.title}">
+                            <span class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white hover:text-neutral-900 transition-all">
                                 <span class="material-symbols-rounded">play_arrow</span>
-                            </div>
-                        </div>
+                            </span>
+                        </button>` : `
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-xs font-semibold tracking-wide">
+                            Video source unavailable
+                        </div>`}
                         <span class="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
                             ${video.duration}
                         </span>
@@ -1857,8 +1756,30 @@
                     </div>
                 `;
                 grid.appendChild(card);
+
+                const thumbnail = card.querySelector('.video-click');
+                if (thumbnail) {
+                    if (video.source) {
+                        const openPlayer = (event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            openVideoPlayer(video);
+                        };
+                        thumbnail.addEventListener('click', openPlayer);
+                        thumbnail.addEventListener('keydown', (event) => {
+                            if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+                                openPlayer(event);
+                            }
+                        });
+                    } else {
+                        thumbnail.title = 'Video playback unavailable for this item';
+                    }
+                }
             });
+
+            // Material Symbols loaded via CDN, no re-initialization needed
         }
     </script>
 </body>
+
 </html>
