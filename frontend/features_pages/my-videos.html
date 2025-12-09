@@ -131,6 +131,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none">
         <div id="videoModalContent"
             class="bg-white rounded-2xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl transform scale-95">
+
             <div class="relative bg-black aspect-video group">
                 <video id="modalVideoPlayer" controls class="w-full h-full object-contain"></video>
 
@@ -220,7 +221,9 @@
             if (!video) return;
 
             // Populate Modal Fields
-            document.getElementById('modalVideoPlayer').src = video.video_url || video.url;
+            // Use video_url from API response, fallback to url
+            const videoUrl = video.video_url || video.url;
+            document.getElementById('modalVideoPlayer').src = videoUrl;
             document.getElementById('modalTitle').textContent = video.title || "Untitled Video";
             document.getElementById('modalDescription').textContent = video.description || "No description provided.";
             document.getElementById('modalDate').textContent = formatDate(video.createdAt);
@@ -239,6 +242,9 @@
             // Show Modal
             const modal = document.getElementById('videoModal');
             modal.classList.add('show');
+
+            // Auto play for better UX
+            document.getElementById('modalVideoPlayer').play().catch(e => console.log("Autoplay blocked"));
         };
 
         window.closeVideoModal = () => {
@@ -260,9 +266,15 @@
             const approved = allVideos.filter(v => v.approvalStatus === 'approved').length;
             const pending = allVideos.filter(v => v.approvalStatus === 'pending').length;
 
-            document.getElementById('total-count').textContent = total;
-            document.getElementById('accepted-count').textContent = approved;
-            document.getElementById('pending-count').textContent = pending;
+            // Updated IDs to match HTML
+            const totalEl = document.getElementById('total-count');
+            if (totalEl) totalEl.textContent = total;
+
+            const acceptedEl = document.getElementById('accepted-count');
+            if (acceptedEl) acceptedEl.textContent = approved;
+
+            const pendingEl = document.getElementById('pending-count');
+            if (pendingEl) pendingEl.textContent = pending;
         }
 
         function renderVideoList(filter = 'all') {
@@ -285,16 +297,18 @@
             container.innerHTML = filteredData.map(video => {
                 const uploaderName = video.uploadedBy && video.uploadedBy.fullName ? video.uploadedBy.fullName : "Me";
 
-                // Add onclick handler to pass the ID
+                // Construct thumbnail logic
+                let thumbnailContent = `<span class="material-symbols-rounded text-primary text-2xl">play_circle</span>`;
+                if (video.thumbnail_url) {
+                    thumbnailContent = `<img src="${video.thumbnail_url}" class="w-full h-full object-cover">`;
+                }
+
                 return `
                 <div onclick="openVideoDetails('${video._id}')" class="video-item bg-white p-4 rounded-2xl shadow-sm border border-neutral-100 cursor-pointer relative overflow-hidden hover:shadow-md">
                     <div class="absolute left-0 top-0 bottom-0 w-1.5 ${getStatusColor(video.approvalStatus)}"></div>
                     <div class="flex items-center gap-4 pl-3">
                         <div class="w-14 h-14 bg-neutral-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative">
-                            ${video.thumbnail_url
-                        ? `<img src="${video.thumbnail_url}" class="w-full h-full object-cover">`
-                        : `<span class="material-symbols-rounded text-primary text-2xl">play_circle</span>`
-                    }
+                            ${thumbnailContent}
                             <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
                                 <span class="material-symbols-rounded text-white text-lg drop-shadow-md">play_arrow</span>
                             </div>
@@ -340,7 +354,7 @@
                 // Fetch videos uploaded by logged-in user
                 const response = await workerVideoAPI.getMyVideos(1, 100);
 
-                // Handle different response structures (pagination vs array)
+                // Handle different response structures
                 if (response.data && response.data.videos) {
                     allVideos = response.data.videos;
                 } else if (Array.isArray(response.data)) {

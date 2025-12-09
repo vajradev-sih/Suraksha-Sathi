@@ -183,10 +183,10 @@
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col h-full overflow-hidden">
+    <div class="flex-1 flex flex-col h-full overflow-hidden w-full">
         
         <!-- Header -->
-        <header class="h-16 bg-white border-b border-neutral-200 flex items-center justify-between px-6 shrink-0 shadow-sm">
+        <header class="sticky top-0 z-30 h-16 bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] border-b border-blue-900/40 flex items-center justify-between px-6 shrink-0 shadow-lg shadow-blue-900/40">
             <h2 id="page-title" class="text-xl font-bold text-neutral-800">Officer Dashboard</h2>
             
             <div class="flex items-center gap-4">
@@ -210,7 +210,7 @@
         </header>
 
         <!-- Main Views -->
-        <main class="flex-1 overflow-y-auto p-6 relative bg-slate-100">
+        <main class="flex-1 overflow-y-auto p-6 relative bg-slate-100 pb-24">
             
             <!-- Dashboard View -->
             <div id="view-dashboard" class="space-y-6 fade-in">
@@ -516,16 +516,7 @@
 
             <!-- Library View -->
             <div id="view-library" class="hidden space-y-6 fade-in">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div class="flex gap-2">
-                        <button onclick="filterVideos('All')" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-neutral-800 text-white" data-category="All">All</button>
-                        <button onclick="filterVideos('Heavy Machinery')" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-white text-neutral-600 border border-neutral-200" data-category="Heavy Machinery">Heavy Machinery</button>
-                        <button onclick="filterVideos('Emergency')" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-white text-neutral-600 border border-neutral-200" data-category="Emergency">Emergency</button>
-                        <button onclick="filterVideos('Health & Safety')" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-white text-neutral-600 border border-neutral-200" data-category="Health & Safety">PPE</button>
-                    </div>
-                </div>
-
-                <!-- Video Grid Container -->
+                <!-- Video Grid Container (Filter buttons removed) -->
                 <div id="video-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     <!-- Javascript will populate this -->
                 </div>
@@ -541,6 +532,24 @@
             </div>
 
         </main>
+
+        <!-- Bottom Navigation Bar - Simplified to 3 Items -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] border-t border-white/10 shadow-lg z-40">
+            <div class="flex justify-around py-3">
+                <button onclick="switchTab('dashboard')" class="nav-bottom-item flex flex-col items-center text-sm font-medium transition-colors">
+                    <span class="material-symbols-rounded text-xl">dashboard</span>
+                    <span class="text-xs">Dashboard</span>
+                </button>
+                <button onclick="switchTab('library')" class="nav-bottom-item flex flex-col items-center text-sm font-medium transition-colors">
+                    <span class="material-symbols-rounded text-xl">video_library</span>
+                    <span class="text-xs">My Videos</span>
+                </button>
+                <button onclick="toggleModal(true)" class="nav-bottom-item flex flex-col items-center text-sm font-medium transition-colors">
+                    <span class="material-symbols-rounded text-xl">cloud_upload</span>
+                    <span class="text-xs">Upload</span>
+                </button>
+            </div>
+        </nav>
     </div>
 
     <!-- Upload Modal -->
@@ -802,9 +811,6 @@
         };
         let currentUser = null;
 
-        let isSidebarOpen = true;
-        let currentFilter = 'All';
-
         // Helper: Show notification
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
@@ -1025,45 +1031,25 @@
             }
         }
 
-        // Filter Videos
-        function filterVideos(category) {
-            currentFilter = category;
-            
-            // Update button styles
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                if (btn.dataset.category === category) {
-                    btn.classList.remove('bg-white', 'text-neutral-600', 'border', 'border-neutral-200');
-                    btn.classList.add('bg-neutral-800', 'text-white');
-                } else {
-                    btn.classList.remove('bg-neutral-800', 'text-white');
-                    btn.classList.add('bg-white', 'text-neutral-600', 'border', 'border-neutral-200');
-                }
-            });
-            
-            renderVideos();
-        }
-
-        // Navigation Functions
+        // Navigation Functions - UPDATED
         function switchTab(tabId) {
-            // Update Tab Styling
-            document.querySelectorAll('.nav-item').forEach(btn => {
+            // Update Bottom Nav Styling
+            document.querySelectorAll('.nav-bottom-item').forEach(btn => {
                 if (btn.dataset.tab === tabId) {
-                    btn.classList.remove('text-slate-400', 'hover:bg-slate-800', 'hover:text-white');
-                    btn.classList.add('bg-yellow-500', 'text-slate-900', 'font-bold', 'shadow-lg', 'shadow-yellow-500/20');
+                    btn.classList.remove('text-neutral-400', 'hover:text-white');
+                    btn.classList.add('text-primary');
                 } else {
-                    btn.classList.add('text-slate-400', 'hover:bg-slate-800', 'hover:text-white');
-                    btn.classList.remove('bg-yellow-500', 'text-slate-900', 'font-bold', 'shadow-lg', 'shadow-yellow-500/20');
+                    btn.classList.add('text-neutral-400', 'hover:text-white');
+                    btn.classList.remove('text-primary');
                 }
             });
 
             // Update Header Title
             const titleMap = {
                 'dashboard': 'Officer Dashboard',
-                'library': 'Training Modules',
-                'trainees': 'Trainees',
-                'incidents': 'Incidents'
+                'library': 'My Videos'
             };
-            document.getElementById('page-title').textContent = titleMap[tabId];
+            document.getElementById('page-title').textContent = titleMap[tabId] || 'Dashboard';
 
             // Toggle Views
             document.getElementById('view-dashboard').classList.add('hidden');
@@ -1803,18 +1789,16 @@
             }
         }
 
-        // Rendering
+        // Rendering - UPDATED (removed filter parameter and logic)
         function renderVideos() {
             const grid = document.getElementById('video-grid');
             grid.innerHTML = '';
 
-            // Filter videos based on current filter
-            const filteredVideos = currentFilter === 'All' 
-                ? videos 
-                : videos.filter(v => v.category === currentFilter);
+            // Show all videos (no filtering)
+            const filteredVideos = videos;
 
             if (filteredVideos.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-neutral-400">No videos found in this category.</p></div>';
+                grid.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-neutral-400">No videos found.</p></div>';
                 return;
             }
 
@@ -1874,8 +1858,6 @@
                 `;
                 grid.appendChild(card);
             });
-            
-            // Material Symbols loaded via CDN, no re-initialization needed
         }
     </script>
 </body>
