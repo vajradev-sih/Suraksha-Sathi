@@ -42,9 +42,16 @@ const SUBSTANCE_KEYWORDS = [
 // PROFANITY & CUSS WORDS (Common English profanity)
 const PROFANITY_KEYWORDS = [
   // Tier 1 - Strong profanity
-  'fuck', 'fucking', 'fucked', 'fucker', 'shit', 'shitting', 
-  'bitch', 'bastard', 'asshole', 'damn', 'damned', 'hell',
-  'crap', 'piss', 'dick', 'cock', 'pussy', 'cunt',
+  'fuck', 'fucking', 'fucked', 'fucker', 'motherfucker', 'motherfucking',
+  'fucks', 'fuckin', 'fck', 'fuk', 'fk',
+  'shit', 'shitting', 'shitty', 'shits', 'bullshit',
+  'bitch', 'bitches', 'bitching', 'son of a bitch',
+  'bastard', 'asshole', 'assholes', 
+  'damn', 'damned', 'dammit', 'goddamn',
+  'hell', 'crap', 'piss', 'pissed', 'pissing',
+  'dick', 'dicks', 'dickhead', 
+  'cock', 'cocks', 'cocksucker',
+  'pussy', 'pussies', 'cunt', 'cunts',
   
   // Tier 2 - Moderate profanity
   'ass', 'arse', 'bloody', 'bugger', 'bollocks', 'wanker',

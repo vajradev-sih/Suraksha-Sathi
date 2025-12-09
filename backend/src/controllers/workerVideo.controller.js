@@ -19,16 +19,39 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Title is required');
   }
 
+  // Check if content was flagged by moderation middleware
+  // If moderationResult exists and was rejected, this code won't run
+  // because middleware throws error before reaching here
+  
+  // Get moderation result from middleware (if it passed preliminary checks)
+  const moderationResult = req.moderationResult || {
+    isAppropriate: true,
+    requiresReview: false,
+    reasons: []
+  };
+
   // Upload video to Cloudinary
   const result = await cloudinary.uploader.upload(req.file.path, { 
     folder: 'worker_videos',
-    resource_type: 'video'
+    resource_type: 'video',
+    moderation: 'aws_rek' // Enable Cloudinary's AI moderation
   });
 
   // Delete local file after upload
   await fs.unlink(req.file.path).catch(() => {});
 
-  // Create video record with pending status
+  // Determine moderation status and approval status
+  let moderationStatus = 'passed';
+  let approvalStatus = 'pending';
+  let requiresManualReview = moderationResult.requiresReview || false;
+  
+  // If moderation flagged for review, mark accordingly
+  if (moderationResult.requiresReview) {
+    moderationStatus = 'flagged';
+    requiresManualReview = true;
+  }
+
+  // Create video record with appropriate status
   const video = await WorkerVideo.create({
     uploaded_by: req.user._id,
     title,
@@ -37,11 +60,11 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
     thumbnail_url: result.secure_url.replace(/\.[^.]+$/, '.jpg'),
     category: category || 'other',
     duration: duration || result.duration || 0,
-    approval_status: 'pending',
-    moderation_status: 'passed',
-    moderation_score: 1,
-    moderation_flags: [],
-    requires_manual_review: false
+    approval_status: approvalStatus,
+    moderation_status: moderationStatus,
+    moderation_score: moderationResult.confidence || 1,
+    moderation_flags: moderationResult.reasons || [],
+    requires_manual_review: requiresManualReview
   });
 
   const populatedVideo = await WorkerVideo.findById(video._id)
