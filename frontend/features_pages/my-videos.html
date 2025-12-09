@@ -49,14 +49,31 @@
         .video-item:active {
             transform: scale(0.98);
         }
+
+        /* Modal Animation */
+        #videoModal {
+            transition: opacity 0.3s ease;
+        }
+
+        #videoModal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #videoModalContent {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #videoModal.show #videoModalContent {
+            transform: scale(1);
+        }
     </style>
 </head>
 
 <body class="bg-neutral-50 font-sans text-neutral-800 min-h-screen pb-24">
 
-    <!-- Header -->
     <div
-        class="sticky top-0 z-50 flex items-center bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] px-4 py-3 justify-between shadow-lg">
+        class="sticky top-0 z-40 flex items-center bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] px-4 py-3 justify-between shadow-lg">
         <a href="updated-home-page.html" class="text-white">
             <span class="material-symbols-rounded text-2xl">arrow_back</span>
         </a>
@@ -68,14 +85,13 @@
 
     <main class="p-4 space-y-4">
 
-        <!-- Stats Summary -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-neutral-100 grid grid-cols-3 gap-4">
             <div class="text-center">
                 <p class="text-xs text-neutral-500 uppercase font-bold">Total</p>
                 <p class="text-2xl font-bold text-primary" id="total-count">0</p>
             </div>
             <div class="text-center">
-                <p class="text-xs text-neutral-500 uppercase font-bold">Accepted</p>
+                <p class="text-xs text-neutral-500 uppercase font-bold">Approved</p>
                 <p class="text-2xl font-bold text-success-green" id="accepted-count">0</p>
             </div>
             <div class="text-center">
@@ -84,27 +100,25 @@
             </div>
         </div>
 
-        <!-- Filter Tabs -->
         <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-            <button onclick="filterVideos('all')" 
+            <button onclick="filterVideos('all')"
                 class="filter-btn active px-4 py-2 rounded-lg bg-primary text-white font-medium text-sm whitespace-nowrap transition-all">
                 All Videos
             </button>
-            <button onclick="filterVideos('pending')" 
+            <button onclick="filterVideos('pending')"
                 class="filter-btn px-4 py-2 rounded-lg bg-white border border-neutral-200 text-neutral-600 font-medium text-sm whitespace-nowrap transition-all">
                 Pending
             </button>
-            <button onclick="filterVideos('accepted')" 
+            <button onclick="filterVideos('approved')"
                 class="filter-btn px-4 py-2 rounded-lg bg-white border border-neutral-200 text-neutral-600 font-medium text-sm whitespace-nowrap transition-all">
-                Accepted
+                Approved
             </button>
-            <button onclick="filterVideos('rejected')" 
+            <button onclick="filterVideos('rejected')"
                 class="filter-btn px-4 py-2 rounded-lg bg-white border border-neutral-200 text-neutral-600 font-medium text-sm whitespace-nowrap transition-all">
                 Rejected
             </button>
         </div>
 
-        <!-- Video List -->
         <div id="video-list-container" class="space-y-3">
             <div class="text-center py-10 text-neutral-400">
                 <span class="material-symbols-rounded text-4xl animate-spin">progress_activity</span>
@@ -113,106 +127,150 @@
         </div>
     </main>
 
-    <script>
-        // --- 1. Sample Data Simulation ---
-        const submissionsData = [
-            {
-                id: 1,
-                title: "Site B - Safety Hazard Report",
-                submittedBy: "Rahul Kumar",
-                date: "2024-01-15T10:30:00",
-                status: "pending"
-            },
-            {
-                id: 2,
-                title: "Morning Attendance Drill",
-                submittedBy: "Priya Sharma",
-                date: "2024-01-15T09:15:00",
-                status: "accepted"
-            },
-            {
-                id: 3,
-                title: "Equipment Check - Forklift 4",
-                submittedBy: "Amit Verma",
-                date: "2024-01-14T14:20:00",
-                status: "rejected"
-            },
-            {
-                id: 4,
-                title: "Zone C Construction Update",
-                submittedBy: "Vikram Singh",
-                date: "2024-01-14T11:45:00",
-                status: "accepted"
-            },
-            {
-                id: 5,
-                title: "Emergency Exit Blockage",
-                submittedBy: "Anjali Gupta",
-                date: "2024-01-13T16:10:00",
-                status: "pending"
-            }
-        ];
+    <div id="videoModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none">
+        <div id="videoModalContent"
+            class="bg-white rounded-2xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl transform scale-95">
+            <div class="relative bg-black aspect-video group">
+                <video id="modalVideoPlayer" controls class="w-full h-full object-contain"></video>
 
+                <button onclick="closeVideoModal()"
+                    class="absolute top-3 right-3 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition backdrop-blur-sm z-10">
+                    <span class="material-symbols-rounded text-xl">close</span>
+                </button>
+            </div>
+
+            <div class="p-5">
+                <div class="flex justify-between items-start mb-3 gap-2">
+                    <h2 id="modalTitle" class="text-lg font-bold text-neutral-900 leading-tight"></h2>
+                    <div id="modalStatusBadge" class="flex-shrink-0"></div>
+                </div>
+
+                <div class="flex items-center gap-2 text-xs text-neutral-500 mb-4 border-b border-neutral-100 pb-3">
+                    <span class="flex items-center gap-1">
+                        <span class="material-symbols-rounded text-sm">calendar_today</span>
+                        <span id="modalDate"></span>
+                    </span>
+                    <span class="mx-1">•</span>
+                    <span class="flex items-center gap-1">
+                        <span class="material-symbols-rounded text-sm">person</span>
+                        <span id="modalUploader"></span>
+                    </span>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-xs font-bold text-neutral-400 uppercase mb-1">Description</h4>
+                        <p id="modalDescription" class="text-neutral-700 text-sm leading-relaxed"></p>
+                    </div>
+
+                    <div id="modalRejectionBox"
+                        class="hidden bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-red-700">
+                        <p class="font-bold mb-1 flex items-center gap-1"><span
+                                class="material-symbols-rounded text-sm">error</span> Rejection Reason</p>
+                        <p id="modalRejectionReason" class="text-red-600/90"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../api.client.js"></script>
+    <script>
+        // State
+        let allVideos = [];
         let currentFilter = 'all';
 
-        // --- 2. Helper Functions ---
+        // --- 1. Helper Functions ---
         function getStatusBadge(status) {
+            const s = (status || 'pending').toLowerCase();
             const badges = {
-                accepted: '<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full uppercase flex items-center gap-1"><span class="material-symbols-rounded text-xs">check_circle</span>Accepted</span>',
+                approved: '<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full uppercase flex items-center gap-1"><span class="material-symbols-rounded text-xs">check_circle</span>Approved</span>',
                 rejected: '<span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full uppercase flex items-center gap-1"><span class="material-symbols-rounded text-xs">cancel</span>Rejected</span>',
                 pending: '<span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded-full uppercase flex items-center gap-1"><span class="material-symbols-rounded text-xs">schedule</span>Pending</span>'
             };
-            return badges[status] || badges.pending;
+            return badges[s] || badges.pending;
         }
 
         function getStatusIcon(status) {
+            const s = (status || 'pending').toLowerCase();
             const icons = {
-                accepted: '<div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0"><span class="material-symbols-rounded">check_circle</span></div>',
+                approved: '<div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0"><span class="material-symbols-rounded">check_circle</span></div>',
                 rejected: '<div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0"><span class="material-symbols-rounded">cancel</span></div>',
                 pending: '<div class="w-10 h-10 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center flex-shrink-0"><span class="material-symbols-rounded">schedule</span></div>'
             };
-            return icons[status] || icons.pending;
+            return icons[s] || icons.pending;
         }
 
         function getStatusColor(status) {
-            return status === 'accepted' ? 'bg-success-green' : 
-                   status === 'rejected' ? 'bg-alert-red' : 'bg-warning-yellow';
+            const s = (status || 'pending').toLowerCase();
+            return s === 'approved' ? 'bg-success-green' :
+                s === 'rejected' ? 'bg-alert-red' : 'bg-warning-yellow';
         }
 
         function formatDate(dateString) {
+            if (!dateString) return 'Unknown Date';
             const date = new Date(dateString);
-            const now = new Date();
-            const diffTime = Math.abs(now - date);
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            
-            if (diffDays === 0) {
-                return `Today, ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
-            } else if (diffDays === 1) {
-                return 'Yesterday';
-            } else if (diffDays < 7) {
-                return `${diffDays} days ago`;
-            } else {
-                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            }
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         }
+
+        // --- 2. Modal Logic ---
+        window.openVideoDetails = (videoId) => {
+            const video = allVideos.find(v => v._id === videoId);
+            if (!video) return;
+
+            // Populate Modal Fields
+            document.getElementById('modalVideoPlayer').src = video.video_url || video.url;
+            document.getElementById('modalTitle').textContent = video.title || "Untitled Video";
+            document.getElementById('modalDescription').textContent = video.description || "No description provided.";
+            document.getElementById('modalDate').textContent = formatDate(video.createdAt);
+            document.getElementById('modalUploader').textContent = video.uploadedBy?.fullName || "Me";
+            document.getElementById('modalStatusBadge').innerHTML = getStatusBadge(video.approvalStatus);
+
+            // Handle Rejection Reason
+            const rejectionBox = document.getElementById('modalRejectionBox');
+            if (video.approvalStatus === 'rejected' && video.rejectionReason) {
+                document.getElementById('modalRejectionReason').textContent = video.rejectionReason;
+                rejectionBox.classList.remove('hidden');
+            } else {
+                rejectionBox.classList.add('hidden');
+            }
+
+            // Show Modal
+            const modal = document.getElementById('videoModal');
+            modal.classList.add('show');
+        };
+
+        window.closeVideoModal = () => {
+            const modal = document.getElementById('videoModal');
+            const player = document.getElementById('modalVideoPlayer');
+
+            modal.classList.remove('show');
+
+            // Stop video playback when closing
+            setTimeout(() => {
+                player.pause();
+                player.src = ""; // Clear src to stop buffering
+            }, 300); // Wait for transition
+        };
 
         // --- 3. Render Functions ---
         function updateStats() {
-            const total = submissionsData.length;
-            const accepted = submissionsData.filter(v => v.status === 'accepted').length;
-            const pending = submissionsData.filter(v => v.status === 'pending').length;
+            const total = allVideos.length;
+            const approved = allVideos.filter(v => v.approvalStatus === 'approved').length;
+            const pending = allVideos.filter(v => v.approvalStatus === 'pending').length;
 
             document.getElementById('total-count').textContent = total;
-            document.getElementById('accepted-count').textContent = accepted;
+            document.getElementById('accepted-count').textContent = approved;
             document.getElementById('pending-count').textContent = pending;
         }
 
         function renderVideoList(filter = 'all') {
             const container = document.getElementById('video-list-container');
-            
-            const filteredData = filter === 'all' 
-                ? submissionsData 
-                : submissionsData.filter(v => v.status === filter);
+
+            const filteredData = filter === 'all'
+                ? allVideos
+                : allVideos.filter(v => v.approvalStatus === filter);
 
             if (filteredData.length === 0) {
                 container.innerHTML = `
@@ -224,54 +282,93 @@
                 return;
             }
 
-            container.innerHTML = filteredData.map(video => `
-                <div class="video-item bg-white p-4 rounded-2xl shadow-sm border border-neutral-100 cursor-pointer relative overflow-hidden">
-                    <div class="absolute left-0 top-0 bottom-0 w-1.5 ${getStatusColor(video.status)}"></div>
+            container.innerHTML = filteredData.map(video => {
+                const uploaderName = video.uploadedBy && video.uploadedBy.fullName ? video.uploadedBy.fullName : "Me";
+
+                // Add onclick handler to pass the ID
+                return `
+                <div onclick="openVideoDetails('${video._id}')" class="video-item bg-white p-4 rounded-2xl shadow-sm border border-neutral-100 cursor-pointer relative overflow-hidden hover:shadow-md">
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5 ${getStatusColor(video.approvalStatus)}"></div>
                     <div class="flex items-center gap-4 pl-3">
-                        <div class="w-14 h-14 bg-neutral-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <span class="material-symbols-rounded text-primary text-2xl">chevron_right</span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="font-bold text-neutral-800 text-base truncate">${video.title}</h3>
-                            <p class="text-xs text-neutral-500 mt-1">By: ${video.submittedBy}</p>
-                            <div class="flex items-center gap-2 mt-2">
-                                ${getStatusBadge(video.status)}
-                                <span class="text-xs text-neutral-400">${formatDate(video.date)}</span>
+                        <div class="w-14 h-14 bg-neutral-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                            ${video.thumbnail_url
+                        ? `<img src="${video.thumbnail_url}" class="w-full h-full object-cover">`
+                        : `<span class="material-symbols-rounded text-primary text-2xl">play_circle</span>`
+                    }
+                            <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                <span class="material-symbols-rounded text-white text-lg drop-shadow-md">play_arrow</span>
                             </div>
                         </div>
-                        ${getStatusIcon(video.status)}
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-neutral-800 text-base truncate">${video.title || "Untitled Video"}</h3>
+                            <p class="text-xs text-neutral-500 mt-1 truncate">${video.description || ""}</p>
+                            <div class="flex items-center gap-2 mt-2">
+                                ${getStatusBadge(video.approvalStatus)}
+                                <span class="text-xs text-neutral-400">${formatDate(video.createdAt)}</span>
+                            </div>
+                        </div>
+                        <div class="text-neutral-300">
+                            <span class="material-symbols-rounded text-2xl">chevron_right</span>
+                        </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
-        // --- 4. Filter Function ---
         window.filterVideos = (filter) => {
             currentFilter = filter;
-            
-            // Update button styles
+
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('bg-primary', 'text-white');
                 btn.classList.add('bg-white', 'border', 'border-neutral-200', 'text-neutral-600');
             });
             event.target.classList.remove('bg-white', 'border', 'border-neutral-200', 'text-neutral-600');
             event.target.classList.add('bg-primary', 'text-white');
-            
+
             renderVideoList(filter);
         };
 
-        // --- 5. Initialize ---
-        document.addEventListener('DOMContentLoaded', () => {
-            updateStats();
-            renderVideoList();
+        // --- 4. Initialize & Fetch ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = "../index.html";
+                return;
+            }
+
+            try {
+                // Fetch videos uploaded by logged-in user
+                const response = await workerVideoAPI.getMyVideos(1, 100);
+
+                // Handle different response structures (pagination vs array)
+                if (response.data && response.data.videos) {
+                    allVideos = response.data.videos;
+                } else if (Array.isArray(response.data)) {
+                    allVideos = response.data;
+                } else {
+                    allVideos = [];
+                }
+
+                updateStats();
+                renderVideoList();
+
+            } catch (error) {
+                console.error("Failed to load videos:", error);
+                document.getElementById('video-list-container').innerHTML = `
+                    <div class="text-center py-10 text-red-400">
+                        <span class="material-symbols-rounded text-4xl">error</span>
+                        <p class="mt-2">Failed to load videos.</p>
+                    </div>
+                `;
+            }
         });
     </script>
 
-    <!-- Hide scrollbar for horizontal filter scroll -->
     <style>
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
+
         .no-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
