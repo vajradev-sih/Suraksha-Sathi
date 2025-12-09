@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Videos - Suraksha Sathi</title>
+    <title>Safety Video Library</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -74,11 +74,11 @@
 
     <div
         class="sticky top-0 z-40 flex items-center bg-gradient-to-r from-[#020617] via-[#0f172a] to-[#000000] px-4 py-3 justify-between shadow-lg">
-        <a href="admin-home.html" class="text-white">
+        <a href="updated-home-page.html" class="text-white">
             <span class="material-symbols-rounded text-2xl">arrow_back</span>
         </a>
         <h1 class="text-xl font-[Orbitron] tracking-widest text-white">
-            My Videos
+            Safety Library
         </h1>
         <div class="w-8"></div>
     </div>
@@ -100,10 +100,21 @@
             </div>
         </div>
 
+        <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+            <button onclick="filterVideos('all')"
+                class="filter-btn active px-4 py-2 rounded-lg bg-primary text-white font-medium text-sm whitespace-nowrap transition-all">
+                All Videos
+            </button>
+            <button onclick="filterVideos('approved')"
+                class="filter-btn px-4 py-2 rounded-lg bg-white border border-neutral-200 text-neutral-600 font-medium text-sm whitespace-nowrap transition-all">
+                Verified
+            </button>
+        </div>
+
         <div id="video-list-container" class="space-y-3">
             <div class="text-center py-10 text-neutral-400">
                 <span class="material-symbols-rounded text-4xl animate-spin">progress_activity</span>
-                <p class="mt-2">Loading your videos...</p>
+                <p class="mt-2">Loading videos...</p>
             </div>
         </div>
     </main>
@@ -112,6 +123,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none">
         <div id="videoModalContent"
             class="bg-white rounded-2xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl transform scale-95">
+
             <div class="relative bg-black aspect-video group">
                 <video id="modalVideoPlayer" controls class="w-full h-full object-contain"></video>
 
@@ -144,13 +156,13 @@
                         <h4 class="text-xs font-bold text-neutral-400 uppercase mb-1">Description</h4>
                         <p id="modalDescription" class="text-neutral-700 text-sm leading-relaxed"></p>
                     </div>
+                </div>
 
-                    <div id="modalRejectionBox"
-                        class="hidden bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-red-700">
-                        <p class="font-bold mb-1 flex items-center gap-1"><span
-                                class="material-symbols-rounded text-sm">error</span> Rejection Reason</p>
-                        <p id="modalRejectionReason" class="text-red-600/90"></p>
-                    </div>
+                <div class="mt-6 pt-4 border-t border-neutral-100 flex justify-end">
+                    <button onclick="deleteVideo()"
+                        class="text-red-500 text-sm font-medium flex items-center gap-1 hover:bg-red-50 px-3 py-2 rounded-lg transition">
+                        <span class="material-symbols-rounded">delete</span> Delete Video
+                    </button>
                 </div>
             </div>
         </div>
@@ -158,35 +170,33 @@
 
     <script src="../api.client.js"></script>
     <script>
+        // --- Define API locally (as requested) ---
+        if (typeof safetyVideoAPI === 'undefined') {
+            window.safetyVideoAPI = {
+                upload: (formData) => apiRequest("/api/v1/safety-videos/upload", { method: "POST", body: formData }),
+                getAll: () => apiRequest("/api/v1/safety-videos", { method: "GET" }),
+                update: (id, data) => apiRequest(`/api/v1/safety-videos/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+                delete: (id) => apiRequest(`/api/v1/safety-videos/${id}`, { method: "DELETE" }),
+            };
+        }
+
         // State
         let allVideos = [];
         let currentFilter = 'all';
+        let currentVideoId = null;
 
         // --- 1. Helper Functions ---
         function getStatusBadge(status) {
-            const s = (status || 'pending').toLowerCase();
-            const badges = {
-                approved: '<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full uppercase flex items-center gap-1"><span class="material-symbols-rounded text-xs">check_circle</span>Approved</span>',
-                rejected: '<span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full uppercase flex items-center gap-1"><span class="material-symbols-rounded text-xs">cancel</span>Rejected</span>',
-                pending: '<span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded-full uppercase flex items-center gap-1"><span class="material-symbols-rounded text-xs">schedule</span>Pending</span>'
-            };
-            return badges[s] || badges.pending;
+            // Default to approved for Safety Videos
+            return '<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full uppercase flex items-center gap-1"><span class="material-symbols-rounded text-xs">check_circle</span>Approved</span>';
         }
 
         function getStatusIcon(status) {
-            const s = (status || 'pending').toLowerCase();
-            const icons = {
-                approved: '<div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0"><span class="material-symbols-rounded">check_circle</span></div>',
-                rejected: '<div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0"><span class="material-symbols-rounded">cancel</span></div>',
-                pending: '<div class="w-10 h-10 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center flex-shrink-0"><span class="material-symbols-rounded">schedule</span></div>'
-            };
-            return icons[s] || icons.pending;
+            return '<div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0"><span class="material-symbols-rounded">check_circle</span></div>';
         }
 
         function getStatusColor(status) {
-            const s = (status || 'pending').toLowerCase();
-            return s === 'approved' ? 'bg-success-green' :
-                s === 'rejected' ? 'bg-alert-red' : 'bg-warning-yellow';
+            return 'bg-success-green';
         }
 
         function formatDate(dateString) {
@@ -197,61 +207,69 @@
 
         // --- 2. Modal Logic ---
         window.openVideoDetails = (videoId) => {
+            currentVideoId = videoId;
             const video = allVideos.find(v => v._id === videoId);
             if (!video) return;
 
             // Populate Modal Fields
-            document.getElementById('modalVideoPlayer').src = video.video_url || video.url;
+            // Map 'url' (SafetyVideo) to player src
+            document.getElementById('modalVideoPlayer').src = video.url || video.video_url;
             document.getElementById('modalTitle').textContent = video.title || "Untitled Video";
             document.getElementById('modalDescription').textContent = video.description || "No description provided.";
             document.getElementById('modalDate').textContent = formatDate(video.createdAt);
-            document.getElementById('modalUploader').textContent = video.uploadedBy?.fullName || "Me";
-            document.getElementById('modalStatusBadge').innerHTML = getStatusBadge(video.approvalStatus);
-
-            // Handle Rejection Reason
-            const rejectionBox = document.getElementById('modalRejectionBox');
-            if (video.approvalStatus === 'rejected' && video.rejectionReason) {
-                document.getElementById('modalRejectionReason').textContent = video.rejectionReason;
-                rejectionBox.classList.remove('hidden');
-            } else {
-                rejectionBox.classList.add('hidden');
-            }
+            // Default uploader to Admin for safety videos
+            document.getElementById('modalUploader').textContent = "Admin";
+            document.getElementById('modalStatusBadge').innerHTML = getStatusBadge('approved');
 
             // Show Modal
             const modal = document.getElementById('videoModal');
             modal.classList.add('show');
+
+            // Auto play
+            document.getElementById('modalVideoPlayer').play().catch(e => console.log("Autoplay blocked"));
         };
 
         window.closeVideoModal = () => {
             const modal = document.getElementById('videoModal');
             const player = document.getElementById('modalVideoPlayer');
-
             modal.classList.remove('show');
+            currentVideoId = null;
 
-            // Stop video playback when closing
             setTimeout(() => {
                 player.pause();
-                player.src = ""; // Clear src to stop buffering
-            }, 300); // Wait for transition
+                player.src = "";
+            }, 300);
+        };
+
+        window.deleteVideo = async () => {
+            if (!currentVideoId) return;
+            if (!confirm("Are you sure you want to delete this safety video?")) return;
+
+            try {
+                await safetyVideoAPI.delete(currentVideoId);
+                closeVideoModal();
+                loadData(); // Refresh list
+                alert("Video deleted successfully");
+            } catch (e) {
+                console.error(e);
+                alert("Failed to delete video");
+            }
         };
 
         // --- 3. Render Functions ---
         function updateStats() {
             const total = allVideos.length;
-            const approved = allVideos.filter(v => v.approvalStatus === 'approved').length;
-            const pending = allVideos.filter(v => v.approvalStatus === 'pending').length;
-
+            // For Safety Videos, assume all are 'approved'/active
             document.getElementById('total-count').textContent = total;
-            document.getElementById('accepted-count').textContent = approved;
-            document.getElementById('pending-count').textContent = pending;
+            document.getElementById('accepted-count').textContent = total;
+            document.getElementById('pending-count').textContent = 0;
         }
 
         function renderVideoList(filter = 'all') {
             const container = document.getElementById('video-list-container');
 
-            const filteredData = filter === 'all'
-                ? allVideos
-                : allVideos.filter(v => v.approvalStatus === filter);
+            // Safety videos typically don't have status, so show all unless filtered by something else
+            const filteredData = allVideos;
 
             if (filteredData.length === 0) {
                 container.innerHTML = `
@@ -264,12 +282,9 @@
             }
 
             container.innerHTML = filteredData.map(video => {
-                const uploaderName = video.uploadedBy && video.uploadedBy.fullName ? video.uploadedBy.fullName : "Me";
-
-                // Add onclick handler to pass the ID
                 return `
                 <div onclick="openVideoDetails('${video._id}')" class="video-item bg-white p-4 rounded-2xl shadow-sm border border-neutral-100 cursor-pointer relative overflow-hidden hover:shadow-md">
-                    <div class="absolute left-0 top-0 bottom-0 w-1.5 ${getStatusColor(video.approvalStatus)}"></div>
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-success-green"></div>
                     <div class="flex items-center gap-4 pl-3">
                         <div class="w-14 h-14 bg-neutral-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative">
                             ${video.thumbnail_url
@@ -284,7 +299,7 @@
                             <h3 class="font-bold text-neutral-800 text-base truncate">${video.title || "Untitled Video"}</h3>
                             <p class="text-xs text-neutral-500 mt-1 truncate">${video.description || ""}</p>
                             <div class="flex items-center gap-2 mt-2">
-                                ${getStatusBadge(video.approvalStatus)}
+                                ${getStatusBadge('approved')}
                                 <span class="text-xs text-neutral-400">${formatDate(video.createdAt)}</span>
                             </div>
                         </div>
@@ -298,7 +313,6 @@
 
         window.filterVideos = (filter) => {
             currentFilter = filter;
-
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('bg-primary', 'text-white');
                 btn.classList.add('bg-white', 'border', 'border-neutral-200', 'text-neutral-600');
@@ -306,29 +320,16 @@
             event.target.classList.remove('bg-white', 'border', 'border-neutral-200', 'text-neutral-600');
             event.target.classList.add('bg-primary', 'text-white');
 
-            renderVideoList(filter);
+            // For this specific page, we treat all as valid since they come from SafetyAPI
+            renderVideoList('all');
         };
 
         // --- 4. Initialize & Fetch ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                window.location.href = "../index.html";
-                return;
-            }
-
+        const loadData = async () => {
             try {
-                // Fetch videos uploaded by logged-in user
-                const response = await workerVideoAPI.getMyVideos(1, 100);
-
-                // Handle different response structures (pagination vs array)
-                if (response.data && response.data.videos) {
-                    allVideos = response.data.videos;
-                } else if (Array.isArray(response.data)) {
-                    allVideos = response.data;
-                } else {
-                    allVideos = [];
-                }
+                // Fetch SAFETY videos (Admin uploaded)
+                const response = await safetyVideoAPI.getAll();
+                allVideos = response.data || [];
 
                 updateStats();
                 renderVideoList();
@@ -342,6 +343,12 @@
                     </div>
                 `;
             }
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem("token");
+            if (!token) { window.location.href = "../index.html"; return; }
+            loadData();
         });
     </script>
 
