@@ -18,6 +18,11 @@ const checklistItemSchema = new Schema(
       required: true,
       trim: true
     },
+    equipment_image_url: {
+      type: String,
+      default: null,
+      trim: true
+    },
     is_mandatory: {
       type: Boolean,
       default: false
@@ -25,6 +30,10 @@ const checklistItemSchema = new Schema(
     order: {
       type: Number,
       required: true
+    },
+    created_by: {
+      type: Schema.Types.ObjectId,
+      ref: 'User'
     }
   },
   { timestamps: true }
