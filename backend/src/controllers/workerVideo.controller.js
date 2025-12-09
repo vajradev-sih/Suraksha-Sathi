@@ -14,10 +14,17 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
   console.log('=== UPLOAD STARTED ===');
   console.log('Body:', req.body);
   console.log('File:', req.file ? req.file.filename : 'No file');
-  console.log('User:', req.user ? req.user._id : 'No user');
   
+  // FIX: Resolve User ID from Token (req.user) OR Body (req.body for testing)
+  const userId = req.user?._id || req.user?.id || req.body.uploaded_by;
+  console.log('Resolved User ID:', userId);
+
   const { title, description, category, duration } = req.body;
   
+  if (!userId) {
+    throw new ApiError(400, "User ID (uploaded_by) is required. Please log in or provide it in the body.");
+  }
+
   if (!req.file) {
     throw new ApiError(400, 'Video file is required');
   }
@@ -47,7 +54,7 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
   if (shouldAutoReject(moderationResult)) {
     // Create record as auto-rejected for audit trail
     const rejectedVideo = await WorkerVideo.create({
-      uploaded_by: req.user?._id || req.user?.id || req.body.uploaded_by,
+      uploaded_by: userId, // Use resolved userId
       title,
       description,
       video_url: result.secure_url,
@@ -61,9 +68,6 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
       rejection_reason: getModerationSummary(moderationResult)
     });
 
-    // Optionally delete from Cloudinary to save storage
-    // await cloudinary.uploader.destroy(result.public_id, { resource_type: 'video' });
-
     throw new ApiError(
       400,
       `Upload rejected by automated moderation: ${getModerationSummary(moderationResult)}. Please ensure your content follows community guidelines.`
@@ -73,7 +77,7 @@ const uploadWorkerVideo = asyncHandler(async (req, res) => {
   console.log('Creating video record...');
   // Create video record with pending status and moderation info
   const video = await WorkerVideo.create({
-    uploaded_by: req.user._id,
+    uploaded_by: userId, // FIX: Use resolved userId here too
     title,
     description,
     video_url: result.secure_url,
@@ -216,10 +220,18 @@ const getApprovedVideos = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 });
 
   // Add social context (like status and uploader follow status)
+  // Note: Only if user is logged in
+  const userId = req.user?._id;
+  
   const videosWithSocialContext = await Promise.all(
     videos.map(async (video) => {
-      const isLiked = await video.isLikedBy(req.user._id);
-      const isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
+      let isLiked = false;
+      let isFollowingUploader = false;
+      
+      if (userId) {
+        isLiked = await video.isLikedBy(userId);
+        isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
+      }
       
       return {
         ...video.toObject(),
@@ -251,8 +263,14 @@ const getWorkerVideoById = asyncHandler(async (req, res) => {
   await video.save();
 
   // Add social context
-  const isLiked = await video.isLikedBy(req.user._id);
-  const isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
+  const userId = req.user?._id;
+  let isLiked = false;
+  let isFollowingUploader = false;
+  
+  if (userId) {
+    isLiked = await video.isLikedBy(userId);
+    isFollowingUploader = await req.user.isFollowing(video.uploaded_by._id);
+  }
 
   const videoWithSocialContext = {
     ...video.toObject(),
