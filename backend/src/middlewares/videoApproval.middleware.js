@@ -22,7 +22,8 @@ export const requireApprovedVideo = async (req, res, next) => {
     // Admins and TrainingOfficers can view any video
     const isAdmin = req.user && (
       req.user.role_name === 'Admin' || 
-      req.user.role_name === 'TrainingOfficer'
+      req.user.role_name === 'TrainingOfficer' ||
+      req.user.role_name === 'SafetyOfficer' // Backward compatibility
     );
 
     // Uploader can view their own video regardless of status
@@ -48,7 +49,8 @@ export const requireApprovedVideo = async (req, res, next) => {
 export const requireApprovalPermission = (req, res, next) => {
   const isAdmin = req.user && (
     req.user.role_name === 'Admin' || 
-    req.user.role_name === 'TrainingOfficer'
+    req.user.role_name === 'TrainingOfficer' ||
+    req.user.role_name === 'SafetyOfficer' // Backward compatibility
   );
 
   if (!isAdmin) {

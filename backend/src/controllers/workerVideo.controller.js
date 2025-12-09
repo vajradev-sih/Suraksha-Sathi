@@ -267,7 +267,9 @@ const deleteWorkerVideo = asyncHandler(async (req, res) => {
 
   // Only uploader or admin can delete
   const isUploader = video.uploaded_by.toString() === req.user._id.toString();
-  const isAdmin = req.user.role_name === 'Admin' || req.user.role_name === 'TrainingOfficer';
+  const isAdmin = req.user.role_name === 'Admin' || 
+                  req.user.role_name === 'TrainingOfficer' || 
+                  req.user.role_name === 'SafetyOfficer'; // Backward compatibility
 
   if (!isUploader && !isAdmin) {
     throw new ApiError(403, 'You do not have permission to delete this video');
