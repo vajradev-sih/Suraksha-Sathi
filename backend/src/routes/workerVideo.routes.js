@@ -29,7 +29,36 @@ router.use((req, res, next) => {
 });
 
 // Worker routes - any authenticated user can upload (with content moderation)
-router.post('/upload', verifyJWT, upload.single('file'), uploadWorkerVideo);
+router.post('/upload', 
+  verifyJWT, 
+  (req, res, next) => {
+    console.log('[ROUTE] About to call multer - accepting ANY file field');
+    
+    // Use upload.any() to accept any field name
+    const multerMiddleware = upload.any();
+    
+    multerMiddleware(req, res, (err) => {
+      if (err) {
+        console.error('[ROUTE] Multer error:', err);
+        return next(err);
+      }
+      
+      console.log('[ROUTE] Files received:', req.files);
+      
+      // Get the first file from the files array
+      if (req.files && req.files.length > 0) {
+        req.file = req.files[0];
+        console.log('[ROUTE] File field name was:', req.file.fieldname);
+        console.log('[ROUTE] File normalized to req.file');
+      } else {
+        console.log('[ROUTE] No files in request');
+      }
+      
+      next();
+    });
+  },
+  uploadWorkerVideo
+);
 router.get('/my-videos', verifyJWT, getMyVideos);
 
 // Public routes - approved videos only
